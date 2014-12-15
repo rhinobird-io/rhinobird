@@ -11,10 +11,6 @@
         background: #5677fc;
       }
 
-      #fileInput{
-        display: none;
-      }
-
       ul {
         display: inline-block;
         list-style-type: none;
@@ -24,15 +20,17 @@
         visibility: hidden;
       }
     </style>
-    <paper-fab mini icon="file-upload" class="blue" on-click="{{onClick}}"></paper-fab>
+    <!--noink because OS X file upload dialog animation makes ink animation stuck-->
+    <paper-fab mini noink icon="file-upload" class="blue" on-click="{{onClick}}"></paper-fab>
     <ul>
       <li><core-label>{{fileName}}</core-label></li>
-      <li invisible?={{!progress}}><paper-progress value="{{progress}}"></paper-progress></li>
+      <li invisible?={{progressInvisible}}><paper-progress value="{{progress}}"></paper-progress></li>
     </ul>
-    <input type="file" id="fileInput" on-change="{{fileChange}}">
+    <input type="file" id="fileInput" on-change="{{fileChange}}" hidden>
   </template>
   <script>
     Polymer({
+      progressInvisible: true,
       onClick: function(){
         var elem = this.$.fileInput;
         if(elem && document.createEvent) { // sanity check
@@ -42,6 +40,8 @@
         }
       },
       fileChange: function(e) {
+        this.progressInvisible = true;
+        this.progress = undefined;
         var file = e.target.files[0];
         if(!file){
           this.fileName = "";
@@ -53,10 +53,12 @@
 
           var xhr = new XMLHttpRequest();
           xhr.upload.addEventListener('progress', function(e){
-            var done = e.position || e.loaded, total = e.totalSize || e.total;
+            var done = e.loaded, total = e.total;
             self.progress = Math.floor(done/total*1000)/10;
           });
           xhr.open('POST', "/upload", true);
+
+          this.progressInvisible = false;
           xhr.send(formData);
         }
       }
