@@ -15,10 +15,11 @@ ActiveRecord::Schema.define(version: 20141217094647) do
 
   create_table "plugins", force: true do |t|
     t.string   "name"
-    t.string   "unique"
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "plugins", ["name"], name: "index_plugins_on_name", unique: true
 
 end
