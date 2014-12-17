@@ -1,6 +1,7 @@
 require 'sinatra'
+require "sinatra/activerecord"
 #require 'sequel'
-require './config/sinatra_env'
+require './config/environments'
 
 class App < Sinatra::Base
 
