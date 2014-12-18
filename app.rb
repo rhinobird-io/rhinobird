@@ -16,7 +16,7 @@ class App < Sinatra::Base
   end
 
   get '/' do
-    'Hello'
+    redirect 'index.html'
   end
 
   before do
