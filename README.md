@@ -19,5 +19,6 @@ Advanced, awesome, cutting-age teamwork software.
     $ bower install
     $ cd ..
     $ bundle install
-    $ ruby app.rb
+    $ shotgun # shotgun will automatically apply any changes for your code, just refresh the page
+    ```
 
