@@ -48,7 +48,9 @@ class App < Sinatra::Base
     post '/plugins' do
       Plugin.create!(@body)
     end
+  end
 
+  namespace '/platform' do
     get '/teams' do
       Team.all.to_json
     end
@@ -59,15 +61,16 @@ class App < Sinatra::Base
 
     #get all users in a team
     get "/teams/:teamId/users" do
-      team = Team.find(params[:teamId])
-      team.users_teams.map {|item| User.find(item.user_id)}.to_json
+      Team.find(params[:teamId]).users.to_json
     end
 
     # add a user to a team
     post "/teams/:teamId/users/:userId" do
       team = Team.find(params[:teamId])
       user = User.find(params[:userId])
-      UsersTeam.create(user_id: user.id, team_id: team.id) unless user.nil?
+      # it does not work now
+      team.users << user
+      200
     end
 
     get '/users' do
@@ -80,10 +83,8 @@ class App < Sinatra::Base
 
     #get all team the user attend
     get "/users/:userId/teams" do
-      user = User.find(params[:userId])
-      user.users_teams.map { |item| Team.find(item.team_id)}.to_json
+      User.find(params[:userId]).teams.to_json
     end
-
   end
 
 end
