@@ -16,7 +16,7 @@ class App < Sinatra::Base
   end
 
   get '/' do
-    'Hello'
+    send_file File.join(settings.public_folder, 'index.html')
   end
 
   before do
