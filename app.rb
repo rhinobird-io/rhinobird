@@ -1,7 +1,6 @@
 require 'sinatra'
 require 'sinatra/namespace'
 require "sinatra/activerecord"
-#require 'sequel'
 require './config/environments'
 require './models/plugin.rb'
 
