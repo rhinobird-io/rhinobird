@@ -1,6 +1,6 @@
 require 'sinatra'
 require 'sinatra/namespace'
-require "sinatra/activerecord"
+require 'sinatra/activerecord'
 require './config/environments'
 require './models/plugin.rb'
 
@@ -16,7 +16,7 @@ class App < Sinatra::Base
   end
 
   get '/' do
-    "Hello"
+    'Hello'
   end
 
   before do
@@ -35,7 +35,7 @@ class App < Sinatra::Base
     post '/upload' do
       p params['file'][:filename]
       p params['file'][:tempfile]
-      "The file was successfully uploaded!"
+      'The file was successfully uploaded!'
     end
 
     get '/plugins' do
@@ -43,7 +43,6 @@ class App < Sinatra::Base
     end
 
     post '/plugins' do
-      p "Entering"
       Plugin.create!(@body)
       200
     end
