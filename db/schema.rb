@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141217094647) do
+ActiveRecord::Schema.define(version: 20141218090740) do
 
   create_table 'plugins', force: true do |t|
     t.string 'name'
@@ -21,5 +21,31 @@ ActiveRecord::Schema.define(version: 20141217094647) do
   end
 
   add_index 'plugins', ['name'], name: 'index_plugins_on_name', unique: true
+
+  create_table "teams", force: true do |t|
+    t.string   "team_name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "users", force: true do |t|
+    t.string   "name"
+    t.string   "realname"
+    t.string   "email"
+    t.string   "encrypted_password"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "users", ["name"], name: "index_users_on_name", unique: true
+
+  create_table "users_teams", force: true do |t|
+    t.integer  "user_id",    null: false
+    t.integer  "team_id",    null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "users_teams", ["user_id"], name: "index_users_teams_on_user_id"
 
 end
