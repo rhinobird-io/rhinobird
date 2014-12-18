@@ -23,7 +23,7 @@ ActiveRecord::Schema.define(version: 20141218090740) do
   add_index 'plugins', ['name'], name: 'index_plugins_on_name', unique: true
 
   create_table "teams", force: true do |t|
-    t.string   "team_name"
+    t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
