@@ -56,7 +56,7 @@
         <core-menu valueattr="hash" selected="{{route}}" theme="core-light-theme">
             <core-item icon="cloud-upload" label="Upload" hash="Upload" ></core-item>
             <template repeat="{{plugin in plugins}}">
-                <core-item icon="{{plugin.icon}}" label="{{plugin.ename}}" hash="{{plugin.id}}"></core-item>
+                <core-item icon="{{plugin.icon}}" label="{{plugin.name}}" hash="{{plugin.name}}"></core-item>
             </template>
         </core-menu>
     </core-header-panel>
@@ -69,8 +69,11 @@
               <div><ajax-file-input url="/upload"></ajax-file-input></div>
             </section>
            <template repeat="{{plugin in plugins}}">
-                <section  hash="{{plugin.id}}" layout vertical center-center>
-                    <div>{{plugin.ename}}</div>
+                <section  hash="{{plugin.name}}" layout vertical center-center>
+                    <div>Name: {{plugin.name}}</div>
+                    <div>Author: {{plugin.author}}</div>
+                    <div>description: {{plugin.description}}</div>
+                    <div>URL: {{plugin.url}}</div>
                 </section>
             </template> 
         </core-animated-pages>
@@ -81,7 +84,7 @@
 <script>
   var template = document.querySelector('template[is="auto-binding"]');
   template.plugins = [
-    {ename: 'Vote', id: 'Vote', icon:'check-box'},
+    {name: 'Vote', author: 'chadliu23', url: 'http://vote.worksap.com', description:'good to vote'},
   ];
 </script>
 </body>
