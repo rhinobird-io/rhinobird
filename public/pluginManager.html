@@ -5,6 +5,7 @@
     <script src="bower_components/webcomponentsjs/webcomponents.min.js"></script>
     <!-- 2. Load the component using an HTML Import -->
     <link rel="import" href="bower_components/core-toolbar/core-toolbar.html">
+    <link rel="import" href="bower_components/core-ajax/core-ajax.html">
     <link rel="import" href="bower_components/core-menu/core-menu.html">
     <link rel="import" href="bower_components/core-item/core-item.html">
     <link rel="import" href="bower_components/core-header-panel/core-header-panel.html">
@@ -40,6 +41,13 @@
 <body unresolved fullbleed>
 <template is="auto-binding">
 <core-scaffold>
+<core-ajax
+    auto='true'
+    method="GET"
+    url="/developer/plugins"
+    handleAs="json"
+    response="{{plugins}}"
+    ></core-ajax>
     <core-header-panel navigation flex mode="seamed">
         <core-toolbar>
             <paper-menu-button>
@@ -80,12 +88,8 @@
     </div>
 </core-scaffold>
 </template>
-
 <script>
-  var template = document.querySelector('template[is="auto-binding"]');
-  template.plugins = [
-    {name: 'Vote', author: 'chadliu23', url: 'http://vote.worksap.com', description:'good to vote'},
-  ];
+
 </script>
 </body>
 </html>
