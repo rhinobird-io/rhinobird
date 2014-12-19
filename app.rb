@@ -3,6 +3,9 @@ require 'sinatra/namespace'
 require 'sinatra/activerecord'
 require './config/environments'
 require './models/plugin.rb'
+require './models/team.rb'
+require './models/user.rb'
+require './models/users_teams.rb'
 
 class App < Sinatra::Base
 
@@ -44,7 +47,42 @@ class App < Sinatra::Base
 
     post '/plugins' do
       Plugin.create!(@body)
+    end
+  end
+
+  namespace '/platform' do
+    get '/teams' do
+      Team.all.to_json
+    end
+
+    post '/teams' do
+      Team.create!(@body)
+    end
+
+    #get all users in a team
+    get "/teams/:teamId/users" do
+      Team.find(params[:teamId]).users.to_json
+    end
+
+    # add a user to a team
+    post "/teams/:teamId/users/:userId" do
+      team = Team.find(params[:teamId])
+      user = User.find(params[:userId])
+      team.users << user
       200
+    end
+
+    get '/users' do
+      User.all.to_json
+    end
+
+    post '/users' do
+      User.create!(@body)
+    end
+
+    #get all team the user attend
+    get "/users/:userId/teams" do
+      User.find(params[:userId]).teams.to_json
     end
   end
 
