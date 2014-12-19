@@ -30,6 +30,7 @@ GEM
     rack-test (0.6.2)
       rack (>= 1.0)
     rake (10.1.0)
+    rubyzip (1.1.6)
     shotgun (0.9)
       rack (>= 1.0)
     sinatra (1.4.5)
@@ -63,6 +64,7 @@ DEPENDENCIES
   activerecord
   bcrypt
   rake
+  rubyzip
   shotgun
   sinatra
   sinatra-activerecord
