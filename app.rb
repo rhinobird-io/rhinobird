@@ -68,7 +68,6 @@ class App < Sinatra::Base
     post "/teams/:teamId/users/:userId" do
       team = Team.find(params[:teamId])
       user = User.find(params[:userId])
-      # it does not work now
       team.users << user
       200
     end
