@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- 1. Load platform support before any code that touches the DOM. -->
+    <script src="bower_components/webcomponentsjs/webcomponents.min.js"></script>
+    <!-- 2. Load the component using an HTML Import -->
+    <link rel="import" href="bower_components/core-toolbar/core-toolbar.html">
+    <link rel="import" href="bower_components/core-menu/core-menu.html">
+    <link rel="import" href="bower_components/core-item/core-item.html">
+    <link rel="import" href="bower_components/core-header-panel/core-header-panel.html">
+    <link rel="import" href="bower_components/core-drawer-panel/core-drawer-panel.html">
+    <link rel="import" href="bower_components/core-scaffold/core-scaffold.html">
+    <link rel="import" href="bower_components/paper-button/paper-button.html">
+    <link rel="import" href="bower_components/paper-input/paper-input.html">
+    <link rel="import" href="bower_components/paper-menu-button/paper-menu-button.html">
+    <link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
+    <link rel="import" href="bower_components/paper-dropdown/paper-dropdown.html">
+    <link rel="import" href="bower_components/paper-item/paper-item.html">
+    <link rel="import" href="bower_components/ajax-file-input/ajax-file-input.html">
+    <link rel="import" href="bower_components/core-animated-pages/core-animated-pages.html">
+    <link rel="import" href="bower_components/core-animated-pages/transitions/slide-from-right.html">
+    <style>
+        div.inline {
+            display: inline;
+        }
+        .open-below {
+            top: 38px;
+        }
+        core-animated-pages {
+            width: 75%;
+            height: 75%;
+            border: none;
+            -webkit-user-select: none;
+            border-radius: 5px;
+            transform: translateZ(0);
+        }
+
+    </style>
+</head>
+<body unresolved fullbleed>
+<template is="auto-binding">
+<core-scaffold>
+    <core-header-panel navigation flex mode="seamed">
+        <core-toolbar>
+            <paper-menu-button>
+                <paper-icon-button icon="menu" noink></paper-icon-button>
+                <paper-dropdown class="dropdown open-below" >
+                <core-menu class="menu">
+                    <paper-item noink><a href='index.html'>Home</a></paper-item>
+                    <paper-item noink><a href="pluginManager.html">Plugin Manager</a></paper-item>
+                </core-menu>
+                </paper-dropdown>
+            </paper-menu-button>
+            <span>Plugin Manager</span>
+        </core-toolbar>
+        <core-menu valueattr="hash" selected="{{route}}" theme="core-light-theme">
+            <core-item icon="cloud-upload" label="Upload" hash="Upload" ></core-item>
+            <core-item icon="check-box" label="Vote" hash="Vote" ></core-item>
+        </core-menu>
+    </core-header-panel>
+    <div tool horizontal layout flex class="bottom">
+        
+    </div>
+    <div layout horizontal center-center fit>
+        <core-animated-pages valueattr="hash"  selected="{{route}}" transitions="slide-from-right" notap>
+            <section hash="Upload" layout vertical center-center >
+              <div><ajax-file-input url="/upload"></ajax-file-input></div>
+            </section>
+            <section  hash="Vote" layout vertical center-center>
+              <div>Vote</div>
+            </section>
+            
+        </core-animated-pages>
+    </div>
+</core-scaffold>
+</template>
+</body>
+</html>
