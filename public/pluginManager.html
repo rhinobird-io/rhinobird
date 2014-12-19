@@ -55,7 +55,9 @@
         </core-toolbar>
         <core-menu valueattr="hash" selected="{{route}}" theme="core-light-theme">
             <core-item icon="cloud-upload" label="Upload" hash="Upload" ></core-item>
-            <core-item icon="check-box" label="Vote" hash="Vote" ></core-item>
+            <template repeat="{{plugin in plugins}}">
+                <core-item icon="{{plugin.icon}}" label="{{plugin.ename}}" hash="{{plugin.id}}"></core-item>
+            </template>
         </core-menu>
     </core-header-panel>
     <div tool horizontal layout flex class="bottom">
@@ -66,13 +68,21 @@
             <section hash="Upload" layout vertical center-center >
               <div><ajax-file-input url="/upload"></ajax-file-input></div>
             </section>
-            <section  hash="Vote" layout vertical center-center>
-              <div>Vote</div>
-            </section>
-            
+           <template repeat="{{plugin in plugins}}">
+                <section  hash="{{plugin.id}}" layout vertical center-center>
+                    <div>{{plugin.ename}}</div>
+                </section>
+            </template> 
         </core-animated-pages>
     </div>
 </core-scaffold>
 </template>
+
+<script>
+  var template = document.querySelector('template[is="auto-binding"]');
+  template.plugins = [
+    {ename: 'Vote', id: 'Vote', icon:'check-box'},
+  ];
+</script>
 </body>
 </html>
