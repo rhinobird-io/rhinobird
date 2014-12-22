@@ -39,7 +39,8 @@
     </style>
 </head>
 <body unresolved fullbleed>
-<template is="auto-binding">
+<template id="auto-bind" is="auto-binding">
+
 <core-scaffold>
 <core-ajax
     auto='true'
@@ -74,7 +75,7 @@
     <div layout horizontal center-center fit>
         <core-animated-pages valueattr="hash"  selected="{{route}}" transitions="slide-from-right" notap>
             <section hash="Upload" layout vertical center-center >
-              <div><ajax-file-input url="/upload"></ajax-file-input></div>
+              <div><ajax-file-input url="/developer/upload" onsuccess="{{uploaded}}"></ajax-file-input></div>
             </section>
            <template repeat="{{plugin in plugins}}">
                 <section  hash="{{plugin.name}}" layout vertical center-center>
@@ -89,7 +90,11 @@
 </core-scaffold>
 </template>
 <script>
-
+    var autoBind= document.querySelector('#auto-bind');
+    autoBind.uploaded = function(xhr){
+        autoBind.plugins.push(JSON.parse(xhr.responseText));
+        autoBind.route = autoBind.plugins.length ;
+    }
 </script>
 </body>
 </html>
