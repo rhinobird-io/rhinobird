@@ -6,6 +6,7 @@ require './models/plugin.rb'
 require './models/team.rb'
 require './models/user.rb'
 require './models/users_teams.rb'
+require './helpers/plugin_bundle'
 
 class App < Sinatra::Base
 
@@ -23,9 +24,11 @@ class App < Sinatra::Base
   end
 
   before do
-    body = request.body.read
-    unless body.empty?
-      @body = JSON.parse(body)
+    if request.media_type == 'application/json'
+      body = request.body.read
+      unless body.empty?
+        @body = JSON.parse(body)
+      end
     end
   end
 
@@ -36,8 +39,7 @@ class App < Sinatra::Base
     end
 
     post '/upload' do
-      p params['file'][:filename]
-      p params['file'][:tempfile]
+      PluginBundle.load_from_zip(params['file'][:tempfile])
       'The file was successfully uploaded!'
     end
 
