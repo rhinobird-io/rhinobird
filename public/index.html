@@ -6,6 +6,7 @@
     <!-- 2. Load the component using an HTML Import -->
     <link rel="import" href="bower_components/core-toolbar/core-toolbar.html">
     <link rel="import" href="bower_components/core-menu/core-menu.html">
+    <link rel="import" href="bower_components/core-list/core-list.html">
     <link rel="import" href="bower_components/core-item/core-item.html">
     <link rel="import" href="bower_components/core-ajax/core-ajax.html">
     <link rel="import" href="bower_components/core-header-panel/core-header-panel.html">
@@ -19,14 +20,18 @@
     <link rel="import" href="bower_components/paper-item/paper-item.html">
     <link rel="import" href="bower_components/ajax-file-input/ajax-file-input.html">
     <link rel="import" href="elements/html-echo.html">
+    <link rel="import" href="elements/dashboard-records.html">
     <style>
-        div.inline {
-            display: inline;
+        core-list {
+            height: 200px;
         }
 
     </style>
 </head>
 <body>
+
+
+
 <template id="auto-bind" is="auto-binding">
     <core-scaffold>
 
@@ -53,22 +58,18 @@
                 </paper-dropdown>
             </paper-menu-button>
         </div>
-        <div fit>
-            <core-ajax
-                    auto
-                    url="/platform/users/1/dashboard_records"
-                    handleAs="json"
-                    response="{{dashboardRecords}}"></core-ajax>
-            <ul>
-            <template repeat="{{dashboardRecords}}">
-                <li><html-echo html="{{content}}"></html-echo><span>{{created_at}}</span></li>
-            </template>
-            </ul>
+        <core-ajax
+                auto
+                url="/platform/users/1/dashboard_records"
+                handleAs="json"
+                on-core-response="{{handleResponse}}"></core-ajax>
+        <div fit class="container">
+            <dashboard-records></dashboard-records>
         </div>
     </core-scaffold>
 </template>
 <script>
-
+    var t = document.querySelector('#auto-bind');
 </script>
 </body>
 </html>
