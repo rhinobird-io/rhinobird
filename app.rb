@@ -40,7 +40,11 @@ class App < Sinatra::Base
     post '/upload' do
       plugin = Plugin.load_from_zip(params['file'][:tempfile])
       plugin.save!
-      plugin.start
+
+      # Plugin start run a new process and we need to kill it manually.
+      # To avoid development trouble, disable it currently
+      # When we want to test the running plugin, uncomment it
+      #plugin.start
       plugin.to_json
     end
 
