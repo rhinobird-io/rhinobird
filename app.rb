@@ -6,7 +6,6 @@ require './models/plugin.rb'
 require './models/team.rb'
 require './models/user.rb'
 require './models/users_teams.rb'
-require './helpers/plugin_bundle'
 
 class App < Sinatra::Base
 
@@ -39,8 +38,10 @@ class App < Sinatra::Base
     end
 
     post '/upload' do
-      PluginBundle.load_from_zip(params['file'][:tempfile])
-      'The file was successfully uploaded!'
+      plugin = Plugin.load_from_zip(params['file'][:tempfile])
+      plugin.save!
+      plugin.start
+      plugin.to_json
     end
 
     get '/plugins' do
