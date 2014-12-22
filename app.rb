@@ -6,7 +6,6 @@ require './models/plugin.rb'
 require './models/team.rb'
 require './models/user.rb'
 require './models/users_teams.rb'
-require './helpers/plugin_bundle'
 
 class App < Sinatra::Base
 
@@ -39,8 +38,14 @@ class App < Sinatra::Base
     end
 
     post '/upload' do
-      PluginBundle.load_from_zip(params['file'][:tempfile])
-      'The file was successfully uploaded!'
+      plugin = Plugin.load_from_zip(params['file'][:tempfile])
+      plugin.save!
+
+      # Plugin start run a new process and we need to kill it manually.
+      # To avoid development trouble, disable it currently
+      # When we want to test the running plugin, uncomment it
+      #plugin.start
+      plugin.to_json
     end
 
     get '/plugins' do
