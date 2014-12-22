@@ -6,6 +6,7 @@ require './models/plugin.rb'
 require './models/team.rb'
 require './models/user.rb'
 require './models/users_teams.rb'
+require './models/dashboard_record'
 
 class App < Sinatra::Base
 
@@ -19,10 +20,12 @@ class App < Sinatra::Base
   end
 
   get '/' do
+    content_type 'text/html'
     send_file File.join(settings.public_folder, 'index.html')
   end
 
   before do
+    content_type 'application/json'
     if request.media_type == 'application/json'
       body = request.body.read
       unless body.empty?
@@ -34,6 +37,7 @@ class App < Sinatra::Base
   namespace '/developer' do
 
     get '/?' do
+      content_type 'text/html'
       send_file File.join(settings.public_folder, 'developer/index.html')
     end
 
@@ -67,12 +71,12 @@ class App < Sinatra::Base
     end
 
     #get all users in a team
-    get "/teams/:teamId/users" do
+    get '/teams/:teamId/users' do
       Team.find(params[:teamId]).users.to_json
     end
 
     # add a user to a team
-    post "/teams/:teamId/users/:userId" do
+    post '/teams/:teamId/users/:userId' do
       team = Team.find(params[:teamId])
       user = User.find(params[:userId])
       team.users << user
@@ -88,8 +92,16 @@ class App < Sinatra::Base
     end
 
     #get all team the user attend
-    get "/users/:userId/teams" do
+    get '/users/:userId/teams' do
       User.find(params[:userId]).teams.to_json
+    end
+
+    get '/users/:userId/dashboard_records' do
+      User.find(params[:userId]).dashboard_records.to_json
+    end
+
+    post '/users/:userId/dashboard_records' do
+      User.find(params[:userId]).dashboard_records.create!(@body)
     end
   end
 
