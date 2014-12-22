@@ -1,0 +1,44 @@
+<link rel="import" href="/bower_components/core-scaffold/core-scaffold.html">
+<link rel="import" href="/bower_components/core-header-panel/core-header-panel.html">
+<link rel="import" href="/bower_components/core-toolbar/core-toolbar.html">
+<link rel="import" href="/bower_components/core-item/core-item.html">
+<link rel="import" href="/bower_components/paper-button/paper-button.html">
+<link rel="import" href="/bower_components/paper-input/paper-input.html">
+<link rel="import" href="/bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="/bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="/bower_components/paper-dropdown/paper-dropdown.html">
+<link rel="import" href="/bower_components/paper-item/paper-item.html">
+
+<polymer-element name="home-container" attributes="selected" noscript>
+    <template>
+        <core-scaffold>
+            <core-header-panel navigation flex mode="seamed">
+                <core-toolbar><core-icon icon="menu"></core-icon><span>Team Work</span></core-toolbar>
+                <core-menu theme="core-light-theme">
+                    <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="/home/dashboard"></a></core-item>
+                    <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="/home/calendar"></a></core-item>
+                    <core-item icon="event" label="Vote" active?="{{selected == 'vote'}}"><a is="pushstate-anchor" href="/home/vote"></a></core-item>
+                    <!--<template id="plugin_menu" repeat="{{plugin in plugins}}">-->
+                    <!--<core-item icon="{{plugin.icon}}" label="{{plugin.label}}" name="{{plugin.name}}" active?="{{selected == plugin.active}}"><a is="pushstate-anchor" href="{{plugin.href}}"></a></core-item>-->
+                    <!--</template>-->
+                </core-menu>
+            </core-header-panel>
+            <div tool horizontal layout flex end-justified class="bottom">
+                <paper-menu-button>
+                    <paper-icon-button icon="apps" noink></paper-icon-button>
+                    <paper-dropdown class="dropdown" halign="right"  style="color:#000;">
+                        <core-menu class="menu">
+                            <paper-input label="Search plugin"></paper-input>
+                            <paper-item>Vote</paper-item>
+                            <paper-item>Questionnaire</paper-item>
+                            <paper-item>Brain Writing</paper-item>
+                        </core-menu>
+                    </paper-dropdown>
+                </paper-menu-button>
+            </div>
+            <div>
+                <content></content>
+            </div>
+        </core-scaffold>
+    </template>
+</polymer-element>

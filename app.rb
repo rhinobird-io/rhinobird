@@ -1,6 +1,7 @@
 require 'sinatra/base'
 require 'sinatra/namespace'
-require 'sinatra/activerecord'
+require "sinatra/activerecord"
+require './config/environments'
 require './models/plugin.rb'
 require './models/team.rb'
 require './models/user.rb'
@@ -34,6 +35,13 @@ class App < Sinatra::Base
       unless body.empty?
         @body = JSON.parse(body)
       end
+    end
+  end
+
+
+  namespace '/home' do
+    get '*' do
+      send_file File.join(settings.public_folder, 'index.html')
     end
   end
 
