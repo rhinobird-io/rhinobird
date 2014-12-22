@@ -7,6 +7,7 @@ gem 'activerecord'
 gem 'sinatra-activerecord'
 gem 'rubyzip'
 gem 'bcrypt'
+gem 'uuid'
 
 group :development do
   gem 'sqlite3'
