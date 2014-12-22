@@ -1,0 +1,127 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
+
+<link rel="import" href="../../bower_components/core-label/core-label.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+
+<script src="../../bower_components/lodash/dist/lodash.min.js"></script>
+
+<polymer-element name="member-select" attributes="selected minTrigger teamsUrl">
+    <template>
+        <link rel="stylesheet" href="member-select.css">
+        <core-ajax url="{{teamsUrl}}" auto on-core-response="{{handleTeamsResponse}}"></core-ajax>
+
+        <paper-input floatingLabel flex label="User name or team name" value="{{ searchName }}"
+                     on-keyup="{{doFilter}}"></paper-input>
+        <div horizontal layout flex>
+            <div id="filtered-user-div" float>
+                <paper-shadow z="1">
+                    <template repeat="{{u in filteredUsers }}">
+                        <core-label center horizontal layout>
+                            <paper-checkbox for on-core-change="{{ handleUserSelect }}" user="{{u}}"
+                                            checked="{{ selectedUser[u.name] }}">
+                            </paper-checkbox>
+                            <div flex>{{u.realname}}</div>
+                        </core-label>
+                    </template>
+                </paper-shadow>
+            </div>
+
+            <div>
+                <paper-shadow z="0">
+                    <template repeat="{{ u in selected }}">
+                        <paper-item on-click="{{ removeUser }}">
+                            <core-icon end-justified icon="clear"></core-icon>
+                            {{u.realname}}
+                        </paper-item>
+                    </template>
+                </paper-shadow>
+            </div>
+        </div>
+
+
+    </template>
+    <script>
+        Polymer({
+            ready: function () {
+                this._ = _;
+                this.searchName = '';
+                this.selectedUser = {};
+            },
+
+            handleTeamsResponse: function (event) {
+                this.teams = event.detail.response;
+                // extract all users
+                this.usersIdMap = {};
+                this.users = [];
+                this.teams.forEach(function (t) {
+                    t.users.forEach(function (u) {
+                        if (!this.usersIdMap[u.id]) {
+                            this.usersIdMap[u.id] = u;
+                            this.users.push(u);
+                        } else {
+                            u = this.usersIdMap[u.id];
+                        }
+                        u.teams = u.teams || [];
+                        u.teams.push(t);
+                    }, this);
+                }, this);
+
+                this.updateSelected = function () {
+                    this.selected = this._.filter(this.users, function (u) {
+                        return this.selectedUser[u.name];
+                    }, this);
+                };
+            },
+
+            doFilter: function (event) {
+                if (this.searchName.length < this.minTrigger) {
+                    this.filteredUsers = [];
+                    return;
+                }
+                var self = this;
+                this.filteredUsers = this._.filter(this.users, function (user) {
+                    return  self._.reduce(self._.flatten([user.name, user.realname, self._.map(user.teams, function (team) {
+                        return team.name
+                    })]), function (sum, item) {
+                        return sum || item.toLowerCase().indexOf(self.searchName.toLowerCase()) > -1;
+                    }, false);
+                });
+            },
+
+            handleUserSelect: function (event, detail, sender) {
+                var u = event.target.templateInstance.model.u;
+                if (event.target.checked) {
+                    this.selectedUser[u.name] = true;
+                } else {
+                    delete this.selectedUser[u.name];
+                }
+
+                this.updateSelected();
+            },
+
+            removeUser: function (event) {
+                var u = event.target.templateInstance.model.u;
+                delete this.selectedUser[u.name];
+                this.updateSelected();
+            },
+
+
+            minTrigger: 1,
+
+            /**
+             * the users are selected, note it not duplicated
+             */
+            selected: [],
+
+            /**
+             * the url to retrieve the users grouped by teams
+             */
+            teamsUrl: 'http://localhost:9001/json/teams.json'
+
+        });
+    </script>
+</polymer-element>
