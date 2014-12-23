@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141222091238) do
+ActiveRecord::Schema.define(version: 20141223061636) do
 
   create_table "dashboard_records", force: true do |t|
     t.integer  "user_id"
@@ -32,6 +32,12 @@ ActiveRecord::Schema.define(version: 20141222091238) do
   end
 
   add_index "plugins", ["name"], name: "index_plugins_on_name", unique: true
+
+  create_table "questions", force: true do |t|
+    t.integer "vote_id"
+    t.text    "description"
+    t.text    "options"
+  end
 
   create_table "teams", force: true do |t|
     t.string   "name"
@@ -58,5 +64,22 @@ ActiveRecord::Schema.define(version: 20141222091238) do
   end
 
   add_index "users_teams", ["user_id"], name: "index_users_teams_on_user_id"
+
+  create_table "users_votes", force: true do |t|
+    t.integer  "vote_id"
+    t.integer  "user_id"
+    t.boolean  "finished"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "users_votes", ["user_id"], name: "index_users_votes_on_user_id"
+  add_index "users_votes", ["vote_id"], name: "index_users_votes_on_vote_id"
+
+  create_table "votes", force: true do |t|
+    t.text     "title"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
 end
