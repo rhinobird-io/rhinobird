@@ -1,12 +1,13 @@
 require 'sinatra/base'
 require 'sinatra/namespace'
-require "sinatra/activerecord"
-require './config/environments'
+require 'sinatra/activerecord'
 require './models/plugin.rb'
 require './models/team.rb'
 require './models/user.rb'
 require './models/users_teams.rb'
 require './models/dashboard_record'
+require './models/vote.rb'
+require './models/question.rb'
 
 class App < Sinatra::Base
 
@@ -38,9 +39,9 @@ class App < Sinatra::Base
     end
   end
 
-
   namespace '/home' do
     get '*' do
+      content_type 'text/html'
       send_file File.join(settings.public_folder, 'index.html')
     end
   end
@@ -117,6 +118,45 @@ class App < Sinatra::Base
 
     # start the server if ruby file executed directly
     run! if app_file == $0
+
+    # vote related services
+    get '/votes' do
+      Vote.all.to_json
+    end
+
+    #create new vote
+    post '/votes' do
+      Vote.create!(@body)
+    end
+
+    get '/votes/:voteId/questions' do
+      Question.where(vote_id: params[:voteId]).all.to_json
+    end
+
+    post '/votes/:voteId/questions' do
+      vote = Vote.find(params[:voteId])
+      question = Question.create!(@body)
+      vote.question << question
+      200
+    end
+
+    # get all user related to specific vote
+    get '/votes/:voteId/users' do
+      Vote.find(params[:voteId]).users.to_json
+    end
+
+    # register all user related to specific vote
+    post '/votes/:voteId/users' do
+      Vote.find(params[:voteId]).users.create!(@body)
+    end
+
+    get '/users/:userId/votes' do
+      User.find(params[:userId]).votes.to_json
+    end
+
+    post '/users/:userId/votes' do
+      User.find(params[:userId]).votes.create!(@body)
+    end
   end
 
 end
