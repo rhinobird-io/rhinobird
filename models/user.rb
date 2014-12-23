@@ -18,6 +18,7 @@ class User < ActiveRecord::Base
 
   has_many :users_teams, dependent: :destroy
   has_many :teams, :through => :users_teams
+  has_many :dashboard_records
 
   def password
     @password ||= Password.new(encrypted_password)
