@@ -27,6 +27,8 @@ ActiveRecord::Schema.define(version: 20141222091238) do
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "author"
+    t.string   "url"
   end
 
   add_index "plugins", ["name"], name: "index_plugins_on_name", unique: true
