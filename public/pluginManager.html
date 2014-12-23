@@ -47,8 +47,9 @@
     transform: translate3d(0, 50px, 0) scale(0.9);
     transform-origin: 50% 50%;
     transition: all 300ms cubic-bezier(.03,.56,.7,.98);
-    font-size: 50px;
+    font-size: 30px;
     background-color: white;
+    font-family: Consolas;
   }
 
   core-pages .core-selected {
@@ -60,6 +61,41 @@
     fill: #fff;
   }
 
+  #uploader{
+    font-size: 30px;
+    margin: 0px auto;
+  }
+
+  #css_table {
+      display:table;
+  }
+    .css_tr {
+      display: table-row;
+
+  }
+    .css_td {
+      display: table-cell;
+      padding: 5px
+  }
+  .toptd {
+    border-top: 1px solid ;
+  }
+  .bottomtd {
+    border-bottom: 1px solid;
+  }
+  .content{
+    text-align: left;
+  }
+  .pluginTitle{
+    font-size: 40px;
+    font-style: bold;
+    padding-bottom: 5px;
+  }
+  .pluginDescription{
+     font-style: italic;
+     font-size: 25px;
+     padding-bottom: 15px;
+  }
 
   core-menu {
   }
@@ -117,17 +153,27 @@
     <div layout horizontal center center-justified fit style="overflow-x: hidden;">
         <core-pages valueattr="hash"  selected="{{route}}" notap>
             <div hash="Upload" >
-              <div><ajax-file-input id='uploader' url="/developer/upload" on-success="{{uploadSuccessed}}"></ajax-file-input></div>
+              <div>Select Plugin to Upload<br/> <br/>
+                <ajax-file-input id='uploader' url="/developer/upload" on-success="{{uploadSuccessed}}"></ajax-file-input>
+              </div>
             </div>
            <template repeat="{{plugin in plugins}}">
                 <div hash="{{plugin.id}}" >
                 <paper-shadow z="2"></paper-shadow>
-
-                    Id: {{plugin.id}} <br/>
-                    Name: {{plugin.name}}<br/>
-                    Author: {{plugin.author}}<br/>
-                    description: {{plugin.description}}<br/>
-                    URL: {{plugin.url}}<br/>
+                
+                    <div id="css_table">
+                    <div class="pluginTitle">{{plugin.name}}</div>
+                    <div class="pluginDescription">{{plugin.description}}</div>
+                     <div class="css_tr">
+                        <div class="css_td toptd">Author</div>
+                        <div class="css_td content toptd">{{plugin.author}}</div>
+                     </div>
+                     <div class="css_tr">
+                        <div class="css_td">URL</div>
+                        <div class="css_td content">{{plugin.url}}</div>
+                     </div>
+                    </div>
+                </div>
 
             </template> 
         </core-pages>
