@@ -1,0 +1,38 @@
+[
+  {
+    "name": "ATE",
+    "users" : [
+      {
+        "id" : 1,
+        "name": "curry",
+        "realname" : "Curry"
+      },
+      {
+        "id" : 2,
+        "name": "john",
+        "realname" : "John"
+      }
+    ]
+  },
+
+  {
+    "name": "CWS",
+    "users" : [
+      {
+        "id" : 1,
+        "name": "curry",
+        "realname" : "Curry"
+      },
+      {
+        "id" : 3,
+        "name": "tim",
+        "realname" : "Tim"
+      },
+      {
+        "id" : 5,
+        "name": "joe",
+        "realname" : "Joe"
+      }
+    ]
+  }
+]
