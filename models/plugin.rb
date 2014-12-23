@@ -17,15 +17,17 @@ class Plugin < ActiveRecord::Base
       }
     }
     config = JSON.parse(File.open(File.join(dir, 'plugin.json'), 'r').read)
-    config[:dir_id] = uuid
+    name = config['name']
+    if File.exists?(File.join(PLUGIN_DIR, name))
+      raise 'Plugin dir already exists!'
+    end
+    FileUtils.mv(dir, File.join(PLUGIN_DIR, name))
     self.new(config)
   end
 
   def start
-    dir = File.join(PLUGIN_DIR, @dir_id)
+    dir = File.join(PLUGIN_DIR, self.name)
     pid = spawn("ruby #{File.join(dir, 'app.rb')}", out: "#{File.join(dir, 'out.log')}", err: "#{File.join(dir, 'err.log')}")
     Process.detach(pid)
   end
-
-  attr_accessor :dir_id
 end
