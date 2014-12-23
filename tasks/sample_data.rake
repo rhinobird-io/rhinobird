@@ -14,5 +14,9 @@ namespace :db do
         end
       end
     end
+
+    10.times do
+      plugin = Plugin.create!({name: Faker::App.name, description: Faker::Lorem.paragraph, author: Faker::App.author, url: Faker::Internet.url})
+    end
   end
 end
