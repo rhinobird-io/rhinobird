@@ -20,6 +20,8 @@ GEM
     builder (3.2.2)
     daemons (1.1.9)
     eventmachine (1.0.3)
+    faker (1.4.3)
+      i18n (~> 0.5)
     i18n (0.6.11)
     json (1.8.1)
     macaddr (1.7.1)
@@ -68,6 +70,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord
   bcrypt
+  faker
   rake
   rubyzip
   shotgun

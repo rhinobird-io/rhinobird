@@ -1,7 +1,6 @@
-require 'sinatra'
+require 'sinatra/base'
 require 'sinatra/namespace'
 require 'sinatra/activerecord'
-require './config/environments'
 require './models/plugin.rb'
 require './models/team.rb'
 require './models/user.rb'
@@ -9,6 +8,20 @@ require './models/users_teams.rb'
 require './models/dashboard_record'
 
 class App < Sinatra::Base
+
+  register Sinatra::ActiveRecordExtension
+
+  configure :development do
+    set :database, {adapter: 'sqlite3', database: 'db/app.sqlite3'}
+  end
+
+  configure :production do
+    set :database, {adapter: 'sqlite3', database: 'db/pro.sqlite3'}
+  end
+
+  configure do
+    I18n.config.enforce_available_locales = true
+  end
 
   register Sinatra::Namespace
 
