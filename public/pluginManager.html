@@ -71,37 +71,33 @@
       width: 75%;
       overflow-wrap: break-word;
   }
-    .css_tr {
+  .css_tr {
       display: table-row;
 
-  }
-    .css_td {
-      display: table-cell;
-      padding: 5px;
-      word-wrap: break-word;
   }
   .caption {
     display: table-caption;
     width: 90%;
   }
-  .toptd {
-    border-top: 1px solid ;
-  }
-  .bottomtd {
-    border-bottom: 1px solid;
-  }
   .content{
     text-align: left;
+    width:100%;
   }
   .pluginTitle{
     font-size: 50px;
     font-style: bold;
     padding-bottom: 5px;
   }
+  .selectable{
+    -webkit-user-select:text ;  /* Chrome all / Safari all */
+    -moz-user-select: text;     /* Firefox all */
+    -ms-user-select: text;      /* IE 10+ */
+  }
   .pluginDescription{
      font-style: italic;
      font-size: 25px;
      padding-bottom: 15px;
+
   }
 
   core-menu {
@@ -169,16 +165,13 @@
                 <paper-shadow z="2"></paper-shadow>
                 
                     <div id="css_table">
-                    <div class="pluginTitle caption">{{plugin.name}}</div>
-                    <div class="pluginDescription caption">{{plugin.description}}</div>
+                    <div class="pluginTitle caption selectable">{{plugin.name}}</div>
+                    <div class="pluginDescription selectable">{{plugin.description}}</div>
                      <div class="css_tr">
-                        <div class="css_td toptd">Author</div>
-                        <div class="css_td content toptd">{{plugin.author}}</div>
+                      <paper-input class="content" floatingLabel label="Author" value="{{plugin.author}}" disabled ></paper-input>
                      </div>
                      <div class="css_tr">
-                        <div class="css_td">URL</div>
-                        <div class="css_td content">{{plugin.url}}</div>
-                     </div>
+                      <paper-input class="content" floatingLabel value="{{plugin.url}}" label="URL" disabled ></paper-input>
                     </div>
                 </div>
 
