@@ -10,14 +10,12 @@ require './models/dashboard_record'
 class App < Sinatra::Base
 
   register Sinatra::ActiveRecordExtension
-
-  configure do
-    I18n.config.enforce_available_locales = true
-  end
-
   register Sinatra::Namespace
 
   set :show_exceptions, :after_handler
+  set :bind, '0.0.0.0'
+
+  I18n.config.enforce_available_locales = true
 
   error ActiveRecord::RecordInvalid do
     status 400
