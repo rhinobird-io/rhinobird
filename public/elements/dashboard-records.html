@@ -1,0 +1,57 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/core-icons/core-icons.html">
+<link rel="import" href="../bower_components/core-item/core-item.html">
+<link rel="import" href="./html-echo.html">
+<link rel="import" href="../bower_components/polymer-filters/polymer-filters.html">
+
+<polymer-element name="dashboard-record" attributes="record">
+    <template>
+        <style>
+            .time {
+                font-size: small;
+                color:dimgrey;
+            }
+        </style>
+        <core-item icon="info">
+            <div flex>
+                <div class="time">{{record.created_at | date('yyyy-MM-dd')}}</div>
+                <div class="content"><html-echo html="{{record.content}}"></html-echo></div>
+            </div>
+        </core-item>
+    </template>
+    <script>
+        Polymer({
+
+        });
+    </script>
+</polymer-element>
+
+<polymer-element name="dashboard-records" attributes="record">
+    <template>
+        <style>
+            core-list {
+                height: 300px;
+                margin: 30px;
+            }
+            dashboard-record {
+
+                padding: 10px;
+            }
+        </style>
+        <core-ajax
+                auto
+                url="/platform/users/1/dashboard_records"
+                handleAs="json"
+                response="{{records}}"></core-ajax>
+        <core-list data="{{records}}">
+            <template>
+                <dashboard-record record="{{model}}"></dashboard-record>
+            </template>
+        </core-list>
+    </template>
+    <script>
+        Polymer({
+
+        });
+    </script>
+</polymer-element>

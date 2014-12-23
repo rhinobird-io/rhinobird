@@ -6,7 +6,9 @@
     <!-- 2. Load the component using an HTML Import -->
     <link rel="import" href="bower_components/core-toolbar/core-toolbar.html">
     <link rel="import" href="bower_components/core-menu/core-menu.html">
+    <link rel="import" href="bower_components/core-list/core-list.html">
     <link rel="import" href="bower_components/core-item/core-item.html">
+    <link rel="import" href="bower_components/core-ajax/core-ajax.html">
     <link rel="import" href="bower_components/core-header-panel/core-header-panel.html">
     <link rel="import" href="bower_components/core-drawer-panel/core-drawer-panel.html">
     <link rel="import" href="bower_components/core-scaffold/core-scaffold.html">
@@ -17,120 +19,57 @@
     <link rel="import" href="bower_components/paper-dropdown/paper-dropdown.html">
     <link rel="import" href="bower_components/paper-item/paper-item.html">
     <link rel="import" href="bower_components/ajax-file-input/ajax-file-input.html">
+    <link rel="import" href="elements/html-echo.html">
+    <link rel="import" href="elements/dashboard-records.html">
     <style>
-        div.inline {
-            display: inline;
+        core-list {
+            height: 200px;
         }
 
     </style>
 </head>
 <body>
-<core-scaffold>
 
-    <core-header-panel navigation flex mode="seamed">
-        <core-toolbar><core-icon icon="menu"></core-icon><span>Team Work</span></core-toolbar>
-        <core-menu theme="core-light-theme">
-            <core-item icon="dashboard" label="Dashboard"></core-item>
-            <core-item icon="event" label="Calendar"></core-item>
-        </core-menu>
-    </core-header-panel>
-    <div tool>Dashboard</div>
-    <div tool horizontal layout flex end-justified class="bottom">
-        <paper-menu-button>
-            <paper-icon-button icon="apps" noink></paper-icon-button>
-            <paper-dropdown class="dropdown" halign="right"  style="color:#000;">
-                <core-menu class="menu">
-                    <paper-input label="Search plugin"></paper-input>
-                    <paper-item>Vote</paper-item>
-                    <paper-item>Questionnaire</paper-item>
-                    <paper-item>Brain Writing</paper-item>
-                </core-menu>
-            </paper-dropdown>
-        </paper-menu-button>
-    </div>
-    <div fit>
-        <ajax-file-input url="/developer/upload"></ajax-file-input>
-        <ul>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-            <li><span>You have 3 tasks to do</span></li>
-            <li><span>Someone has invited you to the vote</span></li>
-        </ul>
-    </div>
-</core-scaffold>
+
+
+<template id="auto-bind" is="auto-binding">
+    <core-scaffold>
+
+        <core-header-panel navigation flex mode="seamed">
+            <core-toolbar>
+                <core-icon icon="menu"></core-icon>
+                <span>Team Work</span></core-toolbar>
+            <core-menu theme="core-light-theme">
+                <core-item icon="dashboard" label="Dashboard"></core-item>
+                <core-item icon="event" label="Calendar"></core-item>
+            </core-menu>
+        </core-header-panel>
+        <div tool>Dashboard</div>
+        <div tool horizontal layout flex end-justified class="bottom">
+            <paper-menu-button>
+                <paper-icon-button icon="apps" noink></paper-icon-button>
+                <paper-dropdown class="dropdown" halign="right" style="color:#000;">
+                    <core-menu class="menu">
+                        <paper-input label="Search plugin"></paper-input>
+                        <paper-item>Vote</paper-item>
+                        <paper-item>Questionnaire</paper-item>
+                        <paper-item>Brain Writing</paper-item>
+                    </core-menu>
+                </paper-dropdown>
+            </paper-menu-button>
+        </div>
+        <core-ajax
+                auto
+                url="/platform/users/1/dashboard_records"
+                handleAs="json"
+                on-core-response="{{handleResponse}}"></core-ajax>
+        <div fit class="container">
+            <dashboard-records></dashboard-records>
+        </div>
+    </core-scaffold>
+</template>
+<script>
+    var t = document.querySelector('#auto-bind');
+</script>
 </body>
 </html>
