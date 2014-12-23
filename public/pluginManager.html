@@ -117,7 +117,7 @@
     <div layout horizontal center center-justified fit style="overflow-x: hidden;">
         <core-pages valueattr="hash"  selected="{{route}}" notap>
             <div hash="Upload" >
-              <div><ajax-file-input url="/developer/upload" onsuccess="{{uploaded}}"></ajax-file-input></div>
+              <div><ajax-file-input id='uploader' url="/developer/upload" on-success="{{uploadSuccessed}}"></ajax-file-input></div>
             </div>
            <template repeat="{{plugin in plugins}}">
                 <div hash="{{plugin.id}}" >
@@ -136,8 +136,8 @@
 </template>
 <script>
     var autoBind= document.querySelector('#auto-bind');
-    autoBind.uploaded = function(xhr){
-        var newPlugin = JSON.parse(xhr.responseText);
+    autoBind.uploadSuccessed = function(e){
+        var newPlugin = JSON.parse(e.detail.xhr.responseText);
         autoBind.plugins.push(newPlugin);
         autoBind.route = newPlugin.id;
     }
