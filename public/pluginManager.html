@@ -68,6 +68,8 @@
 
   #css_table {
       display:table;
+      width: 75%;
+      overflow-wrap: break-word;
   }
     .css_tr {
       display: table-row;
@@ -75,7 +77,12 @@
   }
     .css_td {
       display: table-cell;
-      padding: 5px
+      padding: 5px;
+      word-wrap: break-word;
+  }
+  .caption {
+    display: table-caption;
+    width: 90%;
   }
   .toptd {
     border-top: 1px solid ;
@@ -87,7 +94,7 @@
     text-align: left;
   }
   .pluginTitle{
-    font-size: 40px;
+    font-size: 50px;
     font-style: bold;
     padding-bottom: 5px;
   }
@@ -162,8 +169,8 @@
                 <paper-shadow z="2"></paper-shadow>
                 
                     <div id="css_table">
-                    <div class="pluginTitle">{{plugin.name}}</div>
-                    <div class="pluginDescription">{{plugin.description}}</div>
+                    <div class="pluginTitle caption">{{plugin.name}}</div>
+                    <div class="pluginDescription caption">{{plugin.description}}</div>
                      <div class="css_tr">
                         <div class="css_td toptd">Author</div>
                         <div class="css_td content toptd">{{plugin.author}}</div>
