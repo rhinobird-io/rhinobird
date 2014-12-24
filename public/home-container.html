@@ -15,9 +15,9 @@
             <core-header-panel navigation flex mode="seamed">
                 <core-toolbar><core-icon icon="menu"></core-icon><span>Team Work</span></core-toolbar>
                 <core-menu theme="core-light-theme">
-                    <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="/home/dashboard"></a></core-item>
-                    <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="/home/calendar"></a></core-item>
-                    <core-item icon="event" label="Vote" active?="{{selected == 'vote'}}"><a is="pushstate-anchor" href="/home/vote"></a></core-item>
+                    <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="../#/home/dashboard"></a></core-item>
+                    <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="../#/home/calendar"></a></core-item>
+                    <core-item icon="event" label="Vote" active?="{{selected == 'vote'}}"><a is="pushstate-anchor" href="../#/home/vote"></a></core-item>
                     <!--<template id="plugin_menu" repeat="{{plugin in plugins}}">-->
                     <!--<core-item icon="{{plugin.icon}}" label="{{plugin.label}}" name="{{plugin.name}}" active?="{{selected == plugin.active}}"><a is="pushstate-anchor" href="{{plugin.href}}"></a></core-item>-->
                     <!--</template>-->
