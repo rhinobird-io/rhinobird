@@ -1,112 +1,130 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
-
-<link rel="import" href="../../bower_components/core-label/core-label.html">
 <link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
-<link rel="import" href="../../bower_components/paper-input/paper-input.html">
 
-<script src="../../bower_components/lodash/dist/lodash.min.js"></script>
 
-<polymer-element name="member-select" attributes="selected minTrigger teamsUrl">
+<script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+<script src="../../bower_components/typeahead.js/dist/typeahead.bundle.min.js"></script>
+
+<polymer-element name="member-select" attributes="teamsUrl selected minTrigger">
     <template>
+        <link rel="stylesheet" href="bootstrap.min.css">
         <link rel="stylesheet" href="member-select.css">
+
         <core-ajax url="{{teamsUrl}}" auto on-core-response="{{handleTeamsResponse}}"></core-ajax>
-
-        <paper-input floatingLabel flex label="User name or team name" value="{{ searchName }}"
-                     on-keyup="{{doFilter}}"></paper-input>
-        <div horizontal layout flex>
-            <div id="filtered-user-div" float>
-                <paper-shadow z="1">
-                    <template repeat="{{u in filteredUsers }}">
-                        <core-label center horizontal layout>
-                            <paper-checkbox for on-core-change="{{ handleUserSelect }}" user="{{u}}"
-                                            checked="{{ selectedUser[u.name] }}">
-                            </paper-checkbox>
-                            <div flex>{{u.realname}}</div>
-                        </core-label>
-                    </template>
-                </paper-shadow>
-            </div>
-
-            <div>
-                <paper-shadow z="0">
-                    <template repeat="{{ u in selected }}">
-                        <paper-item on-click="{{ removeUser }}">
-                            <core-icon end-justified icon="clear"></core-icon>
-                            {{u.realname}}
-                        </paper-item>
-                    </template>
-                </paper-shadow>
-            </div>
+        <template repeat="{{ u in selected }}">
+            <paper-item on-click="{{ removeUser }}" style="display: inline-block; ">
+                <core-icon icon="clear"></core-icon>
+                {{u.realname}}
+            </paper-item>
+        </template>
+        <div id="the-basics" style="display: inline-block">
+            <input class="typeahead" type="text" placeholder="Teams">
         </div>
-
-
     </template>
     <script>
+
         Polymer({
             ready: function () {
                 this._ = _;
-                this.searchName = '';
-                this.selectedUser = {};
+
+                this.updateUserSelected = function () {
+                    this.selected = [];
+                    this.users.forEach(function (user) {
+                        if (!!user.selected) {
+                            this.selected.push(user);
+                        }
+                    }, this);
+                };
+
             },
 
             handleTeamsResponse: function (event) {
+
                 this.teams = event.detail.response;
                 // extract all users
-                this.usersIdMap = {};
+                this.usersNameMap = {};
                 this.users = [];
                 this.teams.forEach(function (t) {
                     t.users.forEach(function (u) {
-                        if (!this.usersIdMap[u.id]) {
-                            this.usersIdMap[u.id] = u;
+                        if (!this.usersNameMap[u.name]) {
+                            this.usersNameMap[u.name] = u;
                             this.users.push(u);
                         } else {
-                            u = this.usersIdMap[u.id];
+                            u = this.usersNameMap[u.name];
                         }
                         u.teams = u.teams || [];
                         u.teams.push(t);
                     }, this);
                 }, this);
 
-                this.updateSelected = function () {
-                    this.selected = this._.filter(this.users, function (u) {
-                        return this.selectedUser[u.name];
-                    }, this);
-                };
-            },
 
-            doFilter: function (event) {
-                if (this.searchName.length < this.minTrigger) {
-                    this.filteredUsers = [];
-                    return;
-                }
+
                 var self = this;
-                this.filteredUsers = this._.filter(this.users, function (user) {
-                    return  self._.reduce(self._.flatten([user.name, user.realname, self._.map(user.teams, function (team) {
-                        return team.name
-                    })]), function (sum, item) {
-                        return sum || item.toLowerCase().indexOf(self.searchName.toLowerCase()) > -1;
-                    }, false);
+                var teams = new Bloodhound({
+                    datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+                    queryTokenizer: Bloodhound.tokenizers.whitespace,
+                    local: self.teams
+                });
+
+                teams.initialize();
+
+                var users = new Bloodhound({
+                    datumTokenizer: Bloodhound.tokenizers.obj.whitespace('realname'),
+                    queryTokenizer: Bloodhound.tokenizers.whitespace,
+                    local: self.users
+                });
+
+                users.initialize();
+
+                var typeAheadInput = $(this.$['the-basics'].children[0]);
+
+                typeAheadInput.typeahead({
+                            hint: true,
+                            highlight: true,
+                            minLength: self.minTrigger
+                        },
+                        {
+                            name: 'team-name',
+                            displayKey: 'name',
+                            source: teams.ttAdapter(),
+                            templates: {
+                                header: '<h3 class="league-name">Teams</h3>'
+                            }
+                        },
+                        {
+                            name: 'user-name',
+                            displayKey: 'realname',
+                            source: users.ttAdapter(),
+                            templates: {
+                                header: '<h3 class="league-name">Users</h3>'
+                            }
+                        });
+
+                typeAheadInput.bind('typeahead:selected', function (event, suggestion, dataset) {
+                    if (dataset === 'user-name') {
+                        if (self.selected.indexOf(suggestion) === -1) {
+                            self.selected.push(suggestion);
+                        }
+                        // self.users.splice(self.users.indexOf(suggestion), 1);
+                    } else {
+                        suggestion.users.forEach(function (item, idx, array) {
+                            var u = self.usersNameMap[item.name];
+                            if (self.selected.indexOf(u) === -1) {
+                                self.selected.push(u);
+                            }
+                            // self.users.splice(self.users.indexOf(u), 1);
+                        });
+                        // self.teams.splice(self.teams.indexOf(suggestion), 1);
+                    }
+
                 });
             },
 
-            handleUserSelect: function (event, detail, sender) {
-                var u = event.target.templateInstance.model.u;
-                if (event.target.checked) {
-                    this.selectedUser[u.name] = true;
-                } else {
-                    delete this.selectedUser[u.name];
-                }
-
-                this.updateSelected();
-            },
-
-            removeUser: function (event) {
-                var u = event.target.templateInstance.model.u;
-                delete this.selectedUser[u.name];
-                this.updateSelected();
+            removeUser: function (event, detail, target, model) {
+                var u = model || event.target.templateInstance.model.u;
+                this.selected.splice(this.selected.indexOf(u), 1);
             },
 
 
@@ -120,7 +138,7 @@
             /**
              * the url to retrieve the users grouped by teams
              */
-            teamsUrl: 'http://localhost:9001/json/teams.json'
+            teamsUrl: ''
 
         });
     </script>

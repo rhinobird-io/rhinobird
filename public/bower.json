@@ -17,6 +17,7 @@
     "core-elements": "Polymer/core-elements#~0.5.1",
     "paper-elements": "Polymer/paper-elements#~0.5.1",
     "ajax-file-input": "~0.0.1",
-    "lodash": "~2.4.1"
+    "lodash": "~2.4.1",
+    "typeahead.js": "~0.10.5"
   }
 }
