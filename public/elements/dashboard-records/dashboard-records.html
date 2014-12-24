@@ -38,7 +38,7 @@
                 padding: 10px;
             }
         </style>
-        <core-ajax
+        <core-ajax id="getDashboardRecord"
                 auto
                 url="/platform/users/1/dashboard_records"
                 handleAs="json"
@@ -50,8 +50,21 @@
         </core-list>
     </template>
     <script>
-        Polymer({
+    (function(){
+        var currentUserId = 1;
 
+        Polymer({
+            currentUserId: 0,
+            ready: function(){
+                this.currentUserId = currentUserId;
+            },
+            currentUserIdChanged: function(oldValue, newValue){
+                if (oldValue === 0){
+                    return;
+                }
+                this.$.getDashboardRecord.url = "/platform/users/"+ newValue + "/dashboard_records";
+            }
         });
+    })();
     </script>
 </polymer-element>
