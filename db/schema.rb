@@ -65,16 +65,15 @@ ActiveRecord::Schema.define(version: 20141223061636) do
 
   add_index "users_teams", ["user_id"], name: "index_users_teams_on_user_id"
 
-  create_table "users_votes", force: true do |t|
+  create_table "vote_statuses", force: true do |t|
     t.integer  "vote_id"
-    t.integer  "user_id"
+    t.string   "user"
     t.boolean  "finished"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "users_votes", ["user_id"], name: "index_users_votes_on_user_id"
-  add_index "users_votes", ["vote_id"], name: "index_users_votes_on_vote_id"
+  add_index "vote_statuses", ["vote_id"], name: "index_vote_statuses_on_vote_id"
 
   create_table "votes", force: true do |t|
     t.text     "title"

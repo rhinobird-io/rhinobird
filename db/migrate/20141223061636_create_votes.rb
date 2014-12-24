@@ -12,9 +12,9 @@ class CreateVotes < ActiveRecord::Migration
       t.text :options
     end
 
-    create_table :users_votes do |t|
+    create_table :vote_statuses do |t|
       t.belongs_to :vote, index: true
-      t.belongs_to :user, index: true
+      t.string :user
       t.boolean :finished
 
       t.timestamps
