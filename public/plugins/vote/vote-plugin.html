@@ -52,7 +52,7 @@
 
                 <div horizontal layout center><div><strong style="font-size: larger">Options</strong></div><div><paper-icon-button on-click="{{addOption}}" icon="add-circle" style="color: #32cd32;"></paper-icon-button></div></div>
                 <template repeat="{{option, index in newVote.options}}">
-                    <div horizontal layout center><div><paper-icon-button on-click="{{removeOption}}" icon="remove-circle" style="color: red;"></paper-icon-button></div><div flex><paper-input value="{{option}}"></paper-input></div></div>
+                    <div horizontal layout center><div><paper-icon-button on-click="{{removeOption}}" icon="remove-circle" style="color: red;"></paper-icon-button></div><div flex><paper-input value="{{option.value}}"></paper-input></div></div>
                 </template>
 
                 <paper-button id="cancelButton" affirmative="" role="button" tabindex="0">Cancel</paper-button>
@@ -98,10 +98,10 @@
 
                 this.newVote = {};
                 this.newVote.options = [];
-                this.newVote.options.push("");
+                this.newVote.options.push({value: ''});
             },
             addOption: function(){
-                this.newVote.options.push('');
+                this.newVote.options.push({value: ''});
             },
             removeOption: function(event, detail, target){
                 this.newVote.options.splice(target.templateInstance.model.index, 1);
