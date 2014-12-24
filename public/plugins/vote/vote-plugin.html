@@ -4,6 +4,7 @@
 <link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 
@@ -17,6 +18,12 @@
             paper-action-dialog::shadow #scroller {
                 width : 800;
                 height : 600
+            }
+            #voteCreateDialog {
+                width: 600px;
+            }
+            paper-input {
+                width: 100%;
             }
         </style>
         <home-container>
@@ -39,14 +46,17 @@
                 </div>
             </div>
 
-            <paper-action-dialog id="voteCreateDialog" heading="Create New Vote" class="scrolling" role="dialog" backdrop="" autoclosedisabled="" layered="false" layout="" vertical="" aria-label="Title" tabindex="-1" style="position: fixed; outline: none; display: none;">
+            <paper-action-dialog id="voteCreateDialog" heading="New Vote" class="scrolling" role="dialog" backdrop="" autoclosedisabled="" layered="false" layout="" vertical="" aria-label="Title" tabindex="-1" style="position: fixed; outline: none; display: none;">
 
-                <paper-input label="Description" class="description" floatinglabel=""></paper-input>
-                <br>
-                <paper-button class="colored" role="button" tabindex="0" on-tap="{{newOption}}">NewOption</paper-button>
+                <div><paper-input floatingLabel label="Title" value="{{newVote.title}}"></paper-input></div>
+
+                <div horizontal layout center><div><strong style="font-size: larger">Options</strong></div><div><paper-icon-button on-click="{{addOption}}" icon="add-circle" style="color: #32cd32;"></paper-icon-button></div></div>
+                <template repeat="{{option, index in newVote.options}}">
+                    <div horizontal layout center><div><paper-icon-button on-click="{{removeOption}}" icon="remove-circle" style="color: red;"></paper-icon-button></div><div flex><paper-input value="{{option}}"></paper-input></div></div>
+                </template>
 
                 <paper-button id="cancelButton" affirmative="" role="button" tabindex="0">Cancel</paper-button>
-                <paper-button affirmative="" autofocus="" role="button" tabindex="0" on-tap="{{createVote}}">Create</paper-button>
+                <paper-button affirmative="" autofocus="" role="button" tabindex="0" on-tap="{{createVote}}" style="color: dodgerblue">Create</paper-button>
 
             </paper-action-dialog>
 
@@ -63,6 +73,7 @@
                 <paper-button affirmative="" autofocus="" role="button" tabindex="0" on-tap="{{submitAns}}">Confirm</paper-button>
 
             </paper-action-dialog>
+
         </home-container>
     </template>
     <script>
@@ -84,8 +95,17 @@
 
                 this.voted = [];
                 this.voted.push({name : 'Jim', voted : true});
-            },
 
+                this.newVote = {};
+                this.newVote.options = [];
+                this.newVote.options.push("");
+            },
+            addOption: function(){
+                this.newVote.options.push('');
+            },
+            removeOption: function(event, detail, target){
+                this.newVote.options.splice(target.templateInstance.model.index, 1);
+            },
             createNew : function() {
                 var dialog = this.$.voteCreateDialog;
                 if (!dialog) {
