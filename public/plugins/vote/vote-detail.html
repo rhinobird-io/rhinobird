@@ -1,0 +1,49 @@
+<link rel="import" href="vote-element.html">
+<link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
+
+<polymer-element name="vote-detail" attributes="votes">
+    <template>
+        <template repeat="{{vote in votes}}">
+            <vote-element description="{{vote.description}}" options="{{vote.options}}"></vote-element>
+        </template>
+
+        <div>
+            <p>Finished vote</p>
+            <div>
+                <template repeat="{{status in voted}}">
+                    <p>{{status.name}}</p>
+                </template>
+            </div>
+            <p>Wait for vote</p>
+            <div>
+                <template repeat="{{status in notVoted}}">
+                    <p>{{status.name}}</p>
+                </template>
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer('vote-detail', {
+
+            ready : function() {
+
+                this.currentStatus = [];
+                this.currentStatus.push({name : 'Alice', voted : false});
+                this.currentStatus.push({name : 'Bob', voted : false});
+                this.currentStatus.push({name : 'David', voted : false});
+                this.currentStatus.push({name : 'Tom', voted : false});
+                this.currentStatus.push({name : 'Jim', voted : true});
+
+                this.notVoted = [];
+                this.notVoted.push({name : 'Alice', voted : false});
+                this.notVoted.push({name : 'Bob', voted : false});
+                this.notVoted.push({name : 'David', voted : false});
+                this.notVoted.push({name : 'Tom', voted : false});
+
+                this.voted = [];
+                this.voted.push({name : 'Jim', voted : true});
+            }
+        });
+
+    </script>
+</polymer-element>

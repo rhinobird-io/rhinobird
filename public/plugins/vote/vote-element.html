@@ -1,0 +1,23 @@
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../bower_components/core-label/core-label.html">
+
+<polymer-element name="vote-element" attributes="description options">
+    <template>
+        <div>
+            <div>{{description}}</div>
+            <template repeat="{{option in options}}">
+                <div class="item" layout horizontal center>
+                    <core-label center horizontal layout>
+                        <paper-checkbox for></paper-checkbox>
+                        <div>{{option}}</div>
+                    </core-label>
+                </div>
+            </template>
+        </div>
+    </template>
+    <script>
+        Polymer({
+
+        });
+    </script>
+</polymer-element>

@@ -1,0 +1,151 @@
+<link rel="import" href="vote-element.html">
+<link rel="import" href="vote-detail.html">
+<link rel="import" href="../../home-container.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
+
+<polymer-element name="vote-plugin">
+    <template>
+        <style type="text/css">
+            paper-fab.blue {
+                background: #5677fc;
+            }
+
+            paper-action-dialog::shadow #scroller {
+                width : 800;
+                height : 600
+            }
+        </style>
+        <home-container>
+            <core-ajax
+                    auto
+                    url="/platform/votes"
+                    handleAs="json"
+                    response="{{records}}"></core-ajax>
+            <div class="title">Vote Manager</div>
+            <paper-fab mini icon="add" class="blue" on-tap="{{createNew}}"></paper-fab>
+
+            <div>
+                <h3>You are invited to following votes</h3>
+                <div>
+                    <ul>
+                        <template repeat="{{record in records}}">
+                            <li><a id="{{record.id}}" on-click="{{showVote}}">{{record.title}}</a></li>
+                        </template>
+                    </ul>
+                </div>
+            </div>
+
+            <paper-action-dialog id="voteCreateDialog" heading="Create New Vote" class="scrolling" role="dialog" backdrop="" autoclosedisabled="" layered="false" layout="" vertical="" aria-label="Title" tabindex="-1" style="position: fixed; outline: none; display: none;">
+
+                <paper-input label="Description" class="description" floatinglabel=""></paper-input>
+                <br>
+                <paper-button class="colored" role="button" tabindex="0" on-tap="{{newOption}}">NewOption</paper-button>
+
+                <paper-button id="cancelButton" affirmative="" role="button" tabindex="0">Cancel</paper-button>
+                <paper-button affirmative="" autofocus="" role="button" tabindex="0" on-tap="{{createVote}}">Create</paper-button>
+
+            </paper-action-dialog>
+
+            <paper-action-dialog id="voteAnsDialog" heading="Vote" class="scrolling" role="dialog" backdrop="" autoclosedisabled="" layered="false" layout="" vertical="" aria-label="Title" tabindex="-1" style="position: fixed; outline: none; display: none;">
+
+                <core-ajax
+                        id="ajax"
+                        url="/platform/votes/{{vote_id}}/questions"
+                        handleAs="json"
+                        on-core-response="{{ajaxResponse}}"></core-ajax>
+                <vote-detail votes="{{votes}}"></vote-detail>
+
+                <paper-button id="cancelButton" affirmative="" role="button" tabindex="0">Cancel</paper-button>
+                <paper-button affirmative="" autofocus="" role="button" tabindex="0" on-tap="{{submitAns}}">Confirm</paper-button>
+
+            </paper-action-dialog>
+        </home-container>
+    </template>
+    <script>
+
+        Polymer('vote-plugin', {
+            ready : function() {
+                this.currentStatus = [];
+                this.currentStatus.push({name : 'Alice', voted : false});
+                this.currentStatus.push({name : 'Bob', voted : false});
+                this.currentStatus.push({name : 'David', voted : false});
+                this.currentStatus.push({name : 'Tom', voted : false});
+                this.currentStatus.push({name : 'Jim', voted : true});
+
+                this.notVoted = [];
+                this.notVoted.push({name : 'Alice', voted : false});
+                this.notVoted.push({name : 'Bob', voted : false});
+                this.notVoted.push({name : 'David', voted : false});
+                this.notVoted.push({name : 'Tom', voted : false});
+
+                this.voted = [];
+                this.voted.push({name : 'Jim', voted : true});
+            },
+
+            createNew : function() {
+                var dialog = this.$.voteCreateDialog;
+                if (!dialog) {
+                    return;
+                }
+                dialog.toggle();
+            },
+
+            newOption : function() {
+                var br =  document.createElement('br');
+                var option = document.createElement('paper-input');
+                option.setAttribute('label', 'Option');
+                option.setAttribute('class', 'voteOption');
+                option.setAttribute('floatinglabel', '');
+                var dialog = this.$.voteCreateDialog;
+                var cancelButton = this.$.cancelButton;
+                dialog.insertBefore(option, cancelButton);
+                dialog.insertBefore(br, option);
+            },
+
+            createVote : function() {
+                var dialog = this.$.voteCreateDialog;
+                var vote = {};
+                vote.description = dialog.getElementsByClassName('description')[0].value;
+                vote.option = [];
+                var optionList=  dialog.getElementsByClassName('voteOption');
+                for (element in optionList) {
+                    if (optionList[element].value) {
+                        vote.option.push(optionList[element].value);
+                    }
+                }
+                console.log(JSON.stringify(vote));
+            },
+
+            showVote : function(e) {
+                var target = e.target;
+                this.vote_id = target.id;
+                var ajax = this.$.ajax;
+                ajax.go();
+                var dialog = this.$.voteAnsDialog;
+                if (!dialog) {
+                    return;
+                }
+                dialog.toggle();
+            },
+
+            submitAns : function() {
+                // TODO
+            },
+
+            ajaxResponse: function(event, response) {
+                this.votes = [];
+                for (item in response.response) {
+                    var vote = {};
+                    vote.description = response.response[item].description;
+                    vote.options = JSON.parse(response.response[item].options);
+                    this.votes.push(vote);
+                }
+            }
+        });
+
+    </script>
+</polymer-element>
