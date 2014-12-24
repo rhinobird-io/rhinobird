@@ -22,7 +22,7 @@ Try and learn them by some tasks in our project, send merge request for review. 
 1. Require Ruby with bundle gem installed, Bower, latest Google Chrome.
 
 2. Tips:
-    * You may find [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv) good for manage your ruby versions*
+    * You may find [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv) good for manage your ruby versions
     * It is recommended to use Linux or Mac OS X for development.
 
 3. Build & run
