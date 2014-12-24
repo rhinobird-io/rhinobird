@@ -9,7 +9,7 @@
 <link rel="import" href="./bower_components/paper-dropdown/paper-dropdown.html">
 <link rel="import" href="./bower_components/paper-item/paper-item.html">
 
-<polymer-element name="home-container" attributes="selected" noscript>
+<polymer-element name="home-container" attributes="selected">
     <template>
         <style>
             .content {
@@ -22,7 +22,10 @@
                 <core-menu theme="core-light-theme">
                     <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="../#/home/dashboard"></a></core-item>
                     <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="../#/home/calendar"></a></core-item>
-                    <core-item icon="event" label="Vote" active?="{{selected == 'vote'}}"><a is="pushstate-anchor" href="../#/home/vote"></a></core-item>
+                    <template repeat="{{plugin in plugins}}">
+                        <core-item icon="{{plugin.icon}}" label="{{plugin.label}}" active?="{{selected == plugin.active}}"><a is="pushstate-anchor" href="{{plugin.href}}"></a></core-item>
+                    </template>
+                    <!--<core-item icon="event" label="Vote" active?="{{selected == 'vote'}}"><a is="pushstate-anchor" href="../#/home/vote"></a></core-item>-->
                     <!--<template id="plugin_menu" repeat="{{plugin in plugins}}">-->
                     <!--<core-item icon="{{plugin.icon}}" label="{{plugin.label}}" name="{{plugin.name}}" active?="{{selected == plugin.active}}"><a is="pushstate-anchor" href="{{plugin.href}}"></a></core-item>-->
                     <!--</template>-->
@@ -49,4 +52,17 @@
             </div>
         </core-scaffold>
     </template>
+    <script>
+        Polymer("home-container", {
+            ready : function() {
+                this.plugins = [];
+                var votePlugin = {};
+                votePlugin.icon = "event";
+                votePlugin.label = "Vote";
+                votePlugin.active = "vote";
+                votePlugin.href = "../#/home/vote"
+                this.plugins.push(votePlugin);
+            }
+        })
+    </script>
 </polymer-element>
