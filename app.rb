@@ -137,7 +137,7 @@ class App < Sinatra::Base
         vote_status = VoteStatus.create!(status_attr)
         vote.vote_status << vote_status
       end
-      200
+      vote.to_json
     end
 
     get '/votes/:voteId/questions' do

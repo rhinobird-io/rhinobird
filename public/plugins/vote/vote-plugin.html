@@ -1,5 +1,5 @@
 <link rel="import" href="vote-element.html">
-<link rel="import" href="vote-detail.html">
+<link rel="import" href="vote-launcher.html">
 <link rel="import" href="../../home-container.html">
 <link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
@@ -23,10 +23,6 @@
                 width: 600px;
             }
 
-            #voteAnsDialog {
-                width: 600px;
-            }
-
             paper-input {
                 width: 100%;
             }
@@ -45,7 +41,7 @@
                 <div>
                     <ul>
                         <template repeat="{{record in records}}">
-                            <li><a id="{{record.id}}" on-click="{{showVote}}">{{record.title}}</a></li>
+                            <li><vote-launcher vote_id="{{record.id}}">{{record.title}}</vote-launcher></li>
                         </template>
                     </ul>
                 </div>
@@ -58,7 +54,15 @@
                         method="post"
                         url="/platform/votes"
                         contentType="application/json"
-                        body="{{voteJson}}"></core-ajax>
+                        body="{{voteJson}}"
+                        handleAs="json"
+                        on-core-response="{{createResponse}}"></core-ajax>
+                <core-ajax
+                        id="ajaxDashboard"
+                        method="post"
+                        contentType="application/json"
+                        body="{{dashboard_content}}"
+                        url="/platform/users/{{target_user}}/dashboard_records"></core-ajax>
                 <div><paper-input floatingLabel label="Title" value="{{newVote.title}}"></paper-input></div>
                 <div><paper-input floatingLabel label="Description" value="{{newVote.description}}"></paper-input></div>
 
@@ -69,31 +73,6 @@
 
                 <paper-button id="cancelButton" affirmative="" role="button" tabindex="0">Cancel</paper-button>
                 <paper-button affirmative="" autofocus="" role="button" tabindex="0" on-tap="{{saveVote}}" style="color: dodgerblue">Create</paper-button>
-
-            </paper-action-dialog>
-
-            <paper-action-dialog id="voteAnsDialog" heading="Vote" class="scrolling" role="dialog" backdrop="" autoclosedisabled="" layered="false" layout="" vertical="" aria-label="Title" tabindex="-1" style="position: fixed; outline: none; display: none;">
-
-                <core-ajax
-                        id="ajaxAns"
-                        url="/platform/votes/{{vote_id}}/questions"
-                        handleAs="json"
-                        on-core-response="{{questionResponse}}"></core-ajax>
-                <core-ajax
-                        id="ajaxAnsUsers"
-                        url="/platform/votes/{{vote_id}}/users"
-                        handleAs="json"
-                        on-core-response="{{userResponse}}"></core-ajax>
-                <core-ajax
-                        id="ajaxAnsFinish"
-                        method="post"
-                        contentType="application/json"
-                        url="/platform/votes/{{vote_id}}/{{user_id}}"></core-ajax>
-
-                <vote-detail votes="{{votes}}" users="{{users}}"></vote-detail>
-
-                <paper-button id="cancelButton" affirmative="" role="button" tabindex="0">Cancel</paper-button>
-                <paper-button affirmative="" autofocus="" role="button" tabindex="0" on-tap="{{submitAns}}">Confirm</paper-button>
 
             </paper-action-dialog>
 
@@ -150,47 +129,12 @@
                 ajax.go();
             },
 
-            showVote : function(e) {
-                var target = e.target;
-                this.vote_id = target.id;
-                var ajax = this.$.ajaxAns;
-                ajax.go();
-                var ajaxUser = this.$.ajaxAnsUsers;
-                ajaxUser.go();
-                var dialog = this.$.voteAnsDialog;
-                if (!dialog) {
-                    return;
-                }
-                dialog.toggle();
-            },
-
-            submitAns : function() {
-                var ajax = this.$.ajaxAnsFinish;
-                ajax.go();
-            },
-
-            questionResponse: function(event, response) {
-                this.votes = [];
-                for (item in response.response) {
-                    var vote = {};
-                    vote.description = response.response[item].description;
-                    vote.options = JSON.parse(response.response[item].options);
-                    this.votes.push(vote);
-                }
-            },
-
-            userResponse: function(event, response) {
-                this.users = {};
-                this.users.voted = [];
-                this.users.notVoted = [];
-                for (item in response.response) {
-                    var element = response.response[item];
-                    if (element.finished) {
-                        this.users.voted.push(element.user);
-                    } else {
-                        this.users.notVoted.push(element.user);
-                    }
-                }
+            createResponse: function(event, response) {
+                var res = response.response;
+                this.target_user = 1;
+                this.dashboard_content = "{\"content\":\"<vote-launcher vote_id=\\\"" + res["id"] + "\\\">" + res["title"] + "</vote-launcher>\"}";
+                var ajaxDashboard = this.$.ajaxDashboard;
+                ajaxDashboard.go();
             }
         });
 
