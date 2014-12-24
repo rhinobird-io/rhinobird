@@ -11,6 +11,11 @@
 
 <polymer-element name="home-container" attributes="selected" noscript>
     <template>
+        <style>
+            .content {
+                padding:30px;
+            }
+        </style>
         <core-scaffold>
             <core-header-panel navigation flex mode="seamed">
                 <core-toolbar><core-icon icon="menu"></core-icon><span>Team Work</span></core-toolbar>
@@ -39,7 +44,7 @@
                     </paper-dropdown>
                 </paper-menu-button>
             </div>
-            <div>
+            <div fit class="content">
                 <content></content>
             </div>
         </core-scaffold>
