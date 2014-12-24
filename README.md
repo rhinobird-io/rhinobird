@@ -11,6 +11,14 @@ Advanced, awesome, cutting-age teamwork software.
 
 ## Development
 
+### Catch Up
+
+We use Polymer, Ruby, Sinatra, ActiveRecord for current prototype phase.
+It is recommended to read some materials about them, but not too much.
+Try and learn them by some tasks in our project, send merge request for review. Don't be afraid for mistakes.
+
+### Getting Started
+
 1. Require Ruby with bundle gem installed, Bower, latest Google Chrome.
 
 2. Build & run
