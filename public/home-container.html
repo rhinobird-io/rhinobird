@@ -54,8 +54,8 @@
             <core-header-panel navigation flex mode="seamed">
                 <core-toolbar><core-icon icon="menu"></core-icon><span>Team Work</span></core-toolbar>
                 <core-menu theme="core-light-theme">
-                    <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="../#/home/dashboard"></a></core-item>
-                    <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="../#/home/calendar"></a></core-item>
+                    <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="/#/dashboard"></a></core-item>
+                    <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="/#/calendar"></a></core-item>
                     <template repeat="{{plugin in plugins}}">
                         <core-item icon="{{plugin.icon}}" label="{{plugin.label}}" active?="{{selected == plugin.active}}"><a is="pushstate-anchor" href="{{plugin.href}}"></a></core-item>
                     </template>
@@ -112,7 +112,7 @@
                 votePlugin.icon = "event";
                 votePlugin.label = "Vote";
                 votePlugin.active = "vote";
-                votePlugin.href = "../#/home/vote";
+                votePlugin.href = "/#/vote";
                 this.plugins.push(votePlugin);
 
                 if (this.$.globals.values.currentUser) {
