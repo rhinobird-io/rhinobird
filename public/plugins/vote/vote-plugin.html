@@ -41,7 +41,7 @@
                 <div>
                     <ul>
                         <template repeat="{{record in records}}">
-                            <li><vote-launcher vote_id="{{record.id}}">{{record.title}}</vote-launcher></li>
+                            <li><vote-launcher vote="{{record}}">{{record.title}}</vote-launcher></li>
                         </template>
                     </ul>
                 </div>
