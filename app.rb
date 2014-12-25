@@ -61,7 +61,9 @@ class App < Sinatra::Base
       # Plugin start run a new process and we need to kill it manually.
       # To avoid development trouble, disable it currently
       # When we want to test the running plugin, uncomment it
-      #plugin.start
+      p "start plugin"
+      plugin.start
+      p "started plugin"
       plugin.to_json
     end
 

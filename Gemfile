@@ -8,6 +8,7 @@ gem 'sinatra-activerecord'
 gem 'rubyzip'
 gem 'bcrypt'
 gem 'uuid'
+gem 'sinatra-cross_origin'
 
 group :development do
   gem 'sqlite3'
