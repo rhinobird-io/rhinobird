@@ -24,10 +24,14 @@
         console.log(router.lastElementChild);
         router.insertBefore(element, router.lastElementChild);
 
+        element = document.createElement("app-route");
+        element.setAttribute("path", "*");
+        element.setAttribute("import", "/not-found.html");
+        element.setAttribute("template", "");
+        router.insertBefore(element, router.lastElementChild);
+
         if(!router.activeRoute) {
-            if(window.location.hash.substring(1) === "/vote") {
-                router.go("/vote");
-            }
+            router.go(window.location.hash.substring(1));
         }
         var link = document.createElement('link');
         link.rel = 'import';
