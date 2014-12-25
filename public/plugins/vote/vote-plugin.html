@@ -82,8 +82,6 @@
 
         Polymer('vote-plugin', {
             ready : function() {
-                // TODO user real user id
-                this.user_id = 1;
                 this.selectedUser = [1,2,3];
             },
             addOption: function(){
@@ -132,7 +130,9 @@
             createResponse: function(event, response) {
                 var res = response.response;
                 this.target_user = 1;
-                this.dashboard_content = "{\"content\":\"<vote-launcher vote_id=\\\"" + res["id"] + "\\\">" + res["title"] + "</vote-launcher>\"}";
+                this.dashboard_content = "{\"content\":\"<vote-launcher " +
+                      "vote_id=\\\"" + res["id"] + "\\\" " +
+                      ">" + res["title"] + "</vote-launcher>\"}";
                 var ajaxDashboard = this.$.ajaxDashboard;
                 ajaxDashboard.go();
             }

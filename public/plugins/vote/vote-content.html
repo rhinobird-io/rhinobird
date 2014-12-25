@@ -2,6 +2,7 @@
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../elements/app-globals/app-globals.html">
 
 <polymer-element name="vote-content" attributes="votes users vote_id">
     <template>
@@ -15,7 +16,7 @@
                 width: 600px;
             }
         </style>
-
+        <app-globals id="globals"></app-globals>
         <!--<paper-action-dialog id="voteAnsDialog" heading="Vote" class="scrolling" role="dialog" backdrop="" autoclosedisabled="" layered="false" layout="" vertical="" aria-label="Title" tabindex="-1" style="position: fixed; outline: none; display: none;">-->
         <paper-action-dialog id="voteAnsDialog" heading="Vote" class="scrolling" role="dialog" layout="" vertical="" aria-label="Title" tabindex="-1" style="position: fixed; outline: none; display: none;">
 
@@ -53,7 +54,7 @@
     <script>
         Polymer('vote-content', {
             ready: function() {
-                this.user_id = 1;
+                this.user_id = this.$.globals.values.currentUser.id;
             },
 
             submitAns : function() {

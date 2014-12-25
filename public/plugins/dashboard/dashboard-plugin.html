@@ -2,11 +2,18 @@
 <link rel="import" href="../../bower_components/ajax-file-input/ajax-file-input.html">
 <link rel="import" href="../../elements/dashboard-records/dashboard-records.html">
 
-<polymer-element name="dashboard-plugin" noscript>
+<polymer-element name="dashboard-plugin">
     <template>
         <home-container>
             <div class="title">Dashboad</div>
             <dashboard-records></dashboard-records>
         </home-container>
     </template>
+    <script>
+        Polymer("dashboard-plugin", {
+            ready: function() {
+                this.currentUser = this.shadowRoot.querySelector("home-container").currentUser;
+            }
+        })
+    </script>
 </polymer-element>

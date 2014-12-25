@@ -1,19 +1,53 @@
-<link rel="import" href="./bower_components/core-scaffold/core-scaffold.html">
-<link rel="import" href="./bower_components/core-header-panel/core-header-panel.html">
-<link rel="import" href="./bower_components/core-toolbar/core-toolbar.html">
-<link rel="import" href="./bower_components/core-item/core-item.html">
-<link rel="import" href="./bower_components/paper-button/paper-button.html">
-<link rel="import" href="./bower_components/paper-input/paper-input.html">
-<link rel="import" href="./bower_components/paper-menu-button/paper-menu-button.html">
-<link rel="import" href="./bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="./bower_components/paper-dropdown/paper-dropdown.html">
-<link rel="import" href="./bower_components/paper-item/paper-item.html">
+<link rel="import" href="bower_components/core-toolbar/core-toolbar.html">
+<link rel="import" href="bower_components/core-menu/core-menu.html">
+<link rel="import" href="bower_components/core-list/core-list.html">
+<link rel="import" href="bower_components/core-item/core-item.html">
+<link rel="import" href="bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="bower_components/core-header-panel/core-header-panel.html">
+<link rel="import" href="bower_components/core-scaffold/core-scaffold.html">
+<link rel="import" href="bower_components/paper-button/paper-button.html">
+<link rel="import" href="bower_components/paper-input/paper-input.html">
+<link rel="import" href="bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="bower_components/paper-dropdown/paper-dropdown.html">
+<link rel="import" href="bower_components/paper-item/paper-item.html">
+<link rel="import" href="elements/app-globals/app-globals.html">
 
 <polymer-element name="home-container" attributes="selected">
     <template>
         <style>
             .content {
                 padding:30px;
+            }
+
+            core-list {
+                height: 200px;
+            }
+            .open-below {
+                top: 38px;
+            }
+            .user-item {
+                color: black;
+            }
+            paper-dropdown-menu /deep/ #label {
+                background: transparent;
+                color: white;
+            }
+            paper-dropdown-menu /deep/ #arrow {
+                background: transparent;
+                color: white;
+            }
+            paper-dropdown-menu {
+                border-bottom: none;
+            }
+            .user-dropdown-menu /deep/ .core-opened{
+                left:auto !important;
+                right: 0;
+
+            }
+            .user-item /deep/ #scroller {
+                max-width: none !important;
             }
         </style>
         <core-scaffold>
@@ -35,9 +69,27 @@
                 <content select=".title"></content>
             </div>
             <div tool horizontal layout flex end-justified class="bottom">
-                <paper-menu-button>
+                <core-ajax
+                        auto='true'
+                        method="GET"
+                        url="/platform/users"
+                        handleAs="json"
+                        response="{{users}}"
+                        ></core-ajax>
+
+                <paper-dropdown-menu class='user-dropdown-menu' label="{{userName}}" on-core-select="{{onUserSelect}}">
+                    <paper-dropdown class="dropdown">
+                        <core-menu>
+                            <template repeat="{{users}}">
+                                <paper-item class='user-item'>{{name}}</paper-item>
+                            </template>
+                        </core-menu>
+                    </paper-dropdown>
+                </paper-dropdown-menu>
+                <app-globals id="globals"></app-globals>
+                <paper-menu-button style='padding-top: 20px'>
                     <paper-icon-button icon="apps" noink></paper-icon-button>
-                    <paper-dropdown class="dropdown" halign="right"  style="color:#000;">
+                    <paper-dropdown class="dropdown" halign="right" style="color:#000;">
                         <core-menu class="menu">
                             <paper-input label="Search plugin"></paper-input>
                             <paper-item>Vote</paper-item>
@@ -60,9 +112,23 @@
                 votePlugin.icon = "event";
                 votePlugin.label = "Vote";
                 votePlugin.active = "vote";
-                votePlugin.href = "../#/home/vote"
+                votePlugin.href = "../#/home/vote";
                 this.plugins.push(votePlugin);
+
+                if (this.$.globals.values.currentUser) {
+                    this.currentUser = this.$.globals.values.currentUser;
+                    this.userName = this.currentUser.name;
+                } else {
+                    this.userName = "Select a user";
+                }
+
+            },
+
+            onUserSelect : function (event, detail, target){
+                if (detail.isSelected){
+                    this.$.globals.values.currentUser = detail.item.templateInstance.model;
+                }
             }
-        })
+        });
     </script>
 </polymer-element>
