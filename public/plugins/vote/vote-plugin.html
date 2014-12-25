@@ -7,6 +7,7 @@
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="../../bower_components/core-item/core-item.html">
 
 <polymer-element name="vote-plugin">
     <template>
@@ -39,11 +40,11 @@
             <div>
                 <h3>You are invited to following votes</h3>
                 <div>
-                    <ul>
                         <template repeat="{{record in records}}">
-                            <li><vote-launcher vote="{{record}}">{{record.title}}</vote-launcher></li>
+                            <core-item icon="assignment">
+                                <vote-launcher vote="{{record}}">{{record.title}}</vote-launcher>
+                            </core-item>
                         </template>
-                    </ul>
                 </div>
             </div>
 

@@ -1,6 +1,7 @@
 <link rel="import" href="vote-content.html">
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 
+
 <polymer-element name="vote-launcher" attributes="vote">
     <template>
         <core-ajax
@@ -13,7 +14,7 @@
                 url="/platform/votes/{{vote.id}}/users"
                 handleAs="json"
                 on-core-response="{{userResponse}}"></core-ajax>
-        <a on-click="{{showVote}}"><content></content></a>
+        <a on-click="{{showVote}}" style="color: #4285f4; cursor: pointer"><content></content></a>
 
 
         <vote-content id="voteContent" votes="{{votes}}" users="{{users}}" vote="{{vote}}"></vote-content>
