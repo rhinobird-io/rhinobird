@@ -33,7 +33,7 @@
                 z-index: 1;
                 width: 300px;
                 min-height: 100px;
-                max-height: 500px;
+                max-height: 200px;
                 overflow-y: auto;
                 padding: 10px 10px 10px 10px;
             }
@@ -115,6 +115,8 @@
                         next.classList.add('highlight');
                     }
 
+                    this.fixScroll();
+
                 } else if (event.keyCode === 13) {
                     var selectedItems = this.$.menu.querySelectorAll('paper-item.highlight:not([hidden]');
                     var selectedItem = selectedItems[0];
@@ -148,6 +150,28 @@
 
             },
 
+            /**
+             * make the selected item can be seen
+             */
+            fixScroll : function() {
+                var selectedItems = this.$.menu.querySelectorAll('paper-item.highlight:not([hidden]');
+                var selectedItem = selectedItems[0];
+
+                // whether it is visible
+                var scrollTop = selectedItem.getBoundingClientRect().bottom - this.$.menu.getBoundingClientRect().bottom;
+                if (scrollTop > 0) {
+                    this.$.menu.scrollTop += scrollTop;
+                }
+
+                scrollTop = this.$.menu.getBoundingClientRect().top - selectedItem.getBoundingClientRect().top;
+                if (scrollTop > 0) {
+                    this.$.menu.scrollTop -= scrollTop;
+                    if (this.$.menu.scrollTop < 0) {
+                        this.$.menu.scrollTop = 0;
+                    }
+                }
+            },
+
             showMenu: function () {
                 this.isShowMenu = true;
                 var ul = this.$['input-div'].querySelector('ul');
@@ -157,7 +181,7 @@
 
             hideMenu: function (event, detail, sender) {
 
-                if (!(event && event.relatedTarget && event.relatedTarget.parentElement && event.relatedTarget.parentElement.parentElement && event.relatedTarget.parentElement.parentElement.id !== this.$.menu.id)) {
+                if (!(event && event.relatedTarget && event.relatedTarget.parentElement && event.relatedTarget.parentElement.parentElement && event.relatedTarget.parentElement.parentElement.id === this.$.menu.id)) {
                     this.isShowMenu = false;
                     this.selectedIndex = -1;
                 }
