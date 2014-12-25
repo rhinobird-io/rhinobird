@@ -1,0 +1,19 @@
+<link rel="import" href="vote-launcher.html">
+
+<polymer-element name="vote-wrapper" attributes="vote_id">
+    <template>
+        <core-ajax
+                id="ajax"
+                auto
+                url="/platform/votes/{{vote_id}}"
+                handleAs="json"
+                response="{{vote}}"></core-ajax>
+        <vote-launcher vote="{{vote}}"><content></content></vote-launcher>
+
+    </template>
+    <script>
+        Polymer({
+
+        })
+    </script>
+</polymer-element>

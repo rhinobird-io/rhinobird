@@ -20,7 +20,7 @@
                     id="ajaxAnsFinish"
                     method="post"
                     contentType="application/json"
-                    url="/platform/votes/{{vote_id}}/{{user_id}}"></core-ajax>
+                    url="/platform/votes/{{vote.id}}/{{user_id}}"></core-ajax>
 
             <template repeat="{{vote in votes}}">
                 <vote-element description="{{vote.description}}" options="{{vote.options}}"></vote-element>

@@ -140,6 +140,10 @@ class App < Sinatra::Base
       vote.to_json
     end
 
+    get '/votes/:voteId' do
+      Vote.find(params[:voteId]).to_json
+    end
+
     get '/votes/:voteId/questions' do
       Question.where(vote_id: params[:voteId]).all.to_json
     end

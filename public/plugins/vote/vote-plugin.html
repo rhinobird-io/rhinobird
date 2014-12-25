@@ -131,9 +131,9 @@
             createResponse: function(event, response) {
                 var res = response.response;
                 this.target_user = 1;
-                this.dashboard_content = "{\"content\":\"<vote-launcher " +
+                this.dashboard_content = "{\"content\":\"<vote-wrapper " +
                       "vote_id=\\\"" + res["id"] + "\\\" " +
-                      ">" + res["title"] + "</vote-launcher>\"}";
+                      ">" + res["title"] + "</vote-wrapper>\"}";
                 var ajaxDashboard = this.$.ajaxDashboard;
                 ajaxDashboard.go();
             }
