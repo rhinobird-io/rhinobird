@@ -30,7 +30,7 @@
         .open-below {
             top: 38px;
         }
-        .UserItem {
+        .user-item {
             color: black;
         }
         paper-dropdown-menu /deep/ #label {
@@ -44,12 +44,12 @@
         paper-dropdown-menu {
             border-bottom: none;
         }
-        .userDropDownMenu /deep/ .core-opened{
+        .user-dropdown-menu /deep/ .core-opened{
             left:auto !important;
             right: 0;
 
         }
-        .userDropDownMenu /deep/ #scroller {
+        .user-item /deep/ #scroller {
             max-width: none !important;
         }
 
@@ -79,11 +79,11 @@
                 response="{{users}}"
                 ></core-ajax>
             
-            <paper-dropdown-menu class='userDropDownMenu' label="Select a user" on-core-select='{{onUserSelect}}'>
+            <paper-dropdown-menu class='user-dropdown-menu' label="Select a user" on-core-select='{{onUserSelect}}'>
                 <paper-dropdown class="dropdown">
                   <core-menu>
                     <template repeat="{{users}}">
-                      <paper-item class='UserItem'>{{name}}</paper-item>
+                      <paper-item class='user-item'>{{name}}</paper-item>
                     </template>
                   </core-menu>
                 </paper-dropdown>

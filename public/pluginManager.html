@@ -66,12 +66,12 @@
     margin: 0px auto;
   }
 
-  #css_table {
+  #css-table {
       display:table;
       width: 75%;
       overflow-wrap: break-word;
   }
-  .css_tr {
+  .css-tr {
       display: table-row;
 
   }
@@ -83,7 +83,7 @@
     text-align: left;
     width:100%;
   }
-  .pluginTitle{
+  .plugin-title{
     font-size: 50px;
     font-style: bold;
     padding-bottom: 5px;
@@ -93,7 +93,7 @@
     -moz-user-select: text;     /* Firefox all */
     -ms-user-select: text;      /* IE 10+ */
   }
-  .pluginDescription{
+  .plugin-description{
      font-style: italic;
      font-size: 25px;
      padding-bottom: 15px;
@@ -164,13 +164,13 @@
                 <div hash="{{plugin.id}}" >
                 <paper-shadow z="2"></paper-shadow>
                 
-                    <div id="css_table">
-                    <div class="pluginTitle caption selectable">{{plugin.name}}</div>
-                    <div class="pluginDescription selectable">{{plugin.description}}</div>
-                     <div class="css_tr">
+                    <div id="css-table">
+                    <div class="plugin-title caption selectable">{{plugin.name}}</div>
+                    <div class="plugin-description selectable">{{plugin.description}}</div>
+                     <div class="css-tr">
                       <paper-input class="content" floatingLabel label="Author" value="{{plugin.author}}" disabled ></paper-input>
                      </div>
-                     <div class="css_tr">
+                     <div class="css-tr">
                       <paper-input class="content" floatingLabel value="{{plugin.url}}" label="URL" disabled ></paper-input>
                     </div>
                 </div>
