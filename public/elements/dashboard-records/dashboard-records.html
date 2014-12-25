@@ -40,7 +40,7 @@
         </style>
         <core-ajax id="getDashboardRecord"
                 auto
-                url="/platform/users/1/dashboard_records"
+                url="/platform/users/{{currentUserId}}/dashboard_records"
                 handleAs="json"
                 response="{{records}}"></core-ajax>
         <core-list data="{{records}}">
@@ -57,12 +57,6 @@
             currentUserId: 0,
             ready: function(){
                 this.currentUserId = currentUserId;
-            },
-            currentUserIdChanged: function(oldValue, newValue){
-                if (oldValue === 0){
-                    return;
-                }
-                this.$.getDashboardRecord.url = "/platform/users/"+ newValue + "/dashboard_records";
             }
         });
     })();
