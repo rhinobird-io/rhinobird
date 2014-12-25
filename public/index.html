@@ -13,7 +13,7 @@
     <app-route path="/home/dashboard" import="/plugins/dashboard/dashboard-plugin.html"></app-route>
     <app-route path="/home/calendar" import="/plugins/calendar/calendar-plugin.html"></app-route>
     <!--<app-route path="/home/vote" import="/plugins/vote/vote-plugin.html"></app-route>-->
-    <app-route path="*" import="/home-page.html"></app-route>
+    <app-route path="/" redirect="/home/dashboard"></app-route>
 </app-router>
 <script>
     window.onload = function() {
@@ -24,6 +24,11 @@
         console.log(router.lastElementChild);
         router.insertBefore(element, router.lastElementChild);
 
+        if(!router.activeRoute) {
+            if(window.location.hash.substring(1) === "/home/vote") {
+                router.go("/home/vote");
+            }
+        }
         var link = document.createElement('link');
         link.rel = 'import';
         link.href = 'plugins/vote/vote-launcher.html';
