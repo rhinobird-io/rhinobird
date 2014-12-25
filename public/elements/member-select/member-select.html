@@ -1,6 +1,9 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 
+<link rel="import" href="../../bower_components/core-icon/core-icon.html">
+
+
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 
@@ -21,6 +24,13 @@
 
             #input-div paper-item {
                 background-color: #87ceeb; /*This one is considerable*/
+                min-width: 0px;
+                -moz-border-radius: 5px;
+                -webkit-border-radius: 5px;
+            }
+
+            #input-div paper-item /deep/ * {
+                padding: 2px 2px 2px 2px;
             }
 
             #menu {
@@ -38,6 +48,10 @@
                 padding: 10px 10px 10px 10px;
             }
 
+            #menu paper-item /deep/ * {
+                padding: 2px 2px 2px 2px;
+            }
+
             #menu ul{
                 padding: 0px;
             }
@@ -48,10 +62,12 @@
             <div id="input-div">
                 <ul>
                     <template repeat="{{ u in selected}}">
-                        <li ><paper-item on-click="{{ removeUser }}" style="display: inline-block;">{{u.realname}}</paper-item></li>
+                        <li ><paper-item  style="display: inline-block;">{{u.realname}}
+                            <core-icon icon="clear" on-click="{{ removeUserHandler }}"></core-icon>
+                        </paper-item></li>
                     </template>
                     <li>
-                        <paper-input value="{{searchText}}" on-keyup="{{ doFilter }}" on-focus="{{ showMenu }}" on-blur="{{ hideMenu }}"/>
+                        <paper-input value="{{searchText}}" on-keydown="{{ doFilter }}" on-focus="{{ showMenu }}" on-blur="{{ hideMenu }}"/>
                     </li>
                 </ul>
             </div>
@@ -90,7 +106,6 @@
 
             doFilter: function (event, detail, sender) {
 
-                // back space is not considered
                 if (event.keyCode === 38 || event.keyCode === 40 ) { // up arrow
 
                     var paperItems = this.$.menu.querySelectorAll('paper-item:not([hidden])');
@@ -127,10 +142,11 @@
                     }
 
                     selectedItem.classList.remove('highlight');
-                } else if (event.keyCode === 8) {
-
-                    var user = this.selected[this.selected.length - 1];
-                    this.removeOneUser(user);
+                } else if (event.keyCode === 8) { // backspace
+                    if (this.searchText.length === 0 && this.selected.length > 0) {
+                        var user = this.selected[this.selected.length - 1];
+                        this.removeOneUser(user);
+                    }
 
                 } else {
                     var self = this;
@@ -155,19 +171,21 @@
              */
             fixScroll : function() {
                 var selectedItems = this.$.menu.querySelectorAll('paper-item.highlight:not([hidden]');
-                var selectedItem = selectedItems[0];
+                if (selectedItems.length > 0) {
+                    var selectedItem = selectedItems[0];
 
-                // whether it is visible
-                var scrollTop = selectedItem.getBoundingClientRect().bottom - this.$.menu.getBoundingClientRect().bottom;
-                if (scrollTop > 0) {
-                    this.$.menu.scrollTop += scrollTop;
-                }
+                    // whether it is visible
+                    var scrollTop = selectedItem.getBoundingClientRect().bottom - this.$.menu.getBoundingClientRect().bottom;
+                    if (scrollTop > 0) {
+                        this.$.menu.scrollTop += scrollTop;
+                    }
 
-                scrollTop = this.$.menu.getBoundingClientRect().top - selectedItem.getBoundingClientRect().top;
-                if (scrollTop > 0) {
-                    this.$.menu.scrollTop -= scrollTop;
-                    if (this.$.menu.scrollTop < 0) {
-                        this.$.menu.scrollTop = 0;
+                    scrollTop = this.$.menu.getBoundingClientRect().top - selectedItem.getBoundingClientRect().top;
+                    if (scrollTop > 0) {
+                        this.$.menu.scrollTop -= scrollTop;
+                        if (this.$.menu.scrollTop < 0) {
+                            this.$.menu.scrollTop = 0;
+                        }
                     }
                 }
             },
@@ -224,6 +242,7 @@
                 team.users.forEach(function(user) {
                     if (!this.userSelectedMap[user.name]) {
                         this.selected.push(user);
+                        this.searchText = '';
                     }
                     this.userSelectedMap[user.name] = true;
 
@@ -238,6 +257,7 @@
             addOneUser : function(user) {
                 if (!this.userSelectedMap[user.name]) {
                     this.selected.push(user);
+                    this.searchText = '';
                 }
                 this.userSelectedMap[user.name] = true;
             },
