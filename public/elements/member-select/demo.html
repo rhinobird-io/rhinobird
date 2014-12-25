@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- 1. Load platform support before any code that touches the DOM. -->
+    <script src="../../bower_components/webcomponentsjs/webcomponents.min.js"></script>
+
+    <link rel="import" href="../../bower_components/core-scaffold/core-scaffold.html">
+    <link rel="import" href="../../bower_components/core-header-panel/core-header-panel.html">
+    <link rel="import" href="../../bower_components/core-toolbar/core-toolbar.html">
+    <link rel="import" href="../../bower_components/core-menu/core-menu.html">
+    <link rel="import" href="../../bower_components/core-item/core-item.html">
+
+    <link rel="import" href="member-select.html">
+
+    <script>
+        function submit() {
+            var selected = document.querySelector('member-select').selected;
+            var sum = _.reduce(selected, function(sum, user) {
+                return sum +=' ' + user.realname;
+            },'The selected user is ');
+            alert(sum);
+        }
+    </script>
+</head>
+<body>
+<!-- 3. Declare the element by its tag. -->
+<core-scaffold>
+    <core-header-panel navigation flex mode="seamed">
+        <core-toolbar></core-toolbar>
+        <core-menu theme="core-light-theme">
+            <core-item icon="settings" label="item1"></core-item>
+            <core-item icon="settings" label="item2"></core-item>
+        </core-menu>
+    </core-header-panel>
+    <div tool>Title</div>
+    <div wrap>
+        <member-select minTrigger="1" teamsUrl="./json/teams.json"></member-select>
+    </div>
+
+    <button type="button" onclick="submit()">Submit</button>
+</core-scaffold>
+
+</body>
+</html>
