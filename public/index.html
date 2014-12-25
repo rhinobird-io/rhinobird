@@ -16,17 +16,41 @@
     <link rel="import" href="bower_components/paper-input/paper-input.html">
     <link rel="import" href="bower_components/paper-menu-button/paper-menu-button.html">
     <link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
+    <link rel="import" href="bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
     <link rel="import" href="bower_components/paper-dropdown/paper-dropdown.html">
     <link rel="import" href="bower_components/paper-item/paper-item.html">
     <link rel="import" href="bower_components/ajax-file-input/ajax-file-input.html">
     <link rel="import" href="elements/html-echo/html-echo.html">
     <link rel="import" href="elements/dashboard-records/dashboard-records.html">
+    <link rel="import" href="elements/app-globals/app-globals.html">
     <style>
         core-list {
             height: 200px;
         }
         .open-below {
             top: 38px;
+        }
+        .user-item {
+            color: black;
+        }
+        paper-dropdown-menu /deep/ #label {
+            background: transparent;
+            color: white;
+        }
+        paper-dropdown-menu /deep/ #arrow {
+            background: transparent;
+            color: white;
+        }
+        paper-dropdown-menu {
+            border-bottom: none;
+        }
+        .user-dropdown-menu /deep/ .core-opened{
+            left:auto !important;
+            right: 0;
+
+        }
+        .user-item /deep/ #scroller {
+            max-width: none !important;
         }
 
     </style>
@@ -47,7 +71,26 @@
         </core-header-panel>
         <div tool>Dashboard</div>
         <div tool horizontal layout flex end-justified class="bottom">
-            <paper-menu-button>
+            <core-ajax
+                auto='true'
+                method="GET"
+                url="/platform/users"
+                handleAs="json"
+                response="{{users}}"
+                ></core-ajax>
+            
+            <paper-dropdown-menu class='user-dropdown-menu' label="Select a user" on-core-select='{{onUserSelect}}'>
+                <paper-dropdown class="dropdown">
+                  <core-menu>
+                    <template repeat="{{users}}">
+                      <paper-item class='user-item'>{{name}}</paper-item>
+                    </template>
+                  </core-menu>
+                </paper-dropdown>
+            </paper-dropdown-menu>
+            <app-globals id="globals"></app-globals>
+
+            <paper-menu-button style='padding-top: 20px'>
                 <paper-icon-button icon="apps" noink></paper-icon-button>
                 <paper-dropdown class="dropdown" halign="right" style="color:#000;">
                     <core-menu class="menu">
@@ -59,18 +102,21 @@
                 </paper-dropdown>
             </paper-menu-button>
         </div>
-        <core-ajax
-                auto
-                url="/platform/users/1/dashboard_records"
-                handleAs="json"
-                on-core-response="{{handleResponse}}"></core-ajax>
         <div fit class="container">
             <dashboard-records></dashboard-records>
         </div>
     </core-scaffold>
 </template>
 <script>
-    var t = document.querySelector('#auto-bind');
+    var autoBind = document.querySelector('#auto-bind');
+    var userNameMap = {};
+    autoBind.addEventListener('template-bound', function() {
+        autoBind.onUserSelect = function (event, detail, target){
+            if (detail.isSelected){
+                this.$.globals.values.currentUser = detail.item.templateInstance.model;
+            }
+        }
+    });
 </script>
 </body>
 </html>
