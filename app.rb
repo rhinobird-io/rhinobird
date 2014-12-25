@@ -104,6 +104,27 @@ class App < Sinatra::Base
       User.create!(@body)
     end
 
+    get '/teams_users' do
+      result = []
+      team = Team.all.to_json
+      JSON.parse(team).each do |t|
+        org = {}
+        user = Team.find(t["id"]).users.to_json
+        # members = []
+        # JSON.parse(user).each do |u|
+        #   member = {}
+        #   member["id"] = u["id"]
+        #   member["name"] = u["name"]
+        #   member["realname"] = u["realname"]
+        #   members.push(member)
+        # end
+        org["name"] = t["name"]
+        org["users"] = user
+        result.push(org)
+      end
+      result.to_json
+    end
+
     #get all team the user attend
     get '/users/:userId/teams' do
       User.find(params[:userId]).teams.to_json
@@ -115,6 +136,15 @@ class App < Sinatra::Base
 
     post '/users/:userId/dashboard_records' do
       User.find(params[:userId]).dashboard_records.create!(@body)
+    end
+
+    post '/users/dashboard_records' do
+      users = @body["users"]
+      content = JSON.parse(@body["content"])
+      JSON.parse(users).each do |user|
+        record = User.find(user).dashboard_records.create!(content)
+      end
+      200
     end
 
     # start the server if ruby file executed directly
@@ -150,8 +180,6 @@ class App < Sinatra::Base
 
     # mark the user has finished one specific vote
     post '/votes/:voteId/:userId' do
-      p params[:voteId]
-      p params[:userId]
       vote_status = VoteStatus.where(vote_id: params[:voteId], user: params[:userId]).first
       vote_status.update(finished: true)
     end

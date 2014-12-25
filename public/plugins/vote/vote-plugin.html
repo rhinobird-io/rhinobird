@@ -8,6 +8,7 @@
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="../../bower_components/core-item/core-item.html">
+<link rel="import" href="../../elements/member-select/member-select.html">
 
 <polymer-element name="vote-plugin">
     <template>
@@ -26,6 +27,10 @@
 
             paper-input {
                 width: 100%;
+            }
+
+            #members {
+                display : inline;
             }
         </style>
         <home-container>
@@ -63,7 +68,8 @@
                         method="post"
                         contentType="application/json"
                         body="{{dashboard_content}}"
-                        url="/platform/users/{{target_user}}/dashboard_records"></core-ajax>
+                        url="/platform/users/dashboard_records"></core-ajax>
+                <div id="members"><span>Members:</span><member-select id="memberSelect" minTrigger="1" teamsUrl="/platform/teams_users"></member-select></div>
                 <div><paper-input floatingLabel label="Title" value="{{newVote.title}}"></paper-input></div>
                 <div><paper-input floatingLabel label="Description" value="{{newVote.description}}"></paper-input></div>
 
@@ -82,9 +88,6 @@
     <script>
 
         Polymer('vote-plugin', {
-            ready : function() {
-                this.selectedUser = [1,2,3];
-            },
             addOption: function(){
                 this.newVote.options.push({value: ''});
             },
@@ -121,6 +124,12 @@
                     options.push(this.newVote.options[option]["value"]);
                 }
                 this.newVote.options = JSON.stringify(options);
+                this.selectedUser = [];
+                var select = this.$.memberSelect.selected;
+                for (index in select) {
+                    this.selectedUser.push(select[index].id);
+                }
+
                 this.newVote.user = JSON.stringify(this.selectedUser);
                 console.log(JSON.stringify(this.newVote));
                 this.voteJson = JSON.stringify(this.newVote);
@@ -131,9 +140,12 @@
             createResponse: function(event, response) {
                 var res = response.response;
                 this.target_user = 1;
-                this.dashboard_content = "{\"content\":\"<vote-wrapper " +
+                this.dashboard_content = {};
+                this.dashboard_content.users = this.newVote.user;
+                this.dashboard_content.content = "\"{\"content\":\"<vote-wrapper " +
                       "vote_id=\\\"" + res["id"] + "\\\" " +
-                      ">" + res["title"] + "</vote-wrapper>\"}";
+                      ">" + res["title"] + "</vote-wrapper>\"}\"";
+                this.dashboard_content = JSON.stringify(this.dashboard_content);
                 var ajaxDashboard = this.$.ajaxDashboard;
                 ajaxDashboard.go();
             }
