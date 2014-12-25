@@ -3,6 +3,7 @@
 <link rel="import" href="../../bower_components/core-item/core-item.html">
 <link rel="import" href="../html-echo/html-echo.html">
 <link rel="import" href="../../bower_components/polymer-filters/polymer-filters.html">
+<link rel="import" href="../app-globals/app-globals.html">
 
 <polymer-element name="dashboard-record" attributes="record">
     <template>
@@ -38,9 +39,10 @@
                 padding: 10px;
             }
         </style>
+        <app-globals id="globals"></app-globals>
         <core-ajax id="getDashboardRecord"
                 auto
-                url="/platform/users/{{currentUserId}}/dashboard_records"
+                url="/platform/users/{{$.globals.values.currentUser.id}}/dashboard_records"
                 handleAs="json"
                 response="{{records}}"></core-ajax>
         <core-list data="{{records}}">
@@ -50,15 +52,7 @@
         </core-list>
     </template>
     <script>
-    (function(){
-        var currentUserId = 1;
-
         Polymer({
-            currentUserId: 0,
-            ready: function(){
-                this.currentUserId = currentUserId;
-            }
         });
-    })();
     </script>
 </polymer-element>

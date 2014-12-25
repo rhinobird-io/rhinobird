@@ -22,6 +22,7 @@
     <link rel="import" href="bower_components/ajax-file-input/ajax-file-input.html">
     <link rel="import" href="elements/html-echo/html-echo.html">
     <link rel="import" href="elements/dashboard-records/dashboard-records.html">
+    <link rel="import" href="elements/app-globals/app-globals.html">
     <style>
         core-list {
             height: 200px;
@@ -76,10 +77,9 @@
                 url="/platform/users"
                 handleAs="json"
                 response="{{users}}"
-                on-core-complete="{{afterGetUsers}}"
                 ></core-ajax>
             
-            <paper-dropdown-menu class='userDropDownMenu' label="{{currentUser}}" on-core-select='{{onUserSelect}}'>
+            <paper-dropdown-menu class='userDropDownMenu' label="Select a user" on-core-select='{{onUserSelect}}'>
                 <paper-dropdown class="dropdown">
                   <core-menu>
                     <template repeat="{{users}}">
@@ -88,6 +88,7 @@
                   </core-menu>
                 </paper-dropdown>
             </paper-dropdown-menu>
+            <app-globals id="globals"></app-globals>
 
             <paper-menu-button style='padding-top: 20px'>
                 <paper-icon-button icon="apps" noink></paper-icon-button>
@@ -102,7 +103,7 @@
             </paper-menu-button>
         </div>
         <div fit class="container">
-            <dashboard-records id='dashboardMain'></dashboard-records>
+            <dashboard-records></dashboard-records>
         </div>
     </core-scaffold>
 </template>
@@ -110,17 +111,9 @@
     var autoBind = document.querySelector('#auto-bind');
     var userNameMap = {};
     autoBind.addEventListener('template-bound', function() {
-        autoBind.afterGetUsers = function (){
-            if (autoBind.users.length > 0){
-                autoBind.currentUser = autoBind.users[0].name;
-            }
-            autoBind.users.forEach(function(user){
-                userNameMap[user.name] = user;
-            });
-        }
-        autoBind.onUserSelect = function (e){
-            if (e.detail.isSelected){
-               this.$.dashboardMain.currentUserId = userNameMap[e.detail.item.innerText].id;
+        autoBind.onUserSelect = function (event, detail, target){
+            if (detail.isSelected){
+                this.$.globals.values.currentUser = detail.item.templateInstance.model;
             }
         }
     });
