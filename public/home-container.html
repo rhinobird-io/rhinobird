@@ -56,7 +56,7 @@
                 <core-menu theme="core-light-theme">
                     <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="/#/dashboard"></a></core-item>
                     <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="/#/calendar"></a></core-item>
-                    <template repeat="{{plugin in plugins}}">
+                    <template repeat="{{plugin in $.globals.values.plugins}}">
                         <core-item icon="{{plugin.icon}}" label="{{plugin.label}}" active?="{{selected == plugin.active}}"><a is="pushstate-anchor" href="{{plugin.href}}"></a></core-item>
                     </template>
                     <!--<core-item icon="event" label="Vote" active?="{{selected == 'vote'}}"><a is="pushstate-anchor" href="../#/home/vote"></a></core-item>-->
@@ -107,13 +107,16 @@
     <script>
         Polymer("home-container", {
             ready : function() {
-                this.plugins = [];
-                var votePlugin = {};
-                votePlugin.icon = "event";
-                votePlugin.label = "Vote";
-                votePlugin.active = "vote";
-                votePlugin.href = "/#/vote";
-                this.plugins.push(votePlugin);
+//                this.plugins = [];
+//
+//                if (this.$.globals.values.hasVote) {
+//                    var votePlugin = {};
+//                    votePlugin.icon = "event";
+//                    votePlugin.label = "Vote";
+//                    votePlugin.active = "vote";
+//                    votePlugin.href = "/#/vote";
+//                    this.plugins.push(votePlugin);
+//                }
 
                 if (this.$.globals.values.currentUser) {
                     this.currentUser = this.$.globals.values.currentUser;
