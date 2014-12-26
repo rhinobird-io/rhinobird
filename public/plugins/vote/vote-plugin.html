@@ -130,7 +130,7 @@
                     this.selectedUser.push(select[index].id);
                 }
 
-                this.newVote.user = JSON.stringify(this.selectedUser);
+                this.newVote.user = this.selectedUser;
                 console.log(JSON.stringify(this.newVote));
                 this.voteJson = JSON.stringify(this.newVote);
                 var ajax = this.$.ajaxCreate;
@@ -140,12 +140,14 @@
             createResponse: function(event, response) {
                 var res = response.response;
                 this.target_user = 1;
-                this.dashboard_content = {};
-                this.dashboard_content.users = this.newVote.user;
-                this.dashboard_content.content = "\"{\"content\":\"<vote-wrapper " +
-                      "vote_id=\\\"" + res["id"] + "\\\" " +
-                      ">" + res["title"] + "</vote-wrapper>\"}\"";
-                this.dashboard_content = JSON.stringify(this.dashboard_content);
+                var content = {};
+                content.users = this.newVote.user;
+                var element = document.createElement("vote-wrapper");
+                element.setAttribute("vote_id", res["id"]);
+                element.innerText = res["title"];
+                content.content= {};
+                content.content.content = element.outerHTML;
+                this.dashboard_content = JSON.stringify(content);
                 var ajaxDashboard = this.$.ajaxDashboard;
                 ajaxDashboard.go();
             }

@@ -142,8 +142,8 @@ class App < Sinatra::Base
 
     post '/users/dashboard_records' do
       users = @body["users"]
-      content = JSON.parse(@body["content"])
-      JSON.parse(users).each do |user|
+      content =@body["content"]
+      users.each do |user|
         record = User.find(user).dashboard_records.create!(content)
       end
       200
