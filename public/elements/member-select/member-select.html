@@ -11,7 +11,7 @@
 
 <polymer-element name="member-select" attributes="teamsUrl selected">
     <template>
-        <core-ajax url="{{teamsUrl}}" auto on-core-response="{{handleTeamsResponse}}"></core-ajax>
+        <core-ajax url="{{teamsUrl}}" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>
 
         <style>
             .highlight {
@@ -212,6 +212,7 @@
                 this.usersNameMap = {};
                 this.users = [];
                 this.teams.forEach(function (t) {
+                    t.users = JSON.parse(t.users);
                     t.users.forEach(function (u, idx) {
                         if (!this.usersNameMap[u.name]) {
                             this.usersNameMap[u.name] = u;

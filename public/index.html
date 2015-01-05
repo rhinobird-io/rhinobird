@@ -1,122 +1,78 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-    <!-- 1. Load platform support before any code that touches the DOM. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>Team Work</title>
     <script src="bower_components/webcomponentsjs/webcomponents.min.js"></script>
-    <!-- 2. Load the component using an HTML Import -->
-    <link rel="import" href="bower_components/core-toolbar/core-toolbar.html">
-    <link rel="import" href="bower_components/core-menu/core-menu.html">
-    <link rel="import" href="bower_components/core-list/core-list.html">
-    <link rel="import" href="bower_components/core-item/core-item.html">
+    <link rel="import" href="bower_components/app-router/app-router.html">
     <link rel="import" href="bower_components/core-ajax/core-ajax.html">
-    <link rel="import" href="bower_components/core-header-panel/core-header-panel.html">
-    <link rel="import" href="bower_components/core-drawer-panel/core-drawer-panel.html">
-    <link rel="import" href="bower_components/core-scaffold/core-scaffold.html">
-    <link rel="import" href="bower_components/paper-button/paper-button.html">
-    <link rel="import" href="bower_components/paper-input/paper-input.html">
-    <link rel="import" href="bower_components/paper-menu-button/paper-menu-button.html">
-    <link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
-    <link rel="import" href="bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
-    <link rel="import" href="bower_components/paper-dropdown/paper-dropdown.html">
-    <link rel="import" href="bower_components/paper-item/paper-item.html">
-    <link rel="import" href="bower_components/ajax-file-input/ajax-file-input.html">
-    <link rel="import" href="elements/html-echo/html-echo.html">
-    <link rel="import" href="elements/dashboard-records/dashboard-records.html">
     <link rel="import" href="elements/app-globals/app-globals.html">
-    <style>
-        core-list {
-            height: 200px;
-        }
-        .open-below {
-            top: 38px;
-        }
-        .user-item {
-            color: black;
-        }
-        paper-dropdown-menu /deep/ #label {
-            background: transparent;
-            color: white;
-        }
-        paper-dropdown-menu /deep/ #arrow {
-            background: transparent;
-            color: white;
-        }
-        paper-dropdown-menu {
-            border-bottom: none;
-        }
-        .user-dropdown-menu /deep/ .core-opened{
-            left:auto !important;
-            right: 0;
-
-        }
-        .user-item /deep/ #scroller {
-            max-width: none !important;
-        }
-
-    </style>
 </head>
-<body>
+<body unresolved>
+<polymer-element name="page-ajax">
+    <template>
+        <app-globals id="globals"></app-globals>
+        <core-ajax
+                id="pageAjax"
+                auto
+                method="get"
+                contentType="application/json"
+                url="/developer/plugins"
+                on-core-response="{{pageResponse}}"></core-ajax>
+    </template>
+    <script>
+        Polymer("page-ajax", {
+            pageResponse : function(event, response) {
 
-<template id="auto-bind" is="auto-binding">
-    <core-scaffold>
+                var plugins = JSON.parse(response.response);
 
-        <core-header-panel navigation flex mode="seamed">
-            <core-toolbar>
-                <core-icon icon="menu"></core-icon>
-                <span>Team Work</span></core-toolbar>
-            <core-menu theme="core-light-theme">
-                <core-item icon="dashboard" label="Dashboard"></core-item>
-                <core-item icon="event" label="Calendar"></core-item>
-            </core-menu>
-        </core-header-panel>
-        <div tool>Dashboard</div>
-        <div tool horizontal layout flex end-justified class="bottom">
-            <core-ajax
-                auto='true'
-                method="GET"
-                url="/platform/users"
-                handleAs="json"
-                response="{{users}}"
-                ></core-ajax>
-            
-            <paper-dropdown-menu class='user-dropdown-menu' label="Select a user" on-core-select='{{onUserSelect}}'>
-                <paper-dropdown class="dropdown">
-                  <core-menu>
-                    <template repeat="{{users}}">
-                      <paper-item class='user-item'>{{name}}</paper-item>
-                    </template>
-                  </core-menu>
-                </paper-dropdown>
-            </paper-dropdown-menu>
-            <app-globals id="globals"></app-globals>
+                var router = document.querySelector("app-router");
+                var element = document.createElement("app-route");
 
-            <paper-menu-button style='padding-top: 20px'>
-                <paper-icon-button icon="apps" noink></paper-icon-button>
-                <paper-dropdown class="dropdown" halign="right" style="color:#000;">
-                    <core-menu class="menu">
-                        <paper-input label="Search plugin"></paper-input>
-                        <paper-item>Vote</paper-item>
-                        <paper-item>Questionnaire</paper-item>
-                        <paper-item>Brain Writing</paper-item>
-                    </core-menu>
-                </paper-dropdown>
-            </paper-menu-button>
-        </div>
-        <div fit class="container">
-            <dashboard-records></dashboard-records>
-        </div>
-    </core-scaffold>
-</template>
-<script>
-    var autoBind = document.querySelector('#auto-bind');
-    var userNameMap = {};
-    autoBind.addEventListener('template-bound', function() {
-        autoBind.onUserSelect = function (event, detail, target){
-            if (detail.isSelected){
-                this.$.globals.values.currentUser = detail.item.templateInstance.model;
+                this.$.globals.values.plugins = [];
+
+                for (index in plugins) {
+
+                    var newPlugin = {};
+                    newPlugin.icon = "event";
+                    newPlugin.label = plugins[index].name;
+                    newPlugin.active = plugins[index].name;
+                    newPlugin.href = "/#/" + plugins[index].name;
+                    this.$.globals.values.plugins.push(newPlugin);
+
+                    element = document.createElement("app-route");
+                    element.setAttribute("path", "/" + plugins[index].name);
+                    element.setAttribute("import", "/plugins/" + plugins[index].name + "/" + plugins[index].name + "-plugin.html");
+                    console.log(router.lastElementChild);
+                    router.insertBefore(element, router.lastElementChild);
+                }
+
+                element = document.createElement("app-route");
+                element.setAttribute("path", "*");
+                element.setAttribute("import", "/not-found.html");
+                element.setAttribute("template", "");
+                router.insertBefore(element, router.lastElementChild);
             }
+        })
+    </script>
+</polymer-element>
+<page-ajax></page-ajax>
+<app-router>
+    <app-route path="/dashboard" import="/plugins/dashboard/dashboard-plugin.html"></app-route>
+    <app-route path="/calendar" import="/plugins/calendar/calendar-plugin.html"></app-route>
+    <app-route path="/" redirect="/dashboard"></app-route>
+</app-router>
+
+<script>
+    window.onload = function() {
+        var router = document.querySelector("app-router");
+
+        if(!router.activeRoute) {
+            router.go(window.location.hash.substring(1));
         }
-    });
+    }
 </script>
 </body>
 </html>
