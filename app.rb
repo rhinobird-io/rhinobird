@@ -6,9 +6,6 @@ require './models/team.rb'
 require './models/user.rb'
 require './models/users_teams.rb'
 require './models/dashboard_record'
-require './models/vote.rb'
-require './models/vote_status.rb'
-require './models/question.rb'
 
 class App < Sinatra::Base
 
@@ -151,74 +148,6 @@ class App < Sinatra::Base
 
     # start the server if ruby file executed directly
     run! if app_file == $0
-
-    # vote related services
-    get '/votes' do
-      Vote.all.to_json
-    end
-
-    #create new vote
-    post '/votes' do
-      vote_attr = {title: @body["title"]}
-      vote = Vote.create!(vote_attr)
-      question_attr = {description: @body["description"], options: @body["options"]}
-      question = Question.create!(question_attr)
-      vote.question << question
-      JSON.parse(@body["user"]).each do |user_id|
-        status_attr = {user: user_id, finished: "false"}
-        vote_status = VoteStatus.create!(status_attr)
-        vote.vote_status << vote_status
-      end
-      vote.to_json
-    end
-
-    get '/votes/:voteId' do
-      Vote.find(params[:voteId]).to_json
-    end
-
-    get '/votes/:voteId/questions' do
-      Question.where(vote_id: params[:voteId]).all.to_json
-    end
-
-    # mark the user has finished one specific vote
-    post '/votes/:voteId/:userId' do
-      vote_status = VoteStatus.where(vote_id: params[:voteId], user: params[:userId]).first
-      vote_status.update(finished: true)
-    end
-
-    # post '/votes/:voteId/questions' do
-    #   vote = Vote.find(params[:voteId])
-    #   question = Question.create!(@body)
-    #   vote.question << question
-    #   200
-    # end
-
-    # get all user related to specific vote and their status
-    get '/votes/:voteId/users' do
-      VoteStatus.where(vote_id: params[:voteId]).select("user,finished").to_json;
-      # Vote.find(params[:voteId]).user.to_json
-    end
-
-    # # register all user related to specific vote
-    # post '/votes/:voteId/users' do
-    #   vote = Vote.find(params[:voteId])
-    #   vote_status = VoteStatus.create!(@body)
-    #   vote.vote_status << vote_status
-    #   200
-    #   # user_list = JSON.parse(@body["user_id"])
-    #   # user_list.each do |user_id|
-    #   #   user = User.find(user_id)
-    #   #   vote.user << user
-    #   #   users_votes = VoteStatus.where(user_id: user_id, vote_id: params[:voteId]).first
-    #   #   users_votes
-    #   # end
-    #   # 200
-    # end
-
-    # get all votes user need to answer
-    get '/users/:userId/votes' do
-      VoteStatus.where(user: params[:userId]).select("vote_id,finished").to_json
-    end
   end
 
 end

@@ -27,39 +27,26 @@
             pageResponse : function(event, response) {
 
                 var plugins = JSON.parse(response.response);
-                var hasVote = false;
-
-                for (index in plugins) {
-                    if (plugins[index].name == 'vote') {
-                        hasVote = true;
-                    }
-                }
 
                 var router = document.querySelector("app-router");
                 var element = document.createElement("app-route");
 
-                if (hasVote) {
+                this.$.globals.values.plugins = [];
 
-                    this.$.globals.values.plugins = [];
+                for (index in plugins) {
 
-                    var votePlugin = {};
-                    votePlugin.icon = "event";
-                    votePlugin.label = "Vote";
-                    votePlugin.active = "vote";
-                    votePlugin.href = "/#/vote";
-                    this.$.globals.values.plugins.push(votePlugin);
+                    var newPlugin = {};
+                    newPlugin.icon = "event";
+                    newPlugin.label = plugins[index].name;
+                    newPlugin.active = plugins[index].name;
+                    newPlugin.href = "/#/" + plugins[index].name;
+                    this.$.globals.values.plugins.push(newPlugin);
 
                     element = document.createElement("app-route");
-                    element.setAttribute("path", "/vote");
-                    element.setAttribute("import", "/plugins/vote/vote-plugin.html");
+                    element.setAttribute("path", "/" + plugins[index].name);
+                    element.setAttribute("import", "/plugins/" + plugins[index].name + "/" + plugins[index].name + "-plugin.html");
                     console.log(router.lastElementChild);
                     router.insertBefore(element, router.lastElementChild);
-
-                    element = document.createElement("app-route");
-                    var link = document.createElement('link');
-                    link.rel = 'import';
-                    link.href = 'plugins/vote/vote-wrapper.html';
-                    document.head.appendChild(link);
                 }
 
                 element = document.createElement("app-route");
@@ -81,19 +68,10 @@
 <script>
     window.onload = function() {
         var router = document.querySelector("app-router");
-//        var element = document.createElement("app-route");
-//        element.setAttribute("path", "/vote");
-//        element.setAttribute("import", "/plugins/vote/vote-plugin.html");
-//        console.log(router.lastElementChild);
-//        router.insertBefore(element, router.lastElementChild);
 
         if(!router.activeRoute) {
             router.go(window.location.hash.substring(1));
         }
-//        var link = document.createElement('link');
-//        link.rel = 'import';
-//        link.href = 'plugins/vote/vote-wrapper.html';
-//        document.head.appendChild(link);
     }
 </script>
 </body>

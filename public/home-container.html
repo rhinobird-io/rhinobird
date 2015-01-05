@@ -59,10 +59,6 @@
                     <template repeat="{{plugin in $.globals.values.plugins}}">
                         <core-item icon="{{plugin.icon}}" label="{{plugin.label}}" active?="{{selected == plugin.active}}"><a is="pushstate-anchor" href="{{plugin.href}}"></a></core-item>
                     </template>
-                    <!--<core-item icon="event" label="Vote" active?="{{selected == 'vote'}}"><a is="pushstate-anchor" href="../#/home/vote"></a></core-item>-->
-                    <!--<template id="plugin_menu" repeat="{{plugin in plugins}}">-->
-                    <!--<core-item icon="{{plugin.icon}}" label="{{plugin.label}}" name="{{plugin.name}}" active?="{{selected == plugin.active}}"><a is="pushstate-anchor" href="{{plugin.href}}"></a></core-item>-->
-                    <!--</template>-->
                 </core-menu>
             </core-header-panel>
             <div tool>
@@ -92,7 +88,6 @@
                     <paper-dropdown class="dropdown" halign="right" style="color:#000;">
                         <core-menu class="menu">
                             <paper-input label="Search plugin"></paper-input>
-                            <paper-item>Vote</paper-item>
                             <paper-item>Questionnaire</paper-item>
                             <paper-item>Brain Writing</paper-item>
                         </core-menu>
@@ -107,16 +102,6 @@
     <script>
         Polymer("home-container", {
             ready : function() {
-//                this.plugins = [];
-//
-//                if (this.$.globals.values.hasVote) {
-//                    var votePlugin = {};
-//                    votePlugin.icon = "event";
-//                    votePlugin.label = "Vote";
-//                    votePlugin.active = "vote";
-//                    votePlugin.href = "/#/vote";
-//                    this.plugins.push(votePlugin);
-//                }
 
                 if (this.$.globals.values.currentUser) {
                     this.currentUser = this.$.globals.values.currentUser;
