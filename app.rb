@@ -37,6 +37,13 @@ class App < Sinatra::Base
     end
   end
 
+  namespace '/home' do
+    get '*' do
+      content_type 'text/html'
+      send_file File.join(settings.public_folder, 'index.html')
+    end
+  end
+
   namespace '/developer' do
 
     get '/?' do
@@ -51,7 +58,9 @@ class App < Sinatra::Base
       # Plugin start run a new process and we need to kill it manually.
       # To avoid development trouble, disable it currently
       # When we want to test the running plugin, uncomment it
-      #plugin.start
+      p "start plugin"
+      plugin.start
+      p "started plugin"
       plugin.to_json
     end
 
@@ -94,6 +103,27 @@ class App < Sinatra::Base
       User.create!(@body)
     end
 
+    get '/teams_users' do
+      result = []
+      team = Team.all.to_json
+      JSON.parse(team).each do |t|
+        org = {}
+        user = Team.find(t["id"]).users.to_json
+        # members = []
+        # JSON.parse(user).each do |u|
+        #   member = {}
+        #   member["id"] = u["id"]
+        #   member["name"] = u["name"]
+        #   member["realname"] = u["realname"]
+        #   members.push(member)
+        # end
+        org["name"] = t["name"]
+        org["users"] = user
+        result.push(org)
+      end
+      result.to_json
+    end
+
     #get all team the user attend
     get '/users/:userId/teams' do
       User.find(params[:userId]).teams.to_json
@@ -105,6 +135,15 @@ class App < Sinatra::Base
 
     post '/users/:userId/dashboard_records' do
       User.find(params[:userId]).dashboard_records.create!(@body)
+    end
+
+    post '/users/dashboard_records' do
+      users = @body["users"]
+      content =@body["content"]
+      users.each do |user|
+        record = User.find(user).dashboard_records.create!(content)
+      end
+      200
     end
 
     # start the server if ruby file executed directly

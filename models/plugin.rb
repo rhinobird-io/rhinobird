@@ -3,6 +3,7 @@ class Plugin < ActiveRecord::Base
   require 'fileutils'
   require 'uuid'
   PLUGIN_DIR = 'plugins'
+  PUBLIC_PLUGINS = 'public/plugins'
 
   validates :name, presence: true, uniqueness: true
 
@@ -22,12 +23,17 @@ class Plugin < ActiveRecord::Base
       raise 'Plugin dir already exists!'
     end
     FileUtils.mv(dir, File.join(PLUGIN_DIR, name))
+    FileUtils.mkdir_p(File.join(PUBLIC_PLUGINS, name))
+    Dir[File.join(PLUGIN_DIR, name, "assets", "*")].each do |f|
+
+      FileUtils.mv(f, File.join(PUBLIC_PLUGINS, name))
+    end
     self.new(config)
   end
 
   def start
     dir = File.join(PLUGIN_DIR, self.name)
-    pid = spawn("ruby #{File.join(dir, 'app.rb')}", out: "#{File.join(dir, 'out.log')}", err: "#{File.join(dir, 'err.log')}")
+    pid = spawn("cd #{dir} && ruby app.rb", out: "#{File.join(dir, 'out.log')}", err: "#{File.join(dir, 'err.log')}")
     Process.detach(pid)
   end
 end
