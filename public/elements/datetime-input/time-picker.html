@@ -1,0 +1,25 @@
+<link rel="import" href="../../bower_components/md-timepicker/md-timepicker.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+
+<polymer-element name="time-picker" attributes="value">
+    <template>
+        <paper-dialog id="timeDialog">
+            <md-timepicker id="timePicker" on-time-selected="{{timeSelected}}"></md-timepicker>
+        </paper-dialog>
+    </template>
+    <script>
+        Polymer({
+            value: "00:00",
+            timeSelected : function(event, detail, target){
+                this.value = detail.time;
+                this.$.timeDialog.toggle();
+            },
+            open: function(){
+                this.$.timePicker.hours = this.value.substring(0, 2);
+                this.$.timePicker.minutes = this.value.substring(3);
+                this.$.timePicker.selectHours();
+                this.$.timeDialog.toggle();
+            }
+        });
+    </script>
+</polymer-element>

@@ -1,0 +1,40 @@
+<link rel="import" href="../../bower_components/paper-input/paper-input-decorator.html">
+<link rel="import" href="../../bower_components/polymer-filters/polymer-filters.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="time-picker.html">
+
+
+<polymer-element name="time-input" attributes="date label">
+    <template>
+        <style>
+            .time{
+                position: relative;
+                cursor: pointer;
+            }
+            .time div{
+                color: #4285f4;
+            }
+
+            paper-icon-button {
+                font-size: 9px;
+            }
+        </style>
+        <paper-input-decorator floatingLabel label="{{label}}">
+            <div layout horizontal>
+                <div class="time" on-tap="{{openTimeDialog}}">
+                    <div>{{time}}</div>
+                    <paper-ripple fit></paper-ripple>
+                </div>
+            </div>
+        </paper-input-decorator>
+        <time-picker id="timeDialog" value="{{time}}"></time-picker>
+    </template>
+    <script>
+        Polymer({
+            time: "08:30",
+            openTimeDialog: function(){
+                this.$.timeDialog.open();
+            }
+        });
+    </script>
+</polymer-element>

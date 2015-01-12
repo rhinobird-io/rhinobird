@@ -1,0 +1,36 @@
+<link rel="import" href="../../bower_components/paper-input/paper-input-decorator.html">
+<link rel="import" href="../../bower_components/polymer-filters/polymer-filters.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../../bower_components/paper-date-picker/paper-date-picker-dialog.html">
+
+
+<polymer-element name="date-input" attributes="date label">
+    <template>
+        <style>
+            .date{
+                position: relative;
+                cursor: pointer;
+            }
+            .date div{
+                color: #4285f4;
+            }
+        </style>
+        <paper-input-decorator floatingLabel label="{{label}}">
+            <div layout horizontal>
+                <div class="date" on-tap="{{openDateDialog}}">
+                    <div>{{date | date('yyyy-MM-dd')}}</div>
+                    <paper-ripple fit></paper-ripple>
+                </div>
+            </div>
+        </paper-input-decorator>
+        <paper-date-picker-dialog id="dateDialog" value="{{date}}"></paper-date-picker-dialog>
+    </template>
+    <script>
+        Polymer({
+            date: new Date(),
+            openDateDialog: function(){
+                this.$.dateDialog.open();
+            }
+        });
+    </script>
+</polymer-element>
