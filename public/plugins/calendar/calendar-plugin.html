@@ -9,94 +9,109 @@
 <link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../../bower_components/core-pages/core-pages.html">
+<link rel="import" href="../../bower_components/core-style/core-style.html">
+
+<core-style id="calendar">
+        paper-tabs::shadow #selectionBar{
+            background-color: {{g.theme.accentBgColor}};
+        }
+        paper-tabs paper-tab::shadow #ink {
+            color: {{g.theme.accentBgColor}};
+        }
+        paper-toggle-button::shadow #toggleBar[checked], paper-toggle-button::shadow paper-radio-button::shadow #onRadio {
+            background-color: {{g.theme.accentBgColor}};
+        }
+        :host {
+            background-color: white;
+        }
+        div.container {
+            padding: 1em;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        div.timeline {
+            position: relative;
+            padding: 2em 0;
+            margin-top: 2em;
+            margin-bottom: 2em;
+        }
+
+        paper-fab {
+            background-color: {{g.theme.mainBgColor}};
+        }
+        div.timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 18px;
+            height: 100%;
+            width: 4px;
+            background-color: {{g.theme.thirdBgColor}};
+        }
+
+        paper-shadow.content {
+            margin-left: 40px;
+            border-radius: 0.25em;
+            padding: 16px;
+            cursor: pointer;
+        }
+
+        paper-shadow.content::shadow div#shadow-top::before {
+            content: '';
+            position: absolute;
+            top: 16px;
+            right: 100%;
+            height: 0;
+            width: 0;
+            border: 7px solid black;
+            border-color: transparent transparent white white;
+            box-shadow: -1px 1px 1px 0 rgba(0, 0, 0, 0.26);
+            transform-origin: 14px 14px;
+            transform: rotate(45deg);
+        }
+
+        paper-shadow.content h2 {
+            margin-top: 0;
+        }
+
+        .block {
+            position: relative;
+            margin: 2em 0;
+        }
+
+        p.time {
+            color: grey;
+        }
+
+        p.description {
+            margin-bottom: 0;
+        }
+
+        div.detail {
+            padding: 60px;
+            overflow-y: auto;
+        }
+
+        .main-button {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 10000;
+        }
+
+        .tabs, .pages, .fullday {
+            max-width: 150px;
+        }
+
+        .fullday {
+            margin: 1em 0;
+        }
+</core-style>
 
 <polymer-element name="schedule-list">
     <template>
-        <style>
-            paper-fab.event {
-                background-color: #75ce66;
-            }
-
-            div.container {
-                padding: 1em;
-                overflow-y: auto;
-                overflow-x: hidden;
-
-            }
-
-            div.timeline {
-                position: relative;
-                padding: 2em 0;
-                margin-top: 2em;
-                margin-bottom: 2em;
-            }
-
-            div.timeline::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 18px;
-                height: 100%;
-                width: 4px;
-                background: #d7e4ed;
-            }
-
-            paper-shadow.content {
-                margin-left: 40px;
-                background-color: #87ceeb;
-                border-radius: 0.25em;
-                padding: 16px;
-                cursor: pointer;
-            }
-
-            paper-shadow.content::shadow div#shadow-top::before {
-                content: '';
-                position: absolute;
-                top: 16px;
-                right: 100%;
-                height: 0;
-                width: 0;
-                border: 7px solid black;
-                border-color: transparent transparent #87ceeb #87ceeb;
-                box-shadow: -1px 1px 1px 0 rgba(0, 0, 0, 0.26);
-                transform-origin: 14px 14px;
-                transform: rotate(45deg);
-            }
-
-            paper-shadow.content h2 {
-                margin-top: 0;
-            }
-
-            .block {
-                position: relative;
-                margin: 2em 0;
-            }
-
-            p.time {
-                color: grey;
-            }
-
-            p.description {
-                margin-bottom: 0;
-            }
-
-            div.detail {
-                background-color: #87ceeb;
-                padding: 60px;
-                overflow-y: auto;
-            }
-
-            .main-button {
-                position: absolute;
-                top: 8px;
-                left: 8px;
-                z-index: 10000;
-            }
-
-            .tabs, .pages, .fullday{
-                max-width: 150px;
-            }
-        </style>
+        <core-style ref="calendar"></core-style>
         <core-animated-pages selected="0" transitions="hero-transition cross-fade-all" id="pages" flex>
             <section>
                 <div class="container" fit>
@@ -104,7 +119,8 @@
                         <template repeat="{{event, index in events}}">
                             <div layout horizontal class="block">
                                 <div>
-                                    <paper-fab mini icon="event" class="event" on-tap="{{select}}"></paper-fab>
+                                    <paper-fab mini icon="event" class="event"
+                                               on-tap="{{select}}"></paper-fab>
                                 </div>
                                 <div hero hero-id="{{event.id}}">
                                     <paper-shadow z="1" class="content" on-tap="{{select}}">
@@ -155,7 +171,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <div  layout horizontal justified end>
+                                    <div layout horizontal justified end>
                                         <date-input label="Date"></date-input>
                                         <template if="{{!fullDay}}">
                                             <time-input label="Time"></time-input>
@@ -209,8 +225,8 @@
             selectes: {},
             select: function (event, detail, target) {
                 this.selected = target.templateInstance.model.event;
-                var self=this;
-                setTimeout(function(){
+                var self = this;
+                setTimeout(function () {
                     self.$.autogrowArea.update(self.$.textArea);
                     self.$.decorator.updateLabelVisibility(self.$.textArea.value);
                     self.$.pages.selected = 1;
@@ -242,11 +258,6 @@
                 height: 100%;
                 width: 4px;
                 background: #d7e4ed;
-            }
-
-            .view {
-                font-size: 250px;
-                background-color: tomato;
             }
         </style>
         <home-container>
