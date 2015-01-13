@@ -8,6 +8,7 @@
 <link rel="import" href="../../bower_components/paper-input/paper-input-decorator.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
+<link rel="import" href="member-element.html">
 
 <script src="../../bower_components/lodash/dist/lodash.min.js"></script>
 
@@ -66,11 +67,11 @@
 
         <div vertical layout>
             <div>
-                <paper-input-decorator>
+                <paper-input-decorator label="Members" floatingLabel labelVisible="{{_labelVisible}}">
                     <div horizontal layout end>
                         <template repeat="{{ u in selected}}">
                             <div horizontal layout center>
-                                <member-element user_id="u.id"><member-element></member-element>
+                                <member-element userid="{{u.id}}"></member-element>
                                 <core-icon class="small" icon="clear" on-click="{{ removeUserHandler }}"></core-icon>
                             </div>
                         </template>
@@ -101,6 +102,9 @@
 
 
         Polymer({
+            computed: {
+                _labelVisible: 'selected.length === 0 && !isShowMenu'
+            },
             ready: function () {
                 this.teams = this.teams || [];
                 this._ = _;
@@ -201,9 +205,6 @@
 
             showMenu: function () {
                 this.isShowMenu = true;
-                var ul = this.$['input-div'].querySelector('ul');
-                var paddingLeft = window.getComputedStyle(ul)['padding-left'];
-                this.$.menu.style['margin-left'] = paddingLeft;
             },
 
             hideMenu: function (event, detail, sender) {
