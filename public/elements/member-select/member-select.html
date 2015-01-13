@@ -54,6 +54,10 @@
             .item {
                 cursor: pointer;
             }
+
+            .item.team {
+                margin-left: 18px;
+            }
             .badge{
                 background-color: #C5CAE9;
                 padding: 2px;
@@ -89,7 +93,7 @@
                     <core-selector id="selector" selected="0" excludedLocalNames="label">
                         <label class="block">Teams</label>
                         <template repeat="{{ t in filterTeam(teams, selected, searchText, changeFlag)}}">
-                            <div style="margin-left: 20px" class="item" on-tap="{{addTeamHandler}}">
+                            <div class="item team" on-tap="{{addTeamHandler}}">
                                 {{t.name}}
                                 <!--<paper-item id="team_{{t.name}}" team hidden?="{{!!teamSelectedMap[t.name]}}" on-click="{{ addTeamHandler }}">{{t.name}}</paper-item>-->
                             </div>
