@@ -34,5 +34,25 @@
         "realname" : "Joe"
       }
     ]
+  },
+  {
+    "name": "CWS1",
+    "users" : [
+      {
+        "id" : 7,
+        "name": "curry1",
+        "realname" : "Curry1"
+      },
+      {
+        "id" : 123,
+        "name": "tim1",
+        "realname" : "Tim1"
+      },
+      {
+        "id" : 3463,
+        "name": "joe11",
+        "realname" : "Joe1"
+      }
+    ]
   }
 ]
