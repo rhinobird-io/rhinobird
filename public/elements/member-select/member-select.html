@@ -214,12 +214,14 @@
                 var self = this;
                 setTimeout(function () {
                     var selectedItem = self.$.selector.selectedItem;
-                    var parent = selectedItem.parentElement.parentElement;
-                    var parentRect = selectedItem.parentElement.parentElement.getBoundingClientRect();
-                    var itemRect = selectedItem.getBoundingClientRect();
-                    var invisible = (parentRect.top + parentRect.height) < itemRect.top + itemRect.height || (parentRect.top > itemRect.top);
-                    if (invisible) {
-                        selectedItem.scrollIntoView(isUp);
+                    if (selectedItem) {
+                        var parent = selectedItem.parentElement.parentElement;
+                        var parentRect = selectedItem.parentElement.parentElement.getBoundingClientRect();
+                        var itemRect = selectedItem.getBoundingClientRect();
+                        var invisible = (parentRect.top + parentRect.height) < itemRect.top + itemRect.height || (parentRect.top > itemRect.top);
+                        if (invisible) {
+                            selectedItem.scrollIntoView(isUp);
+                        }
                     }
                 }, 0);
             },
