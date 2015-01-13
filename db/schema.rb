@@ -11,13 +11,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141223061636) do
+ActiveRecord::Schema.define(version: 20150109100541) do
 
   create_table "dashboard_records", force: true do |t|
     t.integer  "user_id"
-    t.text     "content",    null: false
+    t.text     "content",      null: false
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "from_user_id"
   end
 
   add_index "dashboard_records", ["user_id"], name: "index_dashboard_records_on_user_id"
