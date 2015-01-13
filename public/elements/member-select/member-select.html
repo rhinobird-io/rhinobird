@@ -5,7 +5,9 @@
 
 
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input-decorator.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
 
 <script src="../../bower_components/lodash/dist/lodash.min.js"></script>
 
@@ -34,18 +36,13 @@
             }
 
             #menu {
-                border-style: solid;
-                border: white;
-                background-color: white;
                 -moz-border-radius: 5px;
                 -webkit-border-radius: 5px;
                 position: absolute;
-                z-index: 1;
                 width: 300px;
                 min-height: 100px;
-                max-height: 200px;
-                overflow-y: auto;
                 padding: 10px 10px 10px 10px;
+                background-color: lightblue;
             }
 
             #menu paper-item /deep/ * {
@@ -56,34 +53,46 @@
                 padding: 0px;
             }
 
+            #menu div{
+                overflow-y: auto;
+                max-height: 200px;
+            }
+            core-icon.small{
+                height: 1.1em;
+                width: 1.1em;
+                cursor: pointer;
+            }
         </style>
 
         <div vertical layout>
-            <div id="input-div">
-                <ul>
-                    <template repeat="{{ u in selected}}">
-                        <li ><paper-item  style="display: inline-block;">{{u.realname}}
-                            <core-icon icon="clear" on-click="{{ removeUserHandler }}"></core-icon>
-                        </paper-item></li>
-                    </template>
-                    <li>
-                        <paper-input value="{{searchText}}" on-keydown="{{ doFilter }}" on-focus="{{ showMenu }}" on-blur="{{ hideMenu }}"/>
-                    </li>
-                </ul>
+            <div>
+                <paper-input-decorator>
+                    <div horizontal layout end>
+                        <template repeat="{{ u in selected}}">
+                            <div horizontal layout center>
+                                <member-element user_id="u.id"><member-element></member-element>
+                                <core-icon class="small" icon="clear" on-click="{{ removeUserHandler }}"></core-icon>
+                            </div>
+                        </template>
+                        <input is="core-input" value="{{searchText}}" on-keydown="{{ doFilter }}" on-focus="{{ showMenu }}" on-blur="{{ hideMenu }}">
+                    </div>
+                </paper-input-decorator>
             </div>
-            <div id="menu" hidden?="{{ !isShowMenu }}">
-                <ul id="filteredTeams">
-                    <template repeat="{{ t in filteredTeams}}">
-                        <paper-item id="team_{{t.name}}" team hidden?="{{!!teamSelectedMap[t.name]}}" on-click="{{ addTeamHandler }}">{{t.name}}</paper-item>
-                    </template>
-                </ul>
+            <paper-shadow z="1" id="menu" hidden?="{{ !isShowMenu }}">
+                <div>
+                    <ul id="filteredTeams">
+                        <template repeat="{{ t in filteredTeams}}">
+                            <paper-item id="team_{{t.name}}" team hidden?="{{!!teamSelectedMap[t.name]}}" on-click="{{ addTeamHandler }}">{{t.name}}</paper-item>
+                        </template>
+                    </ul>
 
-                <ul id="filteredUsers">
-                    <template repeat="{{ u in filteredUsers}}">
-                        <paper-item id="user_{{u.name}}" user hidden?="{{!!userSelectedMap[u.name]}}" on-click="{{ addUserHandler }}">{{ u.realname }}</paper-item>
-                    </template>
-                </ul>
-            </div>
+                    <ul id="filteredUsers">
+                        <template repeat="{{ u in filteredUsers}}">
+                            <paper-item id="user_{{u.name}}" user hidden?="{{!!userSelectedMap[u.name]}}" on-click="{{ addUserHandler }}">{{ u.realname }}</paper-item>
+                        </template>
+                    </ul>
+                </div>
+            </paper-shadow>
         </div>
 
 
