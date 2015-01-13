@@ -11,8 +11,6 @@
 <link rel="import" href="../../bower_components/core-selector/core-selector.html">
 <link rel="import" href="member-element.html">
 
-<script src="../../bower_components/lodash/dist/lodash.min.js"></script>
-
 <polymer-element name="member-select" attributes="teamsUrl selected">
     <template>
         <core-ajax url="{{teamsUrl}}" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>
@@ -173,7 +171,6 @@
             },
             ready: function () {
                 this.teams = this.teams || [];
-                this._ = _;
                 this.searchText = '';
                 this.isShowMenu = false;
                 this.userSelectedMap = {};
