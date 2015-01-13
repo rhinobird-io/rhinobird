@@ -202,7 +202,9 @@
                         var user = this.selected[this.selected.length - 1];
                         this.removeOneUser(user);
                     }
-
+                } else {
+                    this.$.selector.selected = 0;
+                    this.$.selector.parentElement.scrollTop = 0;
                 }
             },
 
