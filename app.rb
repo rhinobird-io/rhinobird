@@ -144,24 +144,7 @@ class App < Sinatra::Base
     end
 
     get '/teams_users' do
-      result = []
-      team = Team.all.to_json
-      JSON.parse(team).each do |t|
-        org = {}
-        user = Team.find(t["id"]).users.to_json
-        # members = []
-        # JSON.parse(user).each do |u|
-        #   member = {}
-        #   member["id"] = u["id"]
-        #   member["name"] = u["name"]
-        #   member["realname"] = u["realname"]
-        #   members.push(member)
-        # end
-        org["name"] = t["name"]
-        org["users"] = user
-        result.push(org)
-      end
-      result.to_json
+      Team.all.to_json(include: [:users]);
     end
 
     #get all team the user attend
