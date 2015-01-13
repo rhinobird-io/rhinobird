@@ -7,9 +7,11 @@
             .element {
                 color: dimgrey;
             }
+
             :host.small {
                 font-size: small;
             }
+
             img {
                 width: 1em;
                 height: 1em;
@@ -20,7 +22,7 @@
                    handleAs="json"
                    on-core-response="{{handleResponse}}"></core-ajax>
         <div class="element" horizontal layout center>
-            <img src="{{gravatar.url}}?d=identicon&s=20"/> <span style="margin: 2px">{{gravatar.username}}</span>
+            <img id="image"/> <span style="margin: 2px">{{gravatar.username}}</span>
         </div>
 
     </template>
@@ -34,6 +36,8 @@
                     this.gravatar = memberCache[newValue];
                     if (!this.gravatar) {
                         this.$.getGravatar.go();
+                    } else {
+                        this.$.image.src = this.gravatar.url + "?d=identicon&s=20";
                     }
                 }
 
@@ -41,6 +45,7 @@
             handleResponse: function (event, detail, target) {
                 this.gravatar = detail.response;
                 memberCache[this.user_id] = detail.response;
+                this.$.image.src = this.gravatar.url + "?d=identicon&s=20";
             }
         });
     </script>
