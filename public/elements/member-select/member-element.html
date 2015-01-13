@@ -10,16 +10,27 @@
             }
         </style>
         <core-ajax id="getGravatar"
-                   auto
                    url="/platform/gravatar/{{user_id}}"
                    handleAs="json"
-                   response="{{gravatar}}"></core-ajax>
+                   on-core-response="{{handleResponse}}"></core-ajax>
         <div class="element" horizontal layout center>
             <img src="{{gravatar.url}}?d=identicon&s=20" />  <span style="margin: 2px">{{gravatar.username}}</span>
         </div>
 
     </template>
     <script>
-        Polymer();
+        var memberCache = {};
+        Polymer({
+            domReady: function() {
+                this.gravatar = memberCache[this.user_id];
+                if(!this.gravatar){
+                    this.$.getGravatar.go();
+                }
+            },
+            handleResponse: function(event, detail, target) {
+                this.gravatar = detail.response;
+                memberCache[this.user_id] = detail.response;
+            }
+        });
     </script>
 </polymer-element>
