@@ -12,7 +12,7 @@
                 cursor: pointer;
             }
         </style>
-        <paper-input-decorator floatingLabel label="{{label}}">
+        <paper-input-decorator floatingLabel label="{{label}}" disabled="{{disabled}}">
             <div layout horizontal>
                 <div class="date" on-tap="{{openDateDialog}}">
                     <div>{{date | date('yyyy-MM-dd')}}</div>
