@@ -201,7 +201,7 @@
 
                 if (!(event && event.relatedTarget && event.relatedTarget.parentElement && event.relatedTarget.parentElement.parentElement && event.relatedTarget.parentElement.parentElement.id === this.$.menu.id)) {
                     this.isShowMenu = false;
-                    this.selectedIndex = -1;
+                    this.selecteteamsdIndex = -1;
                 }
             },
 
@@ -212,7 +212,6 @@
                 this.usersNameMap = {};
                 this.users = [];
                 this.teams.forEach(function (t) {
-                    t.users = JSON.parse(t.users);
                     t.users.forEach(function (u, idx) {
                         if (!this.usersNameMap[u.name]) {
                             this.usersNameMap[u.name] = u;
