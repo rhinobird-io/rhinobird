@@ -6,6 +6,7 @@ require './models/team.rb'
 require './models/user.rb'
 require './models/users_teams.rb'
 require './models/dashboard_record'
+require 'gravatar-ultimate'
 
 class App < Sinatra::Base
 
@@ -74,6 +75,16 @@ class App < Sinatra::Base
   end
 
   namespace '/platform' do
+
+    #gravatar related
+    get '/gravatar/:userId' do
+      user = User.find(params[:userId])
+      gravatar = {}
+      gravatar["url"] = Gravatar.new(user.email).image_url
+      gravatar["username"] = user.realname
+      gravatar.to_json
+    end
+
     get '/teams' do
       Team.all.to_json
     end
@@ -93,6 +104,35 @@ class App < Sinatra::Base
       user = User.find(params[:userId])
       team.users << user
       200
+    end
+
+    post '/login' do
+      session[:user] = nil
+      user = User.where(email: @body["email"], encrypted_password: @body["password"]).first
+      if user.nil?
+        401
+      end
+
+      session[:user] = { :id => user.read_attribute("id") }
+      user.to_json
+    end
+
+    post '/logout' do
+      session[:user] = nil
+    end
+
+    get '/loggedOnUser' do
+      if session[:user].nil?
+        404
+      else
+        User.find(session[:user][:id]).to_json
+      end
+    end
+
+    get '/profile' do
+      profile = {}
+      profile["user"] = User.find(session[:user][:id])
+
     end
 
     get '/users' do
@@ -140,6 +180,7 @@ class App < Sinatra::Base
     post '/users/dashboard_records' do
       users = @body["users"]
       content =@body["content"]
+      content["from_user_id"] = session[:user][:id]
       users.each do |user|
         record = User.find(user).dashboard_records.create!(content)
       end
