@@ -58,13 +58,15 @@
             .item.team {
                 margin-left: 18px;
             }
-            .badge{
+
+            .badge {
                 background-color: #C5CAE9;
                 padding: 2px;
                 border-radius: 0.25em;
                 border: 1px solid #C5CAE9;
                 margin-right: 4px;
             }
+
             .block {
                 display: block;
                 font-weight: bold;
@@ -183,14 +185,12 @@
 
                     if (event.keyCode === 38) {
                         this.$.selector.selectPrevious(true);
+                        this.fixScroll(true);
                     } else {
                         this.$.selector.selectNext(true);
+                        this.fixScroll(false);
                     }
 
-                    var self = this;
-                    setTimeout(function () {
-                        self.fixScroll();
-                    }, 0);
 
                 } else if (event.keyCode === 13) {
                     if (this.$.selector.selectedModel.t) {
@@ -210,9 +210,18 @@
             /**
              * make the selected item can be seen
              */
-            fixScroll: function () {
-                var selectedItem = this.$.selector.selectedItem;
-                selectedItem.scrollIntoView(false);
+            fixScroll: function (isUp) {
+                var self = this;
+                setTimeout(function () {
+                    var selectedItem = self.$.selector.selectedItem;
+                    var parent = selectedItem.parentElement.parentElement;
+                    var parentRect = selectedItem.parentElement.parentElement.getBoundingClientRect();
+                    var itemRect = selectedItem.getBoundingClientRect();
+                    var invisible = (parentRect.top + parentRect.height) < itemRect.top + itemRect.height || (parentRect.top > itemRect.top);
+                    if (invisible) {
+                        selectedItem.scrollIntoView(isUp);
+                    }
+                }, 0);
             },
 
             showMenu: function () {
