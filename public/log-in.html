@@ -1,0 +1,95 @@
+<link rel="import" href="bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="elements/app-globals/app-globals.html">
+<link rel="import" href="bower_components/paper-input/paper-input.html">
+<link rel="import" href="bower_components/paper-button/paper-button.html">
+<link rel="import" href="bower_components/paper-toast/paper-toast.html">
+
+<polymer-element name="sign-in">
+    <template>
+        <style>
+            .signIn {
+                width: 400px;
+                height: 200px;
+                background: transparent;
+            }
+        </style>
+        <core-ajax
+                id="signInAjax"
+                method="post"
+                contentType="application/json"
+                url="/platform/login"
+                body="{{userJson}}"
+                on-core-response="{{signInResponse}}"
+                on-core-error="{{showError}}"></core-ajax>
+        <div class="signIn" layout vertical>
+            <paper-input id="email" label="Email" value="{{userInfo.email}}"></paper-input>
+            <paper-input id="password" label="Password" value="{{userInfo.password}}"></paper-input>
+            <paper-button id="signInBtn" raised on-tap="{{signIn}}">Sign In</paper-button>
+        </div>
+        <app-globals id="globals"></app-globals>
+        <paper-toast id="toastLoginFail" text="Login failed, please check your credential." role="status" touch-action="none" tabindex="-1" class="core-transition core-transition-bottom" style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
+    </template>
+    <script>
+        Polymer("sign-in", {
+
+            ready: function() {
+                this.userInfo = {};
+            },
+
+            signIn: function() {
+                this.userJson = JSON.stringify(this.userInfo);
+                this.$.signInAjax.go();
+            },
+
+            signInResponse: function(event, response) {
+                user = JSON.parse(response.response);
+                this.$.globals.values.currentUser = user;
+                document.querySelector('app-router').go('/dashboard');
+            },
+
+            showError: function() {
+                this.$.toastLoginFail.show();
+            }
+        })
+    </script>
+</polymer-element>
+
+<polymer-element name="sign-up">
+    <template>
+        <style>
+            .signUp {
+                width: 400px;
+                height: 400px;
+                background: transparent;
+            }
+        </style>
+        <core-ajax
+                id="signUpAjax"
+                method="post"
+                contentType="application/json"
+                url="/platform/users"
+                on-core-response="{{signUpResponse}}"></core-ajax>
+        <div class="signUp" layout vertical>
+            <paper-input id="name" label="Name"></paper-input>
+            <paper-input id="realname" label="RealName"></paper-input>
+            <paper-input id="email" label="Email"></paper-input>
+            <paper-input id="password" label="Password"></paper-input>
+            <paper-button id="signUpBtn" raised on-tap="{{signUp}}">Sign Up</paper-button>
+        </div>
+        <app-globals id="globals"></app-globals>
+    </template>
+    <script>
+        Polymer("sign-up", {
+            signUp: function() {
+                this.$.signUpAjax.go();
+            }
+        })
+    </script>
+</polymer-element>
+
+<polymer-element name="log-in" noscript>
+    <template>
+        <sign-in></sign-in>
+        <sign-up></sign-up>
+    </template>
+</polymer-element>

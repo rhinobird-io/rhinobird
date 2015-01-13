@@ -16,6 +16,10 @@ class App < Sinatra::Base
   set :show_exceptions, :after_handler
   set :bind, '0.0.0.0'
 
+  use Rack::Session::Cookie, :key => 'rack.session',
+      :path => '/',
+      :secret => 'secret'
+
   I18n.config.enforce_available_locales = true
 
   error ActiveRecord::RecordInvalid do
@@ -28,7 +32,12 @@ class App < Sinatra::Base
     send_file File.join(settings.public_folder, 'index.html')
   end
 
+  def login_required!
+    halt 401 if session[:user].nil?
+  end
+
   before do
+    login_required! unless ["/platform/login", "/platform/signup", "/platform/loggedOnUser"].include?(request.path_info)
     content_type 'application/json'
     if request.media_type == 'application/json'
       body = request.body.read

@@ -41,7 +41,7 @@
             paper-dropdown-menu {
                 border-bottom: none;
             }
-            .user-dropdown-menu /deep/ .core-opened{
+            .userSignIn /deep/ .core-opened{
                 left:auto !important;
                 right: 0;
 
@@ -70,18 +70,43 @@
                         method="GET"
                         url="/platform/users"
                         handleAs="json"
-                        response="{{users}}"
-                        ></core-ajax>
+                        response="{{users}}"></core-ajax>
 
-                <paper-dropdown-menu class='user-dropdown-menu' label="{{userName}}" on-core-select="{{onUserSelect}}">
-                    <paper-dropdown class="dropdown">
-                        <core-menu>
-                            <template repeat="{{users}}">
-                                <paper-item class='user-item'>{{name}}</paper-item>
-                            </template>
-                        </core-menu>
-                    </paper-dropdown>
-                </paper-dropdown-menu>
+                <!--<paper-dropdown-menu class='user-dropdown-menu' label="{{userName}}" on-core-select="{{onUserSelect}}">-->
+                    <!--<paper-dropdown class="dropdown">-->
+                        <!--<core-menu>-->
+                            <!--<template repeat="{{users}}">-->
+                                <!--<paper-item class='user-item'>{{name}}</paper-item>-->
+                            <!--</template>-->
+                        <!--</core-menu>-->
+                    <!--</paper-dropdown>-->
+                <!--</paper-dropdown-menu>-->
+                <div class="userSignIn">
+                    <a href="/#/login" hidden?="{{$.globals.values.currentUser}}" style='padding-top: 20px'>{{userName}}</a>
+                    <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
+                        <paper-button>{{userName}}</paper-button>
+                        <paper-dropdown class="dropdown" halign="left" style="color:#000;" on-core-select="{{onUserInfoSelect}}">
+                            <core-menu class="menu">
+                                <paper-item>Profile</paper-item>
+                                <paper-item>Logout</paper-item>
+                            </core-menu>
+                        </paper-dropdown>
+                    </paper-menu-button>
+                    <core-ajax
+                            id="logoutAjax"
+                            method="post"
+                            contentType="application/json"
+                            url="/platform/logout"
+                            on-core-response="{{logoutCallback}}"></core-ajax>
+                    <core-ajax
+                            id="currentUserAjax"
+                            method="get"
+                            contentType="application/json"
+                            url="/platform/loggedOnUser"
+                            on-core-response="{{currentUserCallback}}"
+                            on-core-error="{{noUserCallback}}"></core-ajax>
+
+                </div>
                 <app-globals id="globals"></app-globals>
                 <paper-menu-button style='padding-top: 20px'>
                     <paper-icon-button icon="apps" noink></paper-icon-button>
@@ -104,18 +129,37 @@
             ready : function() {
 
                 if (this.$.globals.values.currentUser) {
-                    this.currentUser = this.$.globals.values.currentUser;
-                    this.userName = this.currentUser.name;
+                    this.userName = this.$.globals.values.currentUser.name;
                 } else {
-                    this.userName = "Select a user";
+                    this.$.currentUserAjax.go();
                 }
+            },
 
+            currentUserCallback: function(event, response) {
+                this.$.globals.values.currentUser = JSON.parse(response.response);
+                this.userName = this.$.globals.values.currentUser.name;
+            },
+
+            noUserCallback: function() {
+                this.$.globals.values.currentUser = null;
+                this.userName = "Sign In";
             },
 
             onUserSelect : function (event, detail, target){
                 if (detail.isSelected){
                     this.$.globals.values.currentUser = detail.item.templateInstance.model;
                 }
+            },
+
+            onUserInfoSelect: function(event, detail, target) {
+                option = detail.item.textContent;
+                if ("Logout" == option) {
+                    this.$.logoutAjax.go();
+                }
+            },
+
+            logoutCallback: function() {
+                document.querySelector('app-router').go('/login');
             }
         });
     </script>
