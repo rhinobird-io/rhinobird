@@ -6,6 +6,7 @@
 <link rel="import" href="../app-globals/app-globals.html">
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="../../bower_components/core-list/core-list.html">
+<link rel="import" href="../member-select/member-element.html">
 
 <polymer-element name="dashboard-record" attributes="record">
     <template>
@@ -15,17 +16,15 @@
                 color:dimgrey;
             }
         </style>
-        <core-item icon="info">
+        <core-item>
             <div flex>
-                <div class="time">{{record.created_at | date('yyyy-MM-dd HH:mm:ss')}}</div>
+                <div class="time" horizontal layout center><member-element user_id="{{record.from_user_id}}"></member-element> {{record.created_at | date('yyyy-MM-dd HH:mm:ss')}}</div>
                 <div class="content"><html-echo html="{{record.content}}"></html-echo></div>
             </div>
         </core-item>
     </template>
     <script>
-        Polymer({
-
-        });
+        Polymer();
     </script>
 </polymer-element>
 
