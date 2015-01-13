@@ -4,10 +4,10 @@
 <link rel="import" href="time-picker.html">
 
 
-<polymer-element name="time-input" attributes="date label">
+<polymer-element name="time-input" attributes="date label disabled">
     <template>
         <style>
-            .time{
+            .time {
                 position: relative;
                 cursor: pointer;
             }
@@ -20,7 +20,9 @@
             <div layout horizontal>
                 <div class="time" on-tap="{{openTimeDialog}}">
                     <div>{{time}}</div>
-                    <paper-ripple fit></paper-ripple>
+                    <template if="{{!disabled}}">
+                        <paper-ripple fit></paper-ripple>
+                    </template>
                 </div>
             </div>
         </paper-input-decorator>
@@ -29,8 +31,10 @@
     <script>
         Polymer({
             time: "08:30",
-            openTimeDialog: function(){
-                this.$.timeDialog.open();
+            openTimeDialog: function () {
+                if (!this.disabled) {
+                    this.$.timeDialog.open();
+                }
             }
         });
     </script>

@@ -4,10 +4,10 @@
 <link rel="import" href="../../bower_components/paper-date-picker/paper-date-picker-dialog.html">
 
 
-<polymer-element name="date-input" attributes="date label">
+<polymer-element name="date-input" attributes="date label disabled">
     <template>
         <style>
-            .date{
+            .date {
                 position: relative;
                 cursor: pointer;
             }
@@ -16,7 +16,9 @@
             <div layout horizontal>
                 <div class="date" on-tap="{{openDateDialog}}">
                     <div>{{date | date('yyyy-MM-dd')}}</div>
-                    <paper-ripple fit></paper-ripple>
+                    <template if="{{!disabled}}">
+                        <paper-ripple fit></paper-ripple>
+                    </template>
                 </div>
             </div>
         </paper-input-decorator>
@@ -25,8 +27,10 @@
     <script>
         Polymer({
             date: new Date(),
-            openDateDialog: function(){
-                this.$.dateDialog.open();
+            openDateDialog: function () {
+                if (!this.disabled) {
+                    this.$.dateDialog.open();
+                }
             }
         });
     </script>
