@@ -18,25 +18,6 @@
         <core-ajax url="{{teamsUrl}}" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>
 
         <style>
-            .highlight {
-                background-color: #b0ccf2;
-            }
-
-            #input-div li {
-                display: inline;
-            }
-
-            #input-div paper-item {
-                background-color: #87ceeb; /*This one is considerable*/
-                min-width: 0px;
-                -moz-border-radius: 5px;
-                -webkit-border-radius: 5px;
-            }
-
-            #input-div paper-item /deep/ * {
-                padding: 2px 2px 2px 2px;
-            }
-
             #menu {
                 -moz-border-radius: 5px;
                 -webkit-border-radius: 5px;
@@ -44,7 +25,7 @@
                 width: 300px;
                 min-height: 100px;
                 padding: 10px 10px 10px 10px;
-                background-color: lightblue;
+                background-color: #C5CAE9;
             }
 
             #menu paper-item /deep/ * {
@@ -61,8 +42,8 @@
             }
 
             core-icon.small {
-                height: 1.1em;
-                width: 1.1em;
+                height: 1em;
+                width: 1em;
                 cursor: pointer;
             }
 
@@ -73,6 +54,18 @@
             .item {
                 cursor: pointer;
             }
+            .badge{
+                background-color: #C5CAE9;
+                padding: 2px;
+                border-radius: 0.25em;
+                border: 1px solid #C5CAE9;
+                margin-right: 4px;
+            }
+            .block {
+                display: block;
+                font-weight: bold;
+                padding: 0.5em 0;
+            }
         </style>
 
         <div vertical layout>
@@ -80,7 +73,7 @@
                 <paper-input-decorator label="Members" floatingLabel labelVisible="{{_labelVisible}}">
                     <div horizontal layout center wrap>
                         <template repeat="{{ u in selected}}">
-                            <div horizontal layout center>
+                            <div horizontal layout center class="badge">
                                 <member-element userid="{{u.id}}"></member-element>
                                 <core-icon class="small" icon="clear" on-click="{{ removeUserHandler }}"
                                            on-mousedown="{{preventFocus}}"></core-icon>
@@ -94,7 +87,7 @@
             <paper-shadow z="1" id="menu" hidden?="{{ !isShowMenu }}">
                 <div>
                     <core-selector id="selector" selected="0" excludedLocalNames="label">
-                        <label>Teams</label>
+                        <label class="block">Teams</label>
                         <template repeat="{{ t in filterTeam(teams, selected, searchText, changeFlag)}}">
                             <div style="margin-left: 20px" class="item" on-tap="{{addTeamHandler}}">
                                 {{t.name}}
@@ -102,7 +95,7 @@
                             </div>
                         </template>
 
-                        <label>Members</label>
+                        <label class="block">Members</label>
                         <template repeat="{{ u in filterUser(users, selected, searchText, changeFlag)}}">
                             <div on-tap="{{addUserHandler}}" class="item">
                                 <!--<paper-item id="user_{{u.name}}" user hidden?="{{!!userSelectedMap[u.name]}}" on-click="{{  }}">{{ u.realname }}</paper-item>-->
