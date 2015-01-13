@@ -9,6 +9,7 @@ gem 'rubyzip'
 gem 'bcrypt'
 gem 'uuid'
 gem 'sinatra-cross_origin'
+gem 'gravatar-ultimate'
 
 group :development do
   gem 'sqlite3'

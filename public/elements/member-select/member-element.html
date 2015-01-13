@@ -1,0 +1,25 @@
+<link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
+
+
+<polymer-element name="member-element" attributes="user_id">
+    <template>
+        <style>
+            .element {
+                font-size: small;
+                color:dimgrey;
+            }
+        </style>
+        <core-ajax id="getGravatar"
+                   auto
+                   url="/platform/gravatar/{{user_id}}"
+                   handleAs="json"
+                   response="{{gravatar}}"></core-ajax>
+        <div class="element" horizontal layout center>
+            <img src="{{gravatar.url}}?d=identicon&s=20" />  <span style="margin: 2px">{{gravatar.username}}</span>
+        </div>
+
+    </template>
+    <script>
+        Polymer();
+    </script>
+</polymer-element>
