@@ -247,6 +247,17 @@ class App < Sinatra::Base
     get '/users/:userId/events' do
       User.find(params[:userId]).events.order(:from).to_json(include: { participants: {only: :id}})
     end
+
+    post '/events' do
+      uid = session[:user][:id]
+      event = Event.new(@body.except('participants'))
+      @body['participants'].each { |p|
+        event.participants << User.find(p)
+      }
+      event.save!
+      200
+    end
+
     get '/users' do
       User.all.to_json
     end

@@ -123,8 +123,8 @@
     }
 
     paper-fab {
-    position: relative;
-    top: 44px;
+    position: absolute;
+    top: 24px;
     }
 
     .wrapper {
@@ -138,11 +138,16 @@
         <core-style ref="calendar"></core-style>
         <div layout vertical fit>
             <div class="mainColor wrapper">
-                <paper-fab mini icon="add" class="accentColor" on-tap="{{jumpToAdd}}"></paper-fab>
+                <template if="{{mode=='list'}}">
+                    <paper-fab mini icon="add" class="accentColor" on-tap="{{jumpToAdd}}"></paper-fab>
+                </template>
+                <template if="{{mode=='edit'}}">
+                    <paper-fab mini icon="done" class="accentColor" on-tap="{{saveEvent}}"></paper-fab>
+                </template>
                 <span class="subTitle">Schedule</span>
             </div>
             <div flex vertical layout class="list">
-                <core-animated-pages selected="0" transitions="cross-fade-all slide-up" id="pages" flex>
+                <core-animated-pages selected="0" transitions="cross-fade-all" id="pages" flex>
                     <section>
                         <div class="container" fit>
                             <div class="timeline" vertical layout>
@@ -257,11 +262,20 @@
                 url="/platform/users/{{$.globals.values.currentUser.id}}/events"
                 handleAs="json"
                 on-core-response="{{handleEvents}}"></core-ajax>
+        <core-ajax id="postEvent"
+                   url="/platform/events"
+                   method="POST"
+                   body="{{eventBody}}"
+                   contentType="application/json">
+        </core-ajax>
     </template>
     <script src="../../bower_components/moment/moment.js"></script>
     <script>
         Polymer({
-            modeDisabled: true,
+            mode: "list",
+            computed:{
+                modeDisabled: 'mode=="view"'
+            },
             tabSelectedChanged: function (oldV, newV) {
                 this.selected.period = newV == 0;
             },
@@ -288,28 +302,31 @@
             },
             select: function (event, detail, target) {
                 this.selected = target.templateInstance.model.model;
-                this.modeDisabled = true;
                 var self = this;
                 setTimeout(function () {
                     self.$.autogrowArea.update(self.$.textArea);
                     self.$.decorator.updateLabelVisibility(self.$.textArea.value);
                     self.$.pages.selected = 1;
                 }, 100);
-
+                this.mode = 'view';
             },
             main: function () {
                 this.$.pages.selected = 0;
+                this.mode = 'list';
             },
             jumpToAdd: function () {
-                this.selected = {from: new Date(), to: new Date(), participants: [], full_day: false, period: false};
-                this.modeDisabled = false;
+                this.selected = {from: new Date(), to: new Date(), participants: [], full_day: false, period: true};
                 var self = this;
                 setTimeout(function () {
                     self.$.autogrowArea.update(self.$.textArea);
                     self.$.decorator.updateLabelVisibility(self.$.textArea.value);
                     self.$.pages.selected = 1;
                 }, 100);
-                this.modeDisabled = false;
+                this.mode = 'edit';
+            },
+            saveEvent: function(){
+                this.eventBody = JSON.stringify(this.selected);
+                this.$.postEvent.go();
             }
         });
     </script>
