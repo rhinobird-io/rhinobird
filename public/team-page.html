@@ -1,0 +1,43 @@
+<link rel="import" href="home-container.html">
+<link rel="import" href="elements/app-globals/app-globals.html">
+<link rel="import" href="elements/member-select/member-element.html">
+<link rel="import" href="bower_components/core-list/core-list.html">
+
+<polymer-element name="team-element" attributes="team">
+    <template>
+        <core-ajax id="getTeams"
+                   auto
+                   url="/platform/teams/{{team.id}}/users"
+                   handleAs="json"
+                   response="{{users}}"></core-ajax>
+        <template repeat="user in users">
+            <member-element user_id="user.id"></member-element>
+        </template>
+    </template>
+    <script>
+        Polymer();
+    </script>
+</polymer-element>
+
+<polymer-element name="team-page">
+    <template>
+        <home-container selected="team">
+            <div class="title">Team</div>
+            <div>
+                <core-ajax id="getTeams"
+                           auto
+                           url="/platform/teams"
+                           handleAs="json"
+                           response="{{teams}}"></core-ajax>
+                <core-list data="{{teams}}" style="height:400px">
+                    <template>
+                        <core-item><team-element team="{{model}}"></team-element></core-item>
+                    </template>
+                </core-list>
+            </div>
+        </home-container>
+    </template>
+    <script>
+        Polymer();
+    </script>
+</polymer-element>

@@ -1,0 +1,67 @@
+<link rel="import" href="home-container.html">
+<link rel="import" href="elements/app-globals/app-globals.html">
+<link rel="import" href="bower_components/ajax-file-input/ajax-file-input.html">
+
+<polymer-element name="profile-page">
+    <template>
+        <home-container selected="profile">
+            <div class="title">Profile</div>
+            <div vertical layout>
+                <div horizontal layout center>
+                    <div style="width:400px" vertical layout>
+                        <paper-input label="name" floatinglabel value="{{user.name}}"></paper-input>
+                        <paper-input label="realname" floatinglabel value="{{user.realname}}"></paper-input>
+                        <paper-input label="email" floatinglabel value="{{user.email}}"></paper-input>
+                    </div>
+                    <div style="margin-left: 100px">
+                        <core-ajax id="getGravatar"
+                                   auto
+                                   url="/platform/gravatar/{{$.globals.values.currentUser.id}}"
+                                   handleAs="json"
+                                   method="get"
+                                   response="{{gravatar}}"></core-ajax>
+                        <div horizontal layout center>
+                            <p>You can upload an avatar here or change it at <a href="http://gravatar.com" rel="nofollow">gravatar.com</a></p>
+                            <ajax-file-input url="/platform/avatar" on-success="{{avatarUpload}}" style="margin-left: 10px"></ajax-file-input>
+                        </div>
+                        <img src="{{gravatar.url}}?d=identicon" style="margin: 20px"/>
+                    </div>
+                </div>
+                <div style="margin-top: 20px">
+                    <core-ajax id="updateUserAjax"
+                               url="/platform/user/{{$.globals.values.currentUser.id}}"
+                               method="post"
+                               contentType="application/json"
+                               body="{{newUserData}}"
+                               on-core-response="{{updateSuccess}}"></core-ajax>
+                    <paper-button raised on-tap="{{saveProfile}}">Save</paper-button>
+                </div>
+            </div>
+
+
+        </home-container>
+        <app-globals id="globals"></app-globals>
+    </template>
+    <script>
+        Polymer("profile-page", {
+            ready: function() {
+                // clone the user object
+                this.user = JSON.parse(JSON.stringify(this.$.globals.values.currentUser));
+            },
+
+            avatarUpload: function() {
+                this.$.getGravatar.go();
+            },
+
+            saveProfile: function() {
+                if (this.user.name && this.user.realname && this.user.email) {
+                    this.newUserData = JSON.stringify(this.user);
+                    this.$.updateUserAjax.go();
+                    this.$.globals.values.currentUser = this.user;
+                } else {
+                    alert("invalid input");
+                }
+            }
+        });
+    </script>
+</polymer-element>
