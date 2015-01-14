@@ -92,6 +92,24 @@ class App < Sinatra::Base
       gravatar["url"] = Gravatar.new(user.email).image_url
       gravatar["username"] = user.realname
       gravatar.to_json
+      #todo show local uploaded picture
+    end
+
+    get '/avatar/uploaded' do
+      content_type 'image/png'
+      #todo
+    end
+
+    post '/avatar' do
+      tempfile = params[:file][:tempfile]
+      image_data = ""
+      tempfile.readlines.each do |line|
+        image_data = image_data + line
+      end
+      #todo save image to db
+      # p image_data
+      # user = User.find(session[:user][:id])
+
     end
 
     get '/teams' do
@@ -150,6 +168,10 @@ class App < Sinatra::Base
 
     post '/users' do
       User.create!(@body)
+    end
+
+    post '/user/:userId' do
+      User.update(params[:userId], @body)
     end
 
     get '/teams_users' do
