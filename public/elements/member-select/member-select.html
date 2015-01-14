@@ -11,7 +11,7 @@
 <link rel="import" href="../../bower_components/core-selector/core-selector.html">
 <link rel="import" href="member-element.html">
 
-<polymer-element name="member-select" attributes="teamsUrl selected">
+<polymer-element name="member-select" attributes="teamsUrl selected disabled">
     <template>
         <core-ajax url="{{teamsUrl}}" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>
 
@@ -63,21 +63,27 @@
                 font-weight: bold;
                 padding: 0.5em 0;
             }
+            input{
+                min-width: 3em;
+                width: 6em !important;
+            }
         </style>
 
         <div vertical layout>
             <div>
-                <paper-input-decorator label="Members" floatingLabel labelVisible="{{_labelVisible}}">
+                <paper-input-decorator label="Members" floatingLabel labelVisible="{{_labelVisible}}" disabled="{{disabled}}">
                     <div horizontal layout center wrap>
                         <template repeat="{{ u in selected}}">
                             <div horizontal layout center class="badge">
                                 <member-element userid="{{u.id}}"></member-element>
-                                <core-icon class="small" icon="clear" on-click="{{ removeUserHandler }}"
+                                <template if="{{!disabled}}">
+                                    <core-icon class="small" icon="clear" on-click="{{ removeUserHandler }}"
                                            on-mousedown="{{preventFocus}}"></core-icon>
+                                </template>
                             </div>
                         </template>
                         <input is="core-input" value="{{searchText}}" on-keydown="{{ doFilter }}"
-                               on-focus="{{ showMenu }}" on-blur="{{ hideMenu }}">
+                               on-focus="{{ showMenu }}" on-blur="{{ hideMenu }}" disabled?="{{disabled}}">
                     </div>
                 </paper-input-decorator>
             </div>

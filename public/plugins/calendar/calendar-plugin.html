@@ -88,8 +88,7 @@
     padding:8px;
     }
     time-input.upper {
-    position: relative;
-    top: -30px;
+    margin-top: -35px;
     }
     date-input {
     z-index: 1;
@@ -97,7 +96,10 @@
     #title {
         font-size: 25px;
     }
-
+    .page.core-selected {
+        position: relative;
+        display: block;
+    }
 </core-style>
 
 <polymer-element name="schedule-list">
@@ -152,7 +154,7 @@
                                 </paper-tabs>
                             </template>
                             <core-pages selected="{{tabSelected}}" class="pages">
-                                <div>
+                                <div class="page">
                                     <div layout horizontal justified end>
                                         <div layout vertical>
                                             <date-input label="From" disabled="{{modeDisabled}}"></date-input>
@@ -168,7 +170,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div>
+                                <div class="page">
                                     <div layout horizontal justified end>
                                         <date-input label="Date" disabled="{{modeDisabled}}"></date-input>
                                         <template if="{{!fullDay}}">
@@ -177,7 +179,7 @@
                                     </div>
                                 </div>
                             </core-pages>
-                            <!--<member-select teamsUrl="/platform/teams_users"></member-select>-->
+                            <member-select teamsUrl="/platform/teams_users" disabled="{{modeDisabled}}"></member-select>
                         </div>
                     </div>
                 </div>
