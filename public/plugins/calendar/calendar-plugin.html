@@ -233,7 +233,8 @@
                                         </div>
                                     </core-pages>
                                     <member-select teamsUrl="/platform/teams_users"
-                                                   disabled="{{modeDisabled}}"></member-select>
+                                                   disabled="{{modeDisabled}}"
+                                                   selected="{{selected.participants}}" label="Participants"></member-select>
                                 </div>
                             </div>
                         </div>
@@ -246,7 +247,7 @@
                 auto
                 url="/platform/users/{{$.globals.values.currentUser.id}}/events"
                 handleAs="json"
-                response="{{events}}"></core-ajax>
+                on-core-response="{{handleEvents}}"></core-ajax>
     </template>
     <script src="../../bower_components/moment/moment.js"></script>
     <script>
@@ -259,8 +260,19 @@
             observe: {
                 'selected.period': 'changeTab'
             },
+            handleEvents: function (event, detail) {
+                this.events = detail.response;
+                this.events.forEach(function(event){
+                    event.participants = event.participants.map(function(p){
+                        return p.id;
+                    });
+                });
+            },
             changeTab: function (oldV, newV) {
                 this.tabSelected = newV ? 0 : 1;
+                if (newV && !this.selected.to) {
+                    this.selected.to = new Date();
+                }
             },
             toTime: function (date) {
                 return moment(date).format('HH:mm');
@@ -280,14 +292,14 @@
                 this.$.pages.selected = 0;
             },
             jumpToAdd: function () {
-                /*this.selected = {};
+                 this.selected = {};
                  this.modeDisabled = false;
                  var self = this;
                  setTimeout(function () {
                  self.$.autogrowArea.update(self.$.textArea);
                  self.$.decorator.updateLabelVisibility(self.$.textArea.value);
                  self.$.pages.selected = 1;
-                 }, 100);*/
+                 }, 100);
                 this.modeDisabled = false;
             }
         });

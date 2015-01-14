@@ -11,7 +11,7 @@
 <link rel="import" href="../../bower_components/core-selector/core-selector.html">
 <link rel="import" href="member-element.html">
 
-<polymer-element name="member-select" attributes="teamsUrl selected disabled">
+<polymer-element name="member-select" attributes="teamsUrl selected disabled label">
     <template>
         <core-ajax url="{{teamsUrl}}" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>
 
@@ -71,11 +71,11 @@
 
         <div vertical layout>
             <div>
-                <paper-input-decorator label="Members" floatingLabel labelVisible="{{_labelVisible}}" disabled="{{disabled}}">
+                <paper-input-decorator label="{{label}}" floatingLabel labelVisible="{{_labelVisible}}" disabled="{{disabled}}">
                     <div horizontal layout center wrap>
-                        <template repeat="{{ u in selected}}">
+                        <template repeat="{{ uid in selected}}">
                             <div horizontal layout center class="badge">
-                                <member-element userid="{{u.id}}"></member-element>
+                                <member-element userid="{{uid}}"></member-element>
                                 <template if="{{!disabled}}">
                                     <core-icon class="small" icon="clear" on-click="{{ removeUserHandler }}"
                                            on-mousedown="{{preventFocus}}"></core-icon>
@@ -94,14 +94,12 @@
                         <template repeat="{{ t in filterTeam(teams, selected, searchText, changeFlag)}}">
                             <div class="item team" on-tap="{{addTeamHandler}}">
                                 {{t.name}}
-                                <!--<paper-item id="team_{{t.name}}" team hidden?="{{!!teamSelectedMap[t.name]}}" on-click="{{ addTeamHandler }}">{{t.name}}</paper-item>-->
                             </div>
                         </template>
 
                         <label class="block">Members</label>
                         <template repeat="{{ u in filterUser(users, selected, searchText, changeFlag)}}">
                             <div on-tap="{{addUserHandler}}" class="item">
-                                <!--<paper-item id="user_{{u.name}}" user hidden?="{{!!userSelectedMap[u.name]}}" on-click="{{  }}">{{ u.realname }}</paper-item>-->
                                 <member-element userid="{{u.id}}"></member-element>
                             </div>
                         </template>
@@ -116,6 +114,7 @@
 
 
         Polymer({
+            label: "Members",
             computed: {
                 _labelVisible: 'selected.length === 0 && !isShowMenu'
             },
@@ -137,7 +136,7 @@
                     teams.forEach(function (t) {
                         var allSelected = true;
                         for (var i = 0; i < t.users.length; i++) {
-                            if (selected.indexOf(t.users[i]) == -1) {
+                            if (selected.indexOf(t.users[i].id) == -1) {
                                 allSelected = false;
                                 break;
                             }
@@ -161,7 +160,7 @@
 
                     //filter selected
                     users.forEach(function (u) {
-                        if (selected.indexOf(u) == -1 && (u.name.toLowerCase().indexOf(searchText) != -1 || u.realname.toLowerCase().indexOf(searchText) != -1)) {
+                        if (selected.indexOf(u.id) == -1 && (u.name.toLowerCase().indexOf(searchText) != -1 || u.realname.toLowerCase().indexOf(searchText) != -1)) {
                             result.push(u);
                         }
                     });
@@ -195,8 +194,8 @@
                     }
                 } else if (event.keyCode === 8) { // backspace
                     if (this.searchText.length === 0 && this.selected.length > 0) {
-                        var user = this.selected[this.selected.length - 1];
-                        this.removeOneUser(user);
+                        var userid = this.selected[this.selected.length - 1];
+                        this.removeOneUser(userid);
                     }
                 } else {
                     this.$.selector.selected = 0;
@@ -264,11 +263,11 @@
 
             addOneTeam: function (team) {
                 team.users.forEach(function (user) {
-                    if (!this.userSelectedMap[user.name]) {
-                        this.selected.push(user);
+                    if (!this.userSelectedMap[user.id]) {
+                        this.selected.push(user.id);
                         this.searchText = '';
                     }
-                    this.userSelectedMap[user.name] = true;
+                    this.userSelectedMap[user.id] = true;
                 }, this);
             },
 
@@ -278,11 +277,11 @@
             },
 
             addOneUser: function (user) {
-                if (!this.userSelectedMap[user.name]) {
-                    this.selected.push(user);
+                if (!this.userSelectedMap[user.id]) {
+                    this.selected.push(user.id);
                     this.searchText = '';
                 }
-                this.userSelectedMap[user.name] = true;
+                this.userSelectedMap[user.id] = true;
             },
 
             removeUserHandler: function (event, detail, target) {
@@ -291,9 +290,9 @@
                 event.stopPropagation();
             },
 
-            removeOneUser: function (user) {
-                this.userSelectedMap[user.name] = false;
-                this.selected.splice(this.selected.indexOf(user), 1);
+            removeOneUser: function (userid) {
+                this.userSelectedMap[userid] = false;
+                this.selected.splice(userid, 1);
             },
 
             // public attributes
