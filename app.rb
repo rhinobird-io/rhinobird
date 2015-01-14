@@ -37,7 +37,7 @@ class App < Sinatra::Base
   end
 
   before do
-    login_required! unless ["/platform/login", "/platform/signup", "/platform/loggedOnUser"].include?(request.path_info)
+    login_required! unless ["/platform/login", "/platform/signup", "/platform/loggedOnUser", "/"].include?(request.path_info)
     content_type 'application/json'
     if request.media_type == 'application/json'
       body = request.body.read
@@ -130,6 +130,15 @@ class App < Sinatra::Base
       team = Team.find(params[:teamId])
       user = User.find(params[:userId])
       team.users << user
+      200
+    end
+
+    post '/teams/:teamId/users' do
+      team = Team.find(params[:teamId])
+      @body.each do |userId|
+        user = User.find(userId)
+        team.users << user
+      end
       200
     end
 
