@@ -13,6 +13,7 @@
 <link rel="import" href="../../bower_components/core-animated-pages/transitions/slide-up.html">
 <link rel="import" href="../../elements/smart-time-display/smart-time-display.html">
 <link rel="import" href="../../bower_components/core-list/core-list.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 
 <core-style id="calendar">
     paper-tabs::shadow #selectionBar{
@@ -151,7 +152,7 @@
                     <section>
                         <div class="container" fit>
                             <div class="timeline" vertical layout>
-                                <core-list data="{{events}}" flex>
+                                <core-list data="{{events | orderBy('from')}}" flex>
                                     <template>
                                         <div class="listitem">
                                         <div layout horizontal class="block" center on-tap="{{select}}">
@@ -266,8 +267,11 @@
                    url="/platform/events"
                    method="POST"
                    body="{{eventBody}}"
-                   contentType="application/json">
+                   contentType="application/json"
+                   on-core-response="{{eventSaved}}"
+                >
         </core-ajax>
+        <paper-toast id="eventSavedToast" text="Event has been saved!"></paper-toast>
     </template>
     <script src="../../bower_components/moment/moment.js"></script>
     <script>
@@ -327,6 +331,11 @@
             saveEvent: function(){
                 this.eventBody = JSON.stringify(this.selected);
                 this.$.postEvent.go();
+            },
+            eventSaved: function(){
+                this.events.push(this.selected);
+                this.mode = 'view';
+                this.$.eventSavedToast.show();
             }
         });
     </script>
