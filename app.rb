@@ -245,7 +245,7 @@ class App < Sinatra::Base
     end
 
     get '/users/:userId/events' do
-      User.find(params[:userId]).events.to_json
+      User.find(params[:userId]).events.order(:from).to_json
     end
     get '/users' do
       User.all.to_json
