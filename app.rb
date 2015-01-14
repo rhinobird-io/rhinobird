@@ -8,6 +8,8 @@ require './models/users_teams.rb'
 require './models/dashboard_record'
 require './models/notification'
 require './models/local_avatar'
+require './models/event'
+require './models/appointment'
 require 'gravatar-ultimate'
 require 'sinatra-websocket'
 require "bcrypt"
