@@ -50,9 +50,7 @@ namespace :db do
                     })
     end
     for idx in 1..15
-      5.times do
-        Appointment.create!(event_id: idx, participant_id: Random.rand(1..30))
-      end
+        Appointment.create!(event_id: idx, participant_id: 1)
     end
   end
 end
