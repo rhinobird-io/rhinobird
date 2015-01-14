@@ -27,6 +27,11 @@
     <script>
         Polymer({
             date: new Date(),
+            dateChanged: function(oldV, newV) {
+                if(!newV){
+                    this.date = new Date();
+                }
+            },
             openDateDialog: function () {
                 if (!this.disabled) {
                     this.$.dateDialog.open();

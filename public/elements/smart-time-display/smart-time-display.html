@@ -1,0 +1,34 @@
+<script src="../../bower_components/moment/moment.js"></script>
+
+<polymer-element name="smart-time-display" attributes="from to full_day period">
+    <template>
+        {{result}}
+    </template>
+    <script>
+        Polymer({
+            computed: {
+                result: 'compute(from, to, full_day, period)'
+            },
+            compute: function (from, to, full_day, period) {
+                if (full_day == undefined || period == undefined) {
+                    return "";
+                } else {
+                    var format;
+                    if (full_day) {
+                        format = "YYYY-MM-DD"
+                    } else {
+                        format = "HH:mm YYYY-MM-DD"
+                    }
+                    if (!period) {
+                        return moment(from).format(format);
+                    } else {
+                        var from = moment(from), to = moment(to);
+                        if(from.isSame(to, 'day')) {
+                            return moment(from).format('HH:mm') + "~" + moment(to).format("HH:mm") + " " + moment(from).format("YYYY-MM-DD");
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</polymer-element>

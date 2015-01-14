@@ -11,6 +11,7 @@
 <link rel="import" href="../../bower_components/core-pages/core-pages.html">
 <link rel="import" href="../../bower_components/core-style/core-style.html">
 <link rel="import" href="../../bower_components/core-animated-pages/transitions/slide-up.html">
+<link rel="import" href="../../elements/smart-time-display/smart-time-display.html">
 
 <core-style id="calendar">
     paper-tabs::shadow #selectionBar{
@@ -148,7 +149,11 @@
                                         </div>
                                         <div hero hero-id="{{event.id}}" vertical layout flex class="content">
                                             <div>{{event.title}}</div>
-                                            <div class="time iconColor">{{event.time | date('HH:mm')}}</div>
+                                            <div class="time iconColor">
+                                                <smart-time-display from="{{event.from}}" to="{{event.to}}"
+                                                                    period="{{event.period}}"
+                                                                    full_day="{{event.full_day}}">
+                                            </div>
                                         </div>
                                         <!--<div class="info">-->
                                         <!--<core-icon icon="info" class="iconColor"></core-icon>-->
@@ -165,8 +170,16 @@
                                                on-tap="{{main}}"></paper-icon-button>
                             <div class="detail-content" vertical layout center>
                                 <div>
-                                    <paper-input label="Title" floatingLabel value="{{selected.title}}" id="title"
-                                                 disabled="{{modeDisabled}}"></paper-input>
+                                    <paper-input-decorator label="Title" floatingLabel id="title"
+                                                           disabled="{{modeDisabled}}">
+                                        <template if="{{!modeDisabled}}">
+                                            <input is="core-input" value="{{selected.title}}">
+                                        </template>
+                                        <template if="{{modeDisabled}}">
+                                            <span>{{selected.title}}</span>
+                                        </template>
+                                    </paper-input-decorator>
+
                                     <paper-input-decorator label="Description" floatingLabel id="decorator"
                                                            disabled="{{modeDisabled}}">
                                         <paper-autogrow-textarea id="autogrowArea">
@@ -177,7 +190,7 @@
                                     <template if="{{!modeDisabled}}">
                                         <div center horizontal layout class="fullday">
                                             <div flex>Full Day</div>
-                                            <paper-toggle-button checked="{{fullDay}}"
+                                            <paper-toggle-button checked="{{selected.full_day}}"
                                                                  disabled="{{modeDisabled}}"></paper-toggle-button>
                                         </div>
                                         <paper-tabs selected="{{tabSelected}}" class="tabs">
@@ -189,26 +202,32 @@
                                         <div class="page">
                                             <div layout horizontal justified end>
                                                 <div layout vertical>
-                                                    <date-input label="From" disabled="{{modeDisabled}}"></date-input>
-                                                    <template if="{{!fullDay}}">
+                                                    <date-input label="From" disabled="{{modeDisabled}}"
+                                                                date="{{selected.from}}"></date-input>
+                                                    <template if="{{!selected.full_day}}">
                                                         <time-input class="upper"
-                                                                    disabled="{{modeDisabled}}"></time-input>
+                                                                    disabled="{{modeDisabled}}"
+                                                                    time="{{selected.from}}"></time-input>
                                                     </template>
                                                 </div>
                                                 <div layout vertical>
-                                                    <date-input label="To" disabled="{{modeDisabled}}"></date-input>
-                                                    <template if="{{!fullDay}}">
+                                                    <date-input label="To" disabled="{{modeDisabled}}"
+                                                                date="{{selected.to}}"></date-input>
+                                                    <template if="{{!selected.full_day}}">
                                                         <time-input class="upper"
-                                                                    disabled="{{modeDisabled}}"></time-input>
+                                                                    disabled="{{modeDisabled}}"
+                                                                    time="{{selected.to}}"></time-input>
                                                     </template>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="page">
                                             <div layout horizontal justified end>
-                                                <date-input label="Date" disabled="{{modeDisabled}}"></date-input>
-                                                <template if="{{!fullDay}}">
-                                                    <time-input label="Time" disabled="{{modeDisabled}}"></time-input>
+                                                <date-input label="Date" disabled="{{modeDisabled}}"
+                                                            date="{{selected.from}}"></date-input>
+                                                <template if="{{!selected.full_day}}">
+                                                    <time-input label="Time" disabled="{{modeDisabled}}"
+                                                                time="{{selected.from}}"></time-input>
                                                 </template>
                                             </div>
                                         </div>
@@ -224,49 +243,28 @@
         </div>
         <app-globals id="globals"></app-globals>
         <core-ajax
-                   auto
-                   url="/platform/users/{{$.globals.values.currentUser.id}}/events"
-                   handleAs="json"
-                   response="{{events}}"></core-ajax>
+                auto
+                url="/platform/users/{{$.globals.values.currentUser.id}}/events"
+                handleAs="json"
+                response="{{events}}"></core-ajax>
     </template>
+    <script src="../../bower_components/moment/moment.js"></script>
     <script>
         Polymer({
             modeDisabled: true,
-            tabSelected: 0,
-            events: [
-                {
-                    id: "1",
-                    title: "Event Title 1",
-                    description: "Event description 1",
-                    time: new Date()
-                }, {
-                    id: "2",
-                    title: "Event Title 2",
-                    description: "Event description 2",
-                    time: new Date()
-                }, {
-                    id: "3",
-                    title: "Event Title 3",
-                    description: "Event description 3 a little long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long",
-                    time: new Date()
-                }, {
-                    id: "4",
-                    title: "Event Title 3",
-                    description: "Event description 3 a little long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long",
-                    time: new Date()
-                }, {
-                    id: "5",
-                    title: "Event Title 3",
-                    description: "Event description 3 a little long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long",
-                    time: new Date()
-                }, {
-                    id: "6",
-                    title: "Event Title 3",
-                    description: "Event description 3 a little long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long",
-                    time: new Date()
-                }
-            ],
-            selectes: {},
+            tabSelectedChanged: function (oldV, newV) {
+                this.selected.period = newV == 0;
+            },
+            selected: {},
+            observe: {
+                'selected.period': 'changeTab'
+            },
+            changeTab: function (oldV, newV) {
+                this.tabSelected = newV ? 0 : 1;
+            },
+            toTime: function (date) {
+                return moment(date).format('HH:mm');
+            },
             select: function (event, detail, target) {
                 this.selected = target.templateInstance.model.event;
                 this.modeDisabled = true;
@@ -282,14 +280,15 @@
                 this.$.pages.selected = 0;
             },
             jumpToAdd: function () {
-                this.selected = {};
+                /*this.selected = {};
+                 this.modeDisabled = false;
+                 var self = this;
+                 setTimeout(function () {
+                 self.$.autogrowArea.update(self.$.textArea);
+                 self.$.decorator.updateLabelVisibility(self.$.textArea.value);
+                 self.$.pages.selected = 1;
+                 }, 100);*/
                 this.modeDisabled = false;
-                var self = this;
-                setTimeout(function () {
-                    self.$.autogrowArea.update(self.$.textArea);
-                    self.$.decorator.updateLabelVisibility(self.$.textArea.value);
-                    self.$.pages.selected = 1;
-                }, 100);
             }
         });
     </script>
