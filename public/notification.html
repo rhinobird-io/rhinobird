@@ -1,0 +1,40 @@
+<link rel="import" href="bower_components/core-menu/core-menu.html">
+<link rel="import" href="bower_components/paper-dropdown/paper-dropdown.html">
+<link rel="import" href="bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="bower_components/paper-button/paper-button.html">
+
+<polymer-element name="notification-element" attributes="user">
+    <tempalte>
+        <core-ajax
+                auto
+                id="notificationAjax"
+                url="/platform/users/{{user.id}}/notifications"
+                handleAs="json"
+                response="{{notifications}}"></core-ajax>
+
+        <paper-menu-button hidden?="{{!user}}">
+            <paper-button>{{111}}</paper-button>
+            <paper-dropdown class="dropdown" halign="left" style="color:#000;">
+                <core-menu class="menu">
+                    <template repeat="notification in notifications">
+                        <paper-item>
+                            <div>
+                                <member-element userid="{{notification.from_user_id}}"></member-element>
+                                <p>{{notification.content}}</p>
+                            </div>
+                        </paper-item>
+                    </template>
+                    <paper-item>Profile</paper-item>
+                    <paper-item>Team</paper-item>
+                    <paper-item>Logout</paper-item>
+                </core-menu>
+            </paper-dropdown>
+        </paper-menu-button>
+        <app-globals id="globals"></app-globals>
+    </tempalte>
+    <script>
+        Polymer("notification-element", {
+
+        });
+    </script>
+</polymer-element>

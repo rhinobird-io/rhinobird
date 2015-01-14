@@ -44,11 +44,12 @@
             .userSignIn /deep/ .core-opened{
                 left:auto !important;
                 right: 0;
-
             }
             .user-item /deep/ #scroller {
                 max-width: none !important;
             }
+
+
         </style>
         <core-scaffold>
             <core-header-panel navigation flex mode="seamed">
@@ -69,7 +70,7 @@
             <div tool>
                 <content select=".title"></content>
             </div>
-            <div tool horizontal layout flex end-justified class="bottom">
+            <div tool horizontal layout center flex end-justified class="bottom">
                 <core-ajax
                         auto='true'
                         method="GET"
@@ -77,19 +78,32 @@
                         handleAs="json"
                         response="{{users}}"></core-ajax>
 
-                <!--<paper-dropdown-menu class='user-dropdown-menu' label="{{userName}}" on-core-select="{{onUserSelect}}">-->
-                    <!--<paper-dropdown class="dropdown">-->
-                        <!--<core-menu>-->
-                            <!--<template repeat="{{users}}">-->
-                                <!--<paper-item class='user-item'>{{name}}</paper-item>-->
-                            <!--</template>-->
-                        <!--</core-menu>-->
-                    <!--</paper-dropdown>-->
-                <!--</paper-dropdown-menu>-->
+                <core-ajax
+                        id="logoutAjax"
+                        method="post"
+                        contentType="application/json"
+                        url="/platform/logout"
+                        on-core-response="{{logoutCallback}}"></core-ajax>
+
+                <core-ajax
+                        id="currentUserAjax"
+                        method="get"
+                        contentType="application/json"
+                        url="/platform/loggedOnUser"
+                        on-core-response="{{currentUserCallback}}"
+                        on-core-error="{{noUserCallback}}"></core-ajax>
+
+                <core-ajax
+                        auto
+                        id="notificationAjax"
+                        url="/platform/users/{{$.globals.values.currentUser.id}}/notifications"
+                        handleAs="json"
+                        response="{{notifications}}"></core-ajax>
+
                 <div class="userSignIn">
                     <a href="/#/login" hidden?="{{$.globals.values.currentUser}}" style='padding-top: 20px'>Sign In</a>
                     <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
-                        <paper-button>{{$.globals.values.currentUser.name}}</paper-button>
+                        <label>{{$.globals.values.currentUser.name}}</label>
                         <paper-dropdown class="dropdown" halign="left" style="color:#000;" on-core-select="{{onUserInfoSelect}}">
                             <core-menu class="menu">
                                 <paper-item>Profile</paper-item>
@@ -98,36 +112,46 @@
                             </core-menu>
                         </paper-dropdown>
                     </paper-menu-button>
-                    <core-ajax
-                            id="logoutAjax"
-                            method="post"
-                            contentType="application/json"
-                            url="/platform/logout"
-                            on-core-response="{{logoutCallback}}"></core-ajax>
-                    <core-ajax
-                            id="currentUserAjax"
-                            method="get"
-                            contentType="application/json"
-                            url="/platform/loggedOnUser"
-                            on-core-response="{{currentUserCallback}}"
-                            on-core-error="{{noUserCallback}}"></core-ajax>
 
                 </div>
-                <app-globals id="globals"></app-globals>
-                <paper-menu-button style='padding-top: 20px'>
-                    <paper-icon-button icon="apps" noink></paper-icon-button>
-                    <paper-dropdown class="dropdown" halign="right" style="color:#000;">
-                        <core-menu class="menu">
-                            <paper-input label="Search plugin"></paper-input>
-                            <paper-item>Questionnaire</paper-item>
-                            <paper-item>Brain Writing</paper-item>
-                        </core-menu>
-                    </paper-dropdown>
-                </paper-menu-button>
+
+                <div>
+                    <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
+                        <label style="margin-left:10px;color: red">{{notifications.length}}</label>
+                        <paper-dropdown class="dropdown" halign="right" style="color:#000;">
+                            <core-menu class="menu">
+                                <template repeat="{{notification in notifications}}">
+                                    <paper-item>
+                                        <div>
+                                            <member-element userid="{{notification.from_user_id}}"></member-element>
+                                            <p>{{notification.content}}</p>
+                                        </div>
+                                    </paper-item>
+                                </template>
+                            </core-menu>
+                        </paper-dropdown>
+                    </paper-menu-button>
+                </div>
+
+                <!--<notification-element user="{{$.globals.values.currentUser}}"></notification-element>-->
+                <div>
+                    <paper-menu-button>
+                        <paper-icon-button icon="apps" noink></paper-icon-button>
+                        <paper-dropdown class="dropdown" halign="right" style="color:#000;">
+                            <core-menu class="menu">
+                                <paper-input label="Search plugin"></paper-input>
+                                <paper-item>Questionnaire</paper-item>
+                                <paper-item>Brain Writing</paper-item>
+                            </core-menu>
+                        </paper-dropdown>
+                    </paper-menu-button>
+                </div>
+
             </div>
             <div fit class="content">
                 <content></content>
             </div>
+            <app-globals id="globals"></app-globals>
         </core-scaffold>
     </template>
     <script>
