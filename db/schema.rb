@@ -13,6 +13,14 @@
 
 ActiveRecord::Schema.define(version: 20150116022048) do
 
+  create_table "appointments", force: :cascade do |t|
+    t.integer "event_id"
+    t.integer "participant_id"
+  end
+
+  add_index "appointments", ["event_id"], name: "index_appointments_on_event_id"
+  add_index "appointments", ["participant_id"], name: "index_appointments_on_participant_id"
+
   create_table "dashboard_records", force: :cascade do |t|
     t.integer  "user_id"
     t.text     "content",      null: false
@@ -22,6 +30,20 @@ ActiveRecord::Schema.define(version: 20150116022048) do
   end
 
   add_index "dashboard_records", ["user_id"], name: "index_dashboard_records_on_user_id"
+
+  create_table "events", force: :cascade do |t|
+    t.string   "title"
+    t.boolean  "full_day"
+    t.boolean  "period"
+    t.datetime "from"
+    t.datetime "to"
+    t.text     "description"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "creator_id"
+  end
+
+  add_index "events", ["creator_id"], name: "index_events_on_creator_id"
 
   create_table "local_avatars", force: :cascade do |t|
     t.integer  "user_id"
