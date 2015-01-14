@@ -113,6 +113,16 @@ class App < Sinatra::Base
   namespace '/platform' do
 
     #gravatar related
+    get '/gravatars' do
+      User.all.map { |u|
+        {
+            id: u.id,
+            url: Gravatar.new(u.email).image_url,
+            username: u.realname
+        }
+      }.to_json
+    end
+
     get '/gravatar/:userId' do
       @user_id = params[:userId]
       @user = User.find(params[:userId])
@@ -234,6 +244,9 @@ class App < Sinatra::Base
 
     end
 
+    get '/users/:userId/events' do
+      User.find(params[:userId]).events.to_json
+    end
     get '/users' do
       User.all.to_json
     end

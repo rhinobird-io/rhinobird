@@ -24,26 +24,37 @@
 
     </template>
     <script>
-        var memberCache = {};
-        Polymer({
-            useridChanged: function (oldValue, newValue) {
-                if (!newValue) {
-                    this.gravatar = {};
-                } else {
-                    this.gravatar = memberCache[newValue];
-                    if (!this.gravatar) {
-                        this.$.getGravatar.go();
-                    } else {
-                        this.$.image.src = this.gravatar.url + "?d=identicon&s=20";
-                    }
+        (function() {
+            var memberCache = {};
+            xhr = new XMLHttpRequest();
+            xhr.onload = function(){
+                var result = JSON.parse(this.responseText);
+                for(var i=0; i<result.length; i++) {
+                    memberCache[result[i].id] = result[i];
                 }
-
-            },
-            handleResponse: function (event, detail, target) {
-                this.gravatar = detail.response;
-                memberCache[this.user_id] = detail.response;
-                this.$.image.src = this.gravatar.url + "?d=identicon&s=20";
             }
-        });
+            xhr.open("GET", "/platform/gravatars", true);
+            xhr.send();
+            Polymer({
+                useridChanged: function (oldValue, newValue) {
+                    if (!newValue) {
+                        this.gravatar = {};
+                    } else {
+                        this.gravatar = memberCache[newValue];
+                        if (!this.gravatar) {
+                            this.$.getGravatar.go();
+                        } else {
+                            this.$.image.src = this.gravatar.url + "?d=identicon&s=20";
+                        }
+                    }
+
+                },
+                handleResponse: function (event, detail, target) {
+                    this.gravatar = detail.response;
+                    memberCache[this.user_id] = detail.response;
+                    this.$.image.src = this.gravatar.url + "?d=identicon&s=20";
+                }
+            });
+        })();
     </script>
 </polymer-element>
