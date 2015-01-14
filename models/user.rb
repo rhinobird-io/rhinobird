@@ -19,6 +19,7 @@ class User < ActiveRecord::Base
   has_many :users_teams, dependent: :destroy
   has_many :teams, :through => :users_teams
   has_many :dashboard_records, -> {order 'created_at DESC'}
+  has_many :notifications, -> {order 'created_at DESC'}
 
   def password
     @password ||= Password.new(encrypted_password)

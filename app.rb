@@ -6,6 +6,7 @@ require './models/team.rb'
 require './models/user.rb'
 require './models/users_teams.rb'
 require './models/dashboard_record'
+require './models/notification'
 require 'gravatar-ultimate'
 
 class App < Sinatra::Base
@@ -206,6 +207,24 @@ class App < Sinatra::Base
       content["from_user_id"] = session[:user][:id]
       users.each do |user|
         record = User.find(user).dashboard_records.create!(content)
+      end
+      200
+    end
+
+    get '/users/:userId/notifications' do
+      User.find(params[:userId]).notifications.to_json
+    end
+
+    post '/users/:userId/notifications' do
+      User.find(params[:userId]).notifications.create!(@body)
+    end
+
+    post '/users/notifications' do
+      users = @body["users"]
+      content =@body["content"]
+      content["from_user_id"] = session[:user][:id]
+      users.each do |user|
+        record = User.find(user).notifications.create!(content)
       end
       200
     end
