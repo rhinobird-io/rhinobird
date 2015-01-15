@@ -8,6 +8,7 @@ require './models/users_teams.rb'
 require './models/dashboard_record'
 require './models/notification'
 require 'gravatar-ultimate'
+require 'sinatra-websocket'
 
 class App < Sinatra::Base
 
@@ -16,6 +17,8 @@ class App < Sinatra::Base
 
   set :show_exceptions, :after_handler
   set :bind, '0.0.0.0'
+  set :server, 'thin'
+  set :sockets, []
 
   use Rack::Session::Cookie, :key => 'rack.session',
       :path => '/',
@@ -29,8 +32,25 @@ class App < Sinatra::Base
   end
 
   get '/' do
-    content_type 'text/html'
-    send_file File.join(settings.public_folder, 'index.html')
+    if request.websocket?
+      request.websocket do |ws|
+        ws.onopen do
+          ws.send("Hello World!")
+          settings.sockets[session[:user][:id]] = ws
+        end
+        ws.onmessage do |msg|
+          EM.next_tick { ws.send(msg) }
+        end
+        ws.onclose do
+          warn("websocket closed")
+          settings.sockets.delete(ws)
+        end
+      end
+    else
+      content_type 'text/html'
+      send_file File.join(settings.public_folder, 'index.html')
+    end
+
   end
 
   def login_required!
@@ -228,10 +248,20 @@ class App < Sinatra::Base
       User.find(params[:userId]).notifications.to_json
     end
 
+    # add a notification to one user
     post '/users/:userId/notifications' do
       User.find(params[:userId]).notifications.create!(@body)
+      content = [@body].to_json
+      socketId = params[:userId].to_i
+      p content
+      p socketId
+      unless settings.sockets[socketId].nil?
+        p "----------------------------------------------"
+        EM.next_tick { settings.sockets[socketId].send(content) }
+      end
     end
 
+    # add a notification to many users
     post '/users/notifications' do
       users = @body["users"]
       content =@body["content"]

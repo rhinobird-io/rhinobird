@@ -5,8 +5,7 @@
                 id="notificationAjax"
                 url="/platform/users/{{$.globals.values.currentUser.id}}/notifications"
                 handleAs="json"
-                response="{{notifications}}"
-                on-core-response="{{newNotification}}"></core-ajax>
+                response="{{notifications}}"></core-ajax>
 
         <core-ajax id="getGravatarForNotification"
                    url="/platform/gravatar"
@@ -34,7 +33,51 @@
     </template>
     <script>
         Polymer("notification-element", {
-            newNotification: function() {
+
+            ready: function() {
+                if (!this.$.globals.values.websocket) {
+                    this.$.globals.values.websocket = this.connect(this);
+                    console.log(this.$.globals.values.websocket);
+                }
+            },
+
+            connect: function(that) {
+                try {
+                    var socket, host;
+                    host = "ws://localhost:9292";
+                    socket = new WebSocket(host);
+
+                    console.log("Socket State: " + socket.readyState);
+
+                    socket.onopen = function() {
+                        console.log("Socket Status: " + socket.readyState + " (open)");
+                    };
+
+                    socket.onclose = function() {
+                        console.log("Socket Status: " + socket.readyState + " (closed)");
+                    };
+
+                    socket.onmessage = function(msg) {
+                        console.log("Received: " + msg.data);
+                        that.notificationData = JSON.parse(msg.data);
+                        that.handleNotification();
+                    };
+
+                    return socket;
+                } catch(exception) {
+                    console.log("Error: " + exception);
+                }
+            },
+
+            handleNotification: function() {
+                for (index in this.notificationData) {
+                    this.notifications.push(this.notificationData[index]);
+                }
+
+                this.showNotification();
+            },
+
+            showNotification: function() {
                 if (!Notification) {
                     alert('Please use a modern version of Chrome');
                     return;
@@ -44,8 +87,8 @@
                     Notification.requestPermission();
 
                 this.notificationFroms = [];
-                for (index in this.notifications) {
-                    this.notificationFroms.push(this.notifications[index].from_user_id);
+                for (index in this.notificationData) {
+                    this.notificationFroms.push(this.notificationData[index].from_user_id);
                 }
 
                 this.notificationFromsJson = JSON.stringify(this.notificationFroms);
@@ -56,7 +99,7 @@
                 for (index in this.gravatars) {
                     var notification = new Notification(this.gravatars[index].username, {
                         icon: this.gravatars[index].url + "?d=identicon",
-                        body: this.notifications[index].content
+                        body: this.notificationData[index].content
                     });
 
                     setTimeout((function(notify) {
