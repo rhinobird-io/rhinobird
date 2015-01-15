@@ -98,13 +98,21 @@
                         id="notificationAjax"
                         url="/platform/users/{{$.globals.values.currentUser.id}}/notifications"
                         handleAs="json"
-                        response="{{notifications}}"></core-ajax>
+                        response="{{notifications}}"
+                        on-core-response="{{newNotification}}"></core-ajax>
+
+                <core-ajax id="getGravatarForNotification"
+                           url="/platform/gravatar"
+                           handleAs="json"
+                           params="{{notificationFromsJson}}"
+                           response="{{gravatars}}"
+                           on-core-response="{{avatarCallback}}"></core-ajax>
 
                 <div class="userSignIn">
                     <a href="/#/login" hidden?="{{$.globals.values.currentUser}}" style='padding-top: 20px'>Sign In</a>
                     <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
                         <label>{{$.globals.values.currentUser.name}}</label>
-                        <paper-dropdown class="dropdown" halign="left" style="color:#000;" on-core-select="{{onUserInfoSelect}}">
+                        <paper-dropdown class="dropdown" halign="right" style="color:#000;" on-core-select="{{onUserInfoSelect}}">
                             <core-menu class="menu">
                                 <paper-item>Profile</paper-item>
                                 <paper-item>Team</paper-item>
@@ -133,7 +141,6 @@
                     </paper-menu-button>
                 </div>
 
-                <!--<notification-element user="{{$.globals.values.currentUser}}"></notification-element>-->
                 <div>
                     <paper-menu-button>
                         <paper-icon-button icon="apps" noink></paper-icon-button>
@@ -214,6 +221,39 @@
             jumpToDashboard: function() {
                 this.$.globals.values.showSetting = false;
                 document.querySelector('app-router').go('/dashboard');
+            },
+
+            newNotification: function() {
+                if (!Notification) {
+                    alert('Please use a modern version of Chrome');
+                    return;
+                }
+
+                if (Notification.permission !== "granted")
+                    Notification.requestPermission();
+
+                this.notificationFroms = [];
+                for (index in this.notifications) {
+                    this.notificationFroms.push(this.notifications[index].from_user_id);
+                }
+
+                this.notificationFromsJson = JSON.stringify(this.notificationFroms);
+                this.$.getGravatarForNotification.go();
+            },
+
+            avatarCallback: function() {
+                for (index in this.gravatars) {
+                    var notification = new Notification(this.gravatars[index].username, {
+                        icon: this.gravatars[index].url + "?d=identicon",
+                        body: this.notifications[index].content
+                    });
+
+                    setTimeout((function(notify) {
+                        return function() {
+                            notify.close();
+                        }
+                    })(notification), 5000);
+                }
             }
         });
     </script>

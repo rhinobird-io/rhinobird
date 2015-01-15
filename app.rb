@@ -96,6 +96,19 @@ class App < Sinatra::Base
       #todo show local uploaded picture
     end
 
+    get '/gravatar' do
+      gravatars = []
+      @params.each do |param|
+        user = User.find(param[1])
+        gravatar = {}
+        gravatar["url"] = Gravatar.new(user.email).image_url
+        gravatar["username"] = user.realname
+        gravatars << gravatar
+      end
+      gravatars.to_json
+      #todo show local uploaded picture
+    end
+
     get '/avatar/uploaded' do
       content_type 'image/png'
       #todo
