@@ -1,22 +1,25 @@
-<link rel="import" href="bower_components/core-menu/core-menu.html">
-<link rel="import" href="bower_components/paper-dropdown/paper-dropdown.html">
-<link rel="import" href="bower_components/paper-menu-button/paper-menu-button.html">
-<link rel="import" href="bower_components/paper-button/paper-button.html">
-
-<polymer-element name="notification-element" attributes="user">
-    <tempalte>
+<polymer-element name="notification-element">
+    <template>
         <core-ajax
                 auto
                 id="notificationAjax"
-                url="/platform/users/{{user.id}}/notifications"
+                url="/platform/users/{{$.globals.values.currentUser.id}}/notifications"
                 handleAs="json"
-                response="{{notifications}}"></core-ajax>
+                response="{{notifications}}"
+                on-core-response="{{newNotification}}"></core-ajax>
 
-        <paper-menu-button hidden?="{{!user}}">
-            <paper-button>{{111}}</paper-button>
-            <paper-dropdown class="dropdown" halign="left" style="color:#000;">
+        <core-ajax id="getGravatarForNotification"
+                   url="/platform/gravatar"
+                   handleAs="json"
+                   params="{{notificationFromsJson}}"
+                   response="{{gravatars}}"
+                   on-core-response="{{avatarCallback}}"></core-ajax>
+
+        <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
+            <label style="margin-left:10px;color: red">{{notifications.length}}</label>
+            <paper-dropdown class="dropdown" halign="right" style="color:#000;">
                 <core-menu class="menu">
-                    <template repeat="notification in notifications">
+                    <template repeat="{{notification in notifications}}">
                         <paper-item>
                             <div>
                                 <member-element userid="{{notification.from_user_id}}"></member-element>
@@ -24,17 +27,45 @@
                             </div>
                         </paper-item>
                     </template>
-                    <paper-item>Profile</paper-item>
-                    <paper-item>Team</paper-item>
-                    <paper-item>Logout</paper-item>
                 </core-menu>
             </paper-dropdown>
         </paper-menu-button>
         <app-globals id="globals"></app-globals>
-    </tempalte>
+    </template>
     <script>
         Polymer("notification-element", {
+            newNotification: function() {
+                if (!Notification) {
+                    alert('Please use a modern version of Chrome');
+                    return;
+                }
 
+                if (Notification.permission !== "granted")
+                    Notification.requestPermission();
+
+                this.notificationFroms = [];
+                for (index in this.notifications) {
+                    this.notificationFroms.push(this.notifications[index].from_user_id);
+                }
+
+                this.notificationFromsJson = JSON.stringify(this.notificationFroms);
+                this.$.getGravatarForNotification.go();
+            },
+
+            avatarCallback: function() {
+                for (index in this.gravatars) {
+                    var notification = new Notification(this.gravatars[index].username, {
+                        icon: this.gravatars[index].url + "?d=identicon",
+                        body: this.notifications[index].content
+                    });
+
+                    setTimeout((function(notify) {
+                        return function() {
+                            notify.close();
+                        }
+                    })(notification), 5000);
+                }
+            }
         });
     </script>
 </polymer-element>

@@ -13,6 +13,7 @@
 <link rel="import" href="bower_components/paper-dropdown/paper-dropdown.html">
 <link rel="import" href="bower_components/paper-item/paper-item.html">
 <link rel="import" href="elements/app-globals/app-globals.html">
+<link rel="import" href="notification.html">
 
 <polymer-element name="home-container" attributes="selected">
     <template>
@@ -93,21 +94,6 @@
                         on-core-response="{{currentUserCallback}}"
                         on-core-error="{{noUserCallback}}"></core-ajax>
 
-                <core-ajax
-                        auto
-                        id="notificationAjax"
-                        url="/platform/users/{{$.globals.values.currentUser.id}}/notifications"
-                        handleAs="json"
-                        response="{{notifications}}"
-                        on-core-response="{{newNotification}}"></core-ajax>
-
-                <core-ajax id="getGravatarForNotification"
-                           url="/platform/gravatar"
-                           handleAs="json"
-                           params="{{notificationFromsJson}}"
-                           response="{{gravatars}}"
-                           on-core-response="{{avatarCallback}}"></core-ajax>
-
                 <div class="userSignIn">
                     <a href="/#/login" hidden?="{{$.globals.values.currentUser}}" style='padding-top: 20px'>Sign In</a>
                     <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
@@ -120,40 +106,20 @@
                             </core-menu>
                         </paper-dropdown>
                     </paper-menu-button>
-
                 </div>
 
-                <div>
-                    <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
-                        <label style="margin-left:10px;color: red">{{notifications.length}}</label>
-                        <paper-dropdown class="dropdown" halign="right" style="color:#000;">
-                            <core-menu class="menu">
-                                <template repeat="{{notification in notifications}}">
-                                    <paper-item>
-                                        <div>
-                                            <member-element userid="{{notification.from_user_id}}"></member-element>
-                                            <p>{{notification.content}}</p>
-                                        </div>
-                                    </paper-item>
-                                </template>
-                            </core-menu>
-                        </paper-dropdown>
-                    </paper-menu-button>
-                </div>
+                <notification-element></notification-element>
 
-                <div>
-                    <paper-menu-button>
-                        <paper-icon-button icon="apps" noink></paper-icon-button>
-                        <paper-dropdown class="dropdown" halign="right" style="color:#000;">
-                            <core-menu class="menu">
-                                <paper-input label="Search plugin"></paper-input>
-                                <paper-item>Questionnaire</paper-item>
-                                <paper-item>Brain Writing</paper-item>
-                            </core-menu>
-                        </paper-dropdown>
-                    </paper-menu-button>
-                </div>
-
+                <paper-menu-button>
+                    <paper-icon-button icon="apps" noink></paper-icon-button>
+                    <paper-dropdown class="dropdown" halign="right" style="color:#000;">
+                        <core-menu class="menu">
+                            <paper-input label="Search plugin"></paper-input>
+                            <paper-item>Questionnaire</paper-item>
+                            <paper-item>Brain Writing</paper-item>
+                        </core-menu>
+                    </paper-dropdown>
+                </paper-menu-button>
             </div>
             <div fit class="content">
                 <content></content>
@@ -221,40 +187,40 @@
             jumpToDashboard: function() {
                 this.$.globals.values.showSetting = false;
                 document.querySelector('app-router').go('/dashboard');
-            },
-
-            newNotification: function() {
-                if (!Notification) {
-                    alert('Please use a modern version of Chrome');
-                    return;
-                }
-
-                if (Notification.permission !== "granted")
-                    Notification.requestPermission();
-
-                this.notificationFroms = [];
-                for (index in this.notifications) {
-                    this.notificationFroms.push(this.notifications[index].from_user_id);
-                }
-
-                this.notificationFromsJson = JSON.stringify(this.notificationFroms);
-                this.$.getGravatarForNotification.go();
-            },
-
-            avatarCallback: function() {
-                for (index in this.gravatars) {
-                    var notification = new Notification(this.gravatars[index].username, {
-                        icon: this.gravatars[index].url + "?d=identicon",
-                        body: this.notifications[index].content
-                    });
-
-                    setTimeout((function(notify) {
-                        return function() {
-                            notify.close();
-                        }
-                    })(notification), 5000);
-                }
             }
+
+//            newNotification: function() {
+//                if (!Notification) {
+//                    alert('Please use a modern version of Chrome');
+//                    return;
+//                }
+//
+//                if (Notification.permission !== "granted")
+//                    Notification.requestPermission();
+//
+//                this.notificationFroms = [];
+//                for (index in this.notifications) {
+//                    this.notificationFroms.push(this.notifications[index].from_user_id);
+//                }
+//
+//                this.notificationFromsJson = JSON.stringify(this.notificationFroms);
+//                this.$.getGravatarForNotification.go();
+//            },
+//
+//            avatarCallback: function() {
+//                for (index in this.gravatars) {
+//                    var notification = new Notification(this.gravatars[index].username, {
+//                        icon: this.gravatars[index].url + "?d=identicon",
+//                        body: this.notifications[index].content
+//                    });
+//
+//                    setTimeout((function(notify) {
+//                        return function() {
+//                            notify.close();
+//                        }
+//                    })(notification), 5000);
+//                }
+//            }
         });
     </script>
 </polymer-element>
