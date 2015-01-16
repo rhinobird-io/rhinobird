@@ -58,11 +58,7 @@
             },
 
             addMemberToTeam: function() {
-                this.selectedUser = [];
-                var select = this.$.memberSelect.selected;
-                for (index in select) {
-                    this.selectedUser.push(select[index].id);
-                }
+                this.selectedUser = this.$.memberSelect.selected;
                 this.newMember = JSON.stringify(this.selectedUser);
                 var ajax = this.$.addMember;
                 ajax.go();

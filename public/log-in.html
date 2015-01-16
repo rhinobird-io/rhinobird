@@ -1,6 +1,8 @@
 <link rel="import" href="bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="elements/app-globals/app-globals.html">
 <link rel="import" href="bower_components/paper-input/paper-input.html">
+<link rel="import" href="bower_components/core-input/core-input.html">
+<link rel="import" href="bower_components/paper-input/paper-input-decorator.html">
 <link rel="import" href="bower_components/paper-button/paper-button.html">
 <link rel="import" href="bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="bower_components/core-icons/core-icons.html">
@@ -137,4 +139,58 @@
         )
         ;
     </script>
+</polymer-element>
+
+<polymer-element name="sign-up">
+    <template>
+        <style>
+            .signUp {
+                width: 400px;
+                height: 400px;
+                background: transparent;
+            }
+        </style>
+        <core-ajax
+                id="signUpAjax"
+                method="post"
+                contentType="application/json"
+                body="{{userJson}}"
+                url="/platform/users"
+                on-core-response="{{signUpResponse}}"></core-ajax>
+        <div class="signUp" layout vertical>
+            <paper-input id="name" label="Name" floatinglabel value="{{userInfo.name}}"></paper-input>
+            <paper-input id="realname" label="RealName" floatinglabel value="{{userInfo.realname}}"></paper-input>
+            <paper-input id="email" label="Email" floatinglabel value="{{userInfo.email}}"></paper-input>
+            <paper-input-decorator id="password" label="Password" floatingLabel value="{{userInfo.password}}">
+                <input is="core-input" value="{{userInfo.password}}" type="password">
+            </paper-input-decorator>
+            <paper-button id="signUpBtn" raised on-tap="{{signUp}}">Sign Up</paper-button>
+        </div>
+        <paper-toast id="toastSignUpSuccess" text="Account created." role="status" touch-action="none" tabindex="-1" class="core-transition core-transition-bottom" style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
+        <app-globals id="globals"></app-globals>
+    </template>
+    <script>
+        Polymer("sign-up", {
+
+            ready: function() {
+                this.userInfo = {};
+            },
+
+            signUp: function() {
+                this.userJson = JSON.stringify(this.userInfo);
+                this.$.signUpAjax.go();
+            },
+
+            signUpResponse: function() {
+                this.$.toastSignUpSuccess.show();
+            }
+        })
+    </script>
+</polymer-element>
+
+<polymer-element name="log-in" noscript>
+    <template>
+        <sign-in></sign-in>
+        <sign-up></sign-up>
+    </template>
 </polymer-element>
