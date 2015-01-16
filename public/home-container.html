@@ -111,7 +111,7 @@
                 <div class="userSignIn">
                     <a href="/#/login" hidden?="{{$.globals.values.currentUser}}" style='padding-top: 20px'>Sign In</a>
                     <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
-                        <label>{{$.globals.values.currentUser.name}}</label>
+                        <label>{{$.globals.values.currentUser.realname}}</label>
                         <paper-dropdown class="dropdown" halign="right" style="color:#000;" on-core-select="{{onUserInfoSelect}}">
                             <core-menu class="menu">
                                 <paper-item>Profile</paper-item>
@@ -145,7 +145,7 @@
             ready : function() {
 
                 if (this.$.globals.values.currentUser) {
-                    this.userName = this.$.globals.values.currentUser.name;
+                    this.userName = this.$.globals.values.currentUser.realname;
                 } else {
                     this.$.currentUserAjax.go();
                 }
@@ -153,7 +153,7 @@
 
             currentUserCallback: function(event, response) {
                 this.$.globals.values.currentUser = JSON.parse(response.response);
-                this.userName = this.$.globals.values.currentUser.name;
+                this.userName = this.$.globals.values.currentUser.realname;
             },
 
             noUserCallback: function() {

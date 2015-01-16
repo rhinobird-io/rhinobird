@@ -9,7 +9,6 @@
             <div vertical layout>
                 <div horizontal layout center>
                     <div style="width:400px" vertical layout>
-                        <paper-input label="name" floatinglabel value="{{user.name}}"></paper-input>
                         <paper-input label="realname" floatinglabel value="{{user.realname}}"></paper-input>
                         <paper-input label="email" floatinglabel value="{{user.email}}"></paper-input>
                     </div>
@@ -54,7 +53,7 @@
             },
 
             saveProfile: function() {
-                if (this.user.name && this.user.realname && this.user.email) {
+                if (this.user.realname && this.user.email) {
                     this.newUserData = JSON.stringify(this.user);
                     this.$.updateUserAjax.go();
                     this.$.globals.values.currentUser = this.user;
