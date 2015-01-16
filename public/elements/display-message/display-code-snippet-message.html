@@ -1,0 +1,40 @@
+<polymer-element name="display-code-snippet-message" attributes="text">
+
+<template>
+	<style>
+		#codeSnippet{
+			margin: .5rem 0 .2rem 0;
+			line-height: 1.15rem;
+			background: #fbfaf8;
+			padding: .5rem;
+			word-break: normal;
+			border-radius: 4px;
+			border: 1px solid rgba(0,0,0,0.15);
+			
+		}
+		#line{
+			white-space: pre-wrap;
+		}
+	</style>
+	<div id="codeSnippet">
+		<template repeat="{{t in processedText}}">
+		<span id="line">{{t}}</span>
+		<br/></template>
+	</div>
+</template>
+
+<script>
+	Polymer({
+		processedText : [],
+		domReady: function(){
+			this.text = this.text.replace(/^```/, "");
+			this.text = this.text.replace(/^\n/, "");
+			this.text = this.text.replace(/```$/, "");
+			this.text = this.text.replace(/```\n$/, "");
+
+			this.processedText = this.text.split("\n");
+
+		}, 
+	});
+</script>
+</polymer-element>

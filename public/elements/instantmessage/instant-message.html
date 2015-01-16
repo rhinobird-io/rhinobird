@@ -1,0 +1,272 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="../../bower_components/core-style/core-style.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
+<link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
+
+<link rel="import" href="../../../home-container.html">
+<link rel="import" href="../display-message/display-message.html">
+
+
+<polymer-element name="instant-message" attributes="userId channelName" on-keypress="{{keypressHandler}}">
+    <template>
+        <style>
+            h3 {
+                font-size: 20px;
+                padding: 20px;
+                margin: 0px;
+            }
+
+
+
+            #history {
+                overflow: auto
+            }
+
+            #inputArea {
+                min-height: 55px
+            }
+
+            #historyAndInput {
+                padding: 20px;
+            }
+
+            #messageInput {
+                width: 100%;
+                min-height: 55px;
+
+            }
+
+        </style>
+        <core-style ref="theme"></core-style>
+        <home-container>
+            <div horizontal layout fit>
+                <div id="historyAndInput" four flex vertical layout reverse class="mainBgColor">
+                    <div id="inputArea" horizontal layout reverse>
+                        <div>
+                            <paper-button on-click="{{sendMessage}}" class="mainColor">Send</paper-button>
+                        </div>
+                        <div flex>
+                            <paper-autogrow-textarea id="messageInput">
+                                <textarea id="t1" value="{{message}}"></textarea>
+                            </paper-autogrow-textarea>
+                        </div>
+                    </div>
+
+                    <div id="history">
+                        old messages in room {{ channelName }}
+                        <template repeat="{{m in messages}}">
+                            <display-message user="{{m.userId}}" text="{{m.text}}" on-loaded="{{messageLoaded}}" on-ready="{{messageReady}}"></display-message>
+                        </template>
+                    </div>
+
+                </div>
+
+                <div flex>
+                    <div id="groupChannel">
+                        <h3 class="thirdColor">Group Channel</h3>
+                        <template repeat="{{ g in group }}">
+                            <paper-item on-click="{{ handleChannelSelect }}" hash="{{g.name}}">{{ g.name }}</paper-item>
+                        </template>
+                    </div>
+                    <div id="privateChannel">
+                        <h3 class="thirdColor">Private Channel</h3>
+                        <template repeat="{{ g in private }}">
+                            <paper-item on-click="{{ handleChannelSelect }}" hash="{{'@'+g.displayName}}">{{ g.displayName }}
+                            </paper-item>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <paper-action-dialog id="userIdDialog" heading="Dialog Title">
+                <paper-input value="{{userId}}"></paper-input>
+                <paper-button affirmative on-click="{{userLogin}}">Accept</paper-button>
+            </paper-action-dialog>
+        </home-container>
+    </template>
+    <script>
+        var defaultChannel = 'lobby';
+        var hostname = window.location.hostname;
+        var serverUrl = 'http://'+ hostname +':3000';
+    </script>
+    <!-- this was provided by var io = require('socket.io').listen(app); -->
+    <script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+    <script>
+
+        Polymer({
+            messages:[],
+
+            ready: function () {
+                // Init the plugin name
+                this.pluginName = 'instantmessage';
+
+                // the users in this room
+                this.users = [];
+
+                var objDiv = this.$.history;
+                objDiv.scrollTop = objDiv.scrollHeight;
+            },
+
+            /**
+             * Only in domReady the userId is filled
+             */
+            domReady: function () {
+
+                var self = this;
+                $.getScript(serverUrl+'/socket.io/socket.io.js', function(){
+                    self.loadChannels().done(function(){
+                        // get channel id by name
+                        self.getChannel(self.channelName, self.userId, self.channelName.indexOf('@') === 0).done(function(resp) {
+                            self.channel = resp;
+                            self.loadHistory(self.channel.id);
+
+                            self.socket = io(serverUrl).connect();
+                            self.socket.on('connect', function () {
+                                self.socket.emit('init', {
+                                    userId: self.userId,
+                                    channelName: self.channel.name
+                                });
+                            });
+
+                            self.socket.on('send:message', function (message) {
+                                self.messages.push(message);
+                                self.$.messageInput.update();
+                                var objDiv = self.$.history;
+                                objDiv.scrollTop = objDiv.scrollHeight;
+                            });
+
+                            self.socket.on('user:join', function (data) {
+                                self.messages.push({
+                                    userId: 0,
+                                    text: 'User ' + data.userId + ' has joined.'
+                                });
+                            });
+
+                            self.socket.on('user:left', function (data) {
+                                self.messages.push({
+                                    userId: 0,
+                                    text: 'User ' + data.userId + ' has left.'
+                                });
+                            });
+                        });
+                    });
+                });
+
+            },
+
+            loadChannels: function () {
+                var self = this;
+                return $.get(serverUrl + '/api/users/' + self.userId + '/channels').done(function(channels){
+                    self.private = [];
+                    self.group = [];
+                    channels.forEach(function (channel) {
+                        if (channel.private) {
+                            self.loadChannelUsers(channel.id).done(function(users){
+                                users.forEach(function(user) {
+                                    if (user.id !== self.userId) {
+                                        channel.displayName = user.name;
+                                    }
+                                })
+                            });
+                            self.private.push(channel);
+                        } else {
+                            self.group.push(channel);
+                        }
+                    });
+                });
+            },
+
+            loadHistory: function (roomId) {
+                var self = this;
+                $.get(serverUrl + '/api/channels/' + self.channel.id + '/messages').done(function(messages) {
+                    var temp = [];
+                    messages.forEach(function(message) {
+                        temp.push({userId : message.UserId, text: message.message});
+                    });
+                    self.messages = temp.concat(self.messages);
+                });
+            },
+
+            loadChannelUsers : function(channelId) {
+                var self = this;
+                return $.get(serverUrl + '/api/channels/' + channelId + '/users');
+            },
+
+            getChannel : function(channelName, fromUserId, isPrivate) {
+                return $.post(serverUrl + '/api/channels', {
+                    name : channelName,
+                    from : fromUserId,
+                    isPrivate : isPrivate
+                });
+            },
+
+            goToDefaultChannel: function () {
+                var querySelector = this.$.groupChannel.querySelector('paper-item');
+                if (querySelector) {
+                    querySelector.click()
+                }
+            },
+
+            handleChannelSelect: function (event, detail, target) {
+                // exit current room
+                var self = this;
+
+                if (target.templateInstance.model.g.id === self.channel.id) {
+                    return;
+                }
+
+                var hash = target.attributes['hash'].value;
+                document.querySelector('app-router').go('/' + self.pluginName +'/users/' + this.userId + '/messages/' + hash);
+
+                this.socket.emit('change:room', {
+                    newRoom: target.templateInstance.model.g.id,
+                    previousRoom: self.channel.id
+                });
+            },
+
+            sendMessage: function () {
+                var self = this;
+                this.socket.emit('send:message', {
+                    message: self.message,
+                    channelId: self.channel.id
+                });
+
+                // add the message to our model locally
+                this.messages.push({
+                    userId: self.userId,
+                    text: self.message
+                });
+                this.message = '';
+                this.$.messageInput.update();
+
+            },
+
+            messageReady: function(event){
+                var objDiv = this.$.history;
+                objDiv.scrollTop = objDiv.scrollHeight;
+            },
+
+            keypressHandler: function (event, detail, sender) {
+                if (event.keyCode === 13 && this.message === '') {
+                    event.preventDefault();
+                    return;
+                }
+                if (event.shiftKey && event.keyCode === 13) {
+                    return;
+                }
+                if (!event.shiftKey && event.keyCode === 13) {
+                    this.sendMessage();
+                    event.preventDefault();
+                    return;
+                }
+            },
+            messageLoaded: function(event){
+                var objDiv = this.$.history;
+                objDiv.scrollTop = objDiv.scrollHeight;
+            },
+
+            roomId: ''
+        });
+    </script>
+</polymer-element>
