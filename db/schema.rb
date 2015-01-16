@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150114072826) do
+ActiveRecord::Schema.define(version: 20150116022048) do
 
   create_table "dashboard_records", force: :cascade do |t|
     t.integer  "user_id"
@@ -22,6 +22,15 @@ ActiveRecord::Schema.define(version: 20150114072826) do
   end
 
   add_index "dashboard_records", ["user_id"], name: "index_dashboard_records_on_user_id"
+
+  create_table "local_avatars", force: :cascade do |t|
+    t.integer  "user_id"
+    t.binary   "image_data", null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "local_avatars", ["user_id"], name: "index_local_avatars_on_user_id"
 
   create_table "notifications", force: :cascade do |t|
     t.integer  "user_id"

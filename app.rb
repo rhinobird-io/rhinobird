@@ -7,6 +7,7 @@ require './models/user.rb'
 require './models/users_teams.rb'
 require './models/dashboard_record'
 require './models/notification'
+require './models/local_avatar'
 require 'gravatar-ultimate'
 require 'sinatra-websocket'
 require "bcrypt"
@@ -61,7 +62,7 @@ class App < Sinatra::Base
   end
 
   before do
-    login_required! unless ["/platform/login", "/platform/users", "/platform/loggedOnUser", "/developer/plugins", "/"].include?(request.path_info)
+    login_required! unless ["/platform/login", "/platform/users", "/platform/loggedOnUser", "/"].include?(request.path_info)
     content_type 'application/json'
     if request.media_type == 'application/json'
       body = request.body.read
@@ -111,30 +112,51 @@ class App < Sinatra::Base
 
     #gravatar related
     get '/gravatar/:userId' do
-      user = User.find(params[:userId])
+      @user_id = params[:userId]
+      @user = User.find(params[:userId])
       gravatar = {}
-      gravatar["url"] = Gravatar.new(user.email).image_url
-      gravatar["username"] = user.realname
+      gravatar["username"] = @user.realname
+      gravatar["url"] = get_image_url
       gravatar.to_json
-      #todo show local uploaded picture
     end
 
     get '/gravatar' do
       gravatars = []
       @params.each do |param|
-        user = User.find(param[1])
+        @user = User.find(param[1])
+        @user_id = param[1]
         gravatar = {}
-        gravatar["url"] = Gravatar.new(user.email).image_url
-        gravatar["username"] = user.realname
+        gravatar["url"] = get_image_url
+        gravatar["username"] = @user.realname
         gravatars << gravatar
       end
       gravatars.to_json
-      #todo show local uploaded picture
     end
 
-    get '/avatar/uploaded' do
-      content_type 'image/png'
-      #todo
+    def get_image_url
+      if @local_avatar.nil?
+        @local_avatar = @user.local_avatar
+      end
+
+      if @local_avatar.nil?
+        url = Gravatar.new(@user.email).image_url
+      else
+        url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}" + "/platform/avatar/" + @user_id
+      end
+
+      return url
+    end
+
+    get '/avatar/:userId' do
+      if @local_avatar.nil?
+        @local_avatar = User.find(params[:userId]).local_avatar
+      end
+      if @local_avatar.nil?
+        404
+      else
+        content_type 'image/png'
+        @local_avatar["image_data"]
+      end
     end
 
     post '/avatar' do
@@ -143,10 +165,9 @@ class App < Sinatra::Base
       tempfile.readlines.each do |line|
         image_data = image_data + line
       end
-      #todo save image to db
-      # p image_data
-      # user = User.find(session[:user][:id])
 
+      avatar = {:image_data => image_data}
+      User.find(session[:user][:id]).local_avatar = LocalAvatar.create!(avatar)
     end
 
     get '/teams' do
