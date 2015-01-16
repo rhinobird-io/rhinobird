@@ -1,0 +1,14 @@
+{
+  "name": "nodejs-socket-io-im",
+  "version": "0.0.1",
+  "dependencies": {
+    "async": "^0.9.0",
+    "express": "2.5.10",
+    "open-graph": "git://github.com/chadliu23/node-open-graph",
+    "restify": "^2.8.4",
+    "sequelize": "^2.0.0-rc7",
+    "socket.io": ">= 0.9.6",
+    "sqlite3": "^3.0.4",
+    "lodash": "^2.4.1"
+  }
+}
