@@ -9,11 +9,14 @@ require './models/dashboard_record'
 require './models/notification'
 require 'gravatar-ultimate'
 require 'sinatra-websocket'
+require "bcrypt"
 
 class App < Sinatra::Base
 
   register Sinatra::ActiveRecordExtension
   register Sinatra::Namespace
+
+  include BCrypt
 
   set :show_exceptions, :after_handler
   set :bind, '0.0.0.0'
@@ -58,7 +61,7 @@ class App < Sinatra::Base
   end
 
   before do
-    login_required! unless ["/platform/login", "/platform/signup", "/platform/loggedOnUser", "/"].include?(request.path_info)
+    login_required! unless ["/platform/login", "/platform/users", "/platform/loggedOnUser", "/developer/plugins", "/"].include?(request.path_info)
     content_type 'application/json'
     if request.media_type == 'application/json'
       body = request.body.read
@@ -178,13 +181,16 @@ class App < Sinatra::Base
 
     post '/login' do
       session[:user] = nil
-      user = User.where(email: @body["email"], encrypted_password: @body["password"]).first
+      password = Password.create(@body["password"]).first
+      user = User.find_by(email: @body["email"])
       if user.nil?
-        401
+        status 410
+      elsif user.password == @body["password"]
+        session[:user] = { :id => user.id }
+        user.to_json(:except => :encrypted_password)
+      else
+        status 401
       end
-
-      session[:user] = { :id => user.read_attribute("id") }
-      user.to_json
     end
 
     post '/logout' do
@@ -252,12 +258,9 @@ class App < Sinatra::Base
     post '/users/:userId/notifications' do
       User.find(params[:userId]).notifications.create!(@body)
       content = [@body].to_json
-      socketId = params[:userId].to_i
-      p content
-      p socketId
-      unless settings.sockets[socketId].nil?
-        p "----------------------------------------------"
-        EM.next_tick { settings.sockets[socketId].send(content) }
+      socket_id = params[:userId].to_i
+      unless settings.sockets[socket_id].nil?
+        EM.next_tick { settings.sockets[socket_id].send(content) }
       end
     end
 

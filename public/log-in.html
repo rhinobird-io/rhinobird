@@ -67,21 +67,33 @@
                 id="signUpAjax"
                 method="post"
                 contentType="application/json"
+                body="{{userJson}}"
                 url="/platform/users"
                 on-core-response="{{signUpResponse}}"></core-ajax>
         <div class="signUp" layout vertical>
-            <paper-input id="name" label="Name"></paper-input>
-            <paper-input id="realname" label="RealName"></paper-input>
-            <paper-input id="email" label="Email"></paper-input>
-            <paper-input id="password" label="Password"></paper-input>
+            <paper-input id="name" label="Name" value="{{userInfo.name}}"></paper-input>
+            <paper-input id="realname" label="RealName" value="{{userInfo.realname}}"></paper-input>
+            <paper-input id="email" label="Email" value="{{userInfo.email}}"></paper-input>
+            <paper-input id="password" label="Password" value="{{userInfo.password}}"></paper-input>
             <paper-button id="signUpBtn" raised on-tap="{{signUp}}">Sign Up</paper-button>
         </div>
+        <paper-toast id="toastSignUpSuccess" text="Account created." role="status" touch-action="none" tabindex="-1" class="core-transition core-transition-bottom" style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
         <app-globals id="globals"></app-globals>
     </template>
     <script>
         Polymer("sign-up", {
+
+            ready: function() {
+                this.userInfo = {};
+            },
+
             signUp: function() {
+                this.userJson = JSON.stringify(this.userInfo);
                 this.$.signUpAjax.go();
+            },
+
+            signUpResponse: function() {
+                this.$.toastSignUpSuccess.show();
             }
         })
     </script>
