@@ -8,6 +8,8 @@ require './models/users_teams.rb'
 require './models/dashboard_record'
 require './models/notification'
 require './models/local_avatar'
+require './models/event'
+require './models/appointment'
 require 'gravatar-ultimate'
 require 'sinatra-websocket'
 require "bcrypt"
@@ -111,6 +113,16 @@ class App < Sinatra::Base
   namespace '/platform' do
 
     #gravatar related
+    get '/gravatars' do
+      User.all.map { |u|
+        {
+            id: u.id,
+            url: Gravatar.new(u.email).image_url,
+            username: u.realname
+        }
+      }.to_json
+    end
+
     get '/gravatar/:userId' do
       @user_id = params[:userId]
       @user = User.find(params[:userId])
@@ -230,6 +242,20 @@ class App < Sinatra::Base
       profile = {}
       profile["user"] = User.find(session[:user][:id])
 
+    end
+
+    get '/users/:userId/events' do
+      User.find(params[:userId]).events.order(:from).to_json(include: { participants: {only: :id}})
+    end
+
+    post '/events' do
+      uid = session[:user][:id]
+      event = Event.new(@body.except('participants'))
+      @body['participants'].each { |p|
+        event.participants << User.find(p)
+      }
+      event.save!
+      200
     end
 
     get '/users' do
