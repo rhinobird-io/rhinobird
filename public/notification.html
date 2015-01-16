@@ -1,0 +1,113 @@
+<polymer-element name="notification-element">
+    <template>
+        <core-ajax
+                auto
+                id="notificationAjax"
+                url="/platform/users/{{$.globals.values.currentUser.id}}/notifications"
+                handleAs="json"
+                response="{{notifications}}"></core-ajax>
+
+        <core-ajax id="getGravatarForNotification"
+                   url="/platform/gravatar"
+                   params="{{notificationFromsJson}}"
+                   on-core-response="{{avatarCallback}}"></core-ajax>
+
+        <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
+            <label style="margin-left:10px;color: red">{{notifications.length}}</label>
+            <paper-dropdown class="dropdown" halign="right" style="color:#000;">
+                <core-menu class="menu">
+                    <template repeat="{{notification in notifications}}">
+                        <paper-item>
+                            <div>
+                                <member-element userid="{{notification.from_user_id}}"></member-element>
+                                <p>{{notification.content}}</p>
+                            </div>
+                        </paper-item>
+                    </template>
+                </core-menu>
+            </paper-dropdown>
+        </paper-menu-button>
+        <app-globals id="globals"></app-globals>
+    </template>
+    <script>
+        Polymer("notification-element", {
+
+            ready: function() {
+                if (!this.$.globals.values.websocket) {
+                    this.$.globals.values.websocket = this.connect(this);
+                    console.log(this.$.globals.values.websocket);
+                }
+            },
+
+            connect: function(that) {
+                try {
+                    var socket, host;
+                    host = "ws://" + window.location.hostname + ":9292";
+                    socket = new WebSocket(host);
+
+                    console.log("Socket State: " + socket.readyState);
+
+                    socket.onopen = function() {
+                        console.log("Socket Status: " + socket.readyState + " (open)");
+                    };
+
+                    socket.onclose = function() {
+                        console.log("Socket Status: " + socket.readyState + " (closed)");
+                    };
+
+                    socket.onmessage = function(msg) {
+                        console.log("Received: " + msg.data);
+                        that.notificationData = JSON.parse(msg.data);
+                        that.handleNotification();
+                    };
+
+                    return socket;
+                } catch(exception) {
+                    console.log("Error: " + exception);
+                }
+            },
+
+            handleNotification: function() {
+                for (index in this.notificationData) {
+                    this.notifications.push(this.notificationData[index]);
+                }
+
+                this.showNotification();
+            },
+
+            showNotification: function() {
+                if (!Notification) {
+                    alert('Please use a modern version of Chrome');
+                    return;
+                }
+
+                if (Notification.permission !== "granted")
+                    Notification.requestPermission();
+
+                this.notificationFroms = [];
+                for (index in this.notificationData) {
+                    this.notificationFroms.push(this.notificationData[index].from_user_id);
+                }
+
+                this.notificationFromsJson = JSON.stringify(this.notificationFroms);
+                this.$.getGravatarForNotification.go();
+            },
+
+            avatarCallback: function(event, detail, target) {
+                this.gravatars = JSON.parse(detail.response);
+                for (index in this.gravatars) {
+                    var notification = new Notification(this.gravatars[index].username, {
+                        icon: this.gravatars[index].url + "?d=identicon",
+                        body: this.notificationData[index].content
+                    });
+
+                    setTimeout((function(notify) {
+                        return function() {
+                            notify.close();
+                        }
+                    })(notification), 5000);
+                }
+            }
+        });
+    </script>
+</polymer-element>

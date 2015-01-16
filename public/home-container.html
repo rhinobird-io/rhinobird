@@ -13,6 +13,7 @@
 <link rel="import" href="bower_components/paper-dropdown/paper-dropdown.html">
 <link rel="import" href="bower_components/paper-item/paper-item.html">
 <link rel="import" href="elements/app-globals/app-globals.html">
+<link rel="import" href="notification.html">
 
 <polymer-element name="home-container" attributes="selected">
     <template>
@@ -44,27 +45,33 @@
             .userSignIn /deep/ .core-opened{
                 left:auto !important;
                 right: 0;
-
             }
             .user-item /deep/ #scroller {
                 max-width: none !important;
             }
+
+
         </style>
         <core-scaffold>
             <core-header-panel navigation flex mode="seamed">
-                <core-toolbar><core-icon icon="menu"></core-icon><span>Team Work</span></core-toolbar>
-                <core-menu theme="core-light-theme">
+                <core-toolbar><core-icon icon="menu"></core-icon><paper-button on-tap="{{jumpToDashboard}}">Team Work</paper-button></core-toolbar>
+                <core-menu theme="core-light-theme" hidden?="{{$.globals.values.showSetting}}">
                     <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="/#/dashboard"></a></core-item>
                     <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="/#/calendar"></a></core-item>
                     <template repeat="{{plugin in $.globals.values.plugins}}">
                         <core-item icon="{{plugin.icon}}" label="{{plugin.label}}" active?="{{selected == plugin.active}}"><a is="pushstate-anchor" href="{{plugin.href}}"></a></core-item>
                     </template>
                 </core-menu>
+                <core-menu theme="core-light-theme" hidden?="{{!$.globals.values.showSetting}}">
+                    <template repeat="{{menu in $.globals.values.menus}}">
+                        <core-item icon="{{menu.icon}}" label="{{menu.label}}" active?="{{selected == menu.active}}"><a is="pushstate-anchor" href="{{menu.href}}"></a></core-item>
+                    </template>
+                </core-menu>
             </core-header-panel>
             <div tool>
                 <content select=".title"></content>
             </div>
-            <div tool horizontal layout flex end-justified class="bottom">
+            <div tool horizontal layout center flex end-justified class="bottom">
                 <core-ajax
                         auto='true'
                         method="GET"
@@ -72,43 +79,38 @@
                         handleAs="json"
                         response="{{users}}"></core-ajax>
 
-                <!--<paper-dropdown-menu class='user-dropdown-menu' label="{{userName}}" on-core-select="{{onUserSelect}}">-->
-                    <!--<paper-dropdown class="dropdown">-->
-                        <!--<core-menu>-->
-                            <!--<template repeat="{{users}}">-->
-                                <!--<paper-item class='user-item'>{{name}}</paper-item>-->
-                            <!--</template>-->
-                        <!--</core-menu>-->
-                    <!--</paper-dropdown>-->
-                <!--</paper-dropdown-menu>-->
+                <core-ajax
+                        id="logoutAjax"
+                        method="post"
+                        contentType="application/json"
+                        url="/platform/logout"
+                        on-core-response="{{logoutCallback}}"></core-ajax>
+
+                <core-ajax
+                        id="currentUserAjax"
+                        method="get"
+                        contentType="application/json"
+                        url="/platform/loggedOnUser"
+                        on-core-response="{{currentUserCallback}}"
+                        on-core-error="{{noUserCallback}}"></core-ajax>
+
                 <div class="userSignIn">
-                    <a href="/#/login" hidden?="{{$.globals.values.currentUser}}" style='padding-top: 20px'>{{userName}}</a>
+                    <a href="/#/login" hidden?="{{$.globals.values.currentUser}}" style='padding-top: 20px'>Sign In</a>
                     <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
-                        <paper-button>{{userName}}</paper-button>
-                        <paper-dropdown class="dropdown" halign="left" style="color:#000;" on-core-select="{{onUserInfoSelect}}">
+                        <label>{{$.globals.values.currentUser.name}}</label>
+                        <paper-dropdown class="dropdown" halign="right" style="color:#000;" on-core-select="{{onUserInfoSelect}}">
                             <core-menu class="menu">
                                 <paper-item>Profile</paper-item>
+                                <paper-item>Team</paper-item>
                                 <paper-item>Logout</paper-item>
                             </core-menu>
                         </paper-dropdown>
                     </paper-menu-button>
-                    <core-ajax
-                            id="logoutAjax"
-                            method="post"
-                            contentType="application/json"
-                            url="/platform/logout"
-                            on-core-response="{{logoutCallback}}"></core-ajax>
-                    <core-ajax
-                            id="currentUserAjax"
-                            method="get"
-                            contentType="application/json"
-                            url="/platform/loggedOnUser"
-                            on-core-response="{{currentUserCallback}}"
-                            on-core-error="{{noUserCallback}}"></core-ajax>
-
                 </div>
-                <app-globals id="globals"></app-globals>
-                <paper-menu-button style='padding-top: 20px'>
+
+                <notification-element></notification-element>
+
+                <paper-menu-button>
                     <paper-icon-button icon="apps" noink></paper-icon-button>
                     <paper-dropdown class="dropdown" halign="right" style="color:#000;">
                         <core-menu class="menu">
@@ -122,6 +124,7 @@
             <div fit class="content">
                 <content></content>
             </div>
+            <app-globals id="globals"></app-globals>
         </core-scaffold>
     </template>
     <script>
@@ -153,13 +156,37 @@
 
             onUserInfoSelect: function(event, detail, target) {
                 option = detail.item.textContent;
-                if ("Logout" == option) {
-                    this.$.logoutAjax.go();
+
+                switch(option){
+                    case "Logout":
+                        this.$.logoutAjax.go();
+                        break;
+                    case "Profile":
+                    case "Team":
+                    case "Notification":
+                        if (!this.$.globals.values.menus) {
+                            this.buildNewSideMenu();
+                        }
+
+                        this.$.globals.values.showSetting = true;
+                        document.querySelector('app-router').go('/' + option.toLowerCase());
+                        break;
                 }
+            },
+
+            buildNewSideMenu: function() {
+                this.$.globals.values.menus = [];
+                this.$.globals.values.menus.push({"icon": "event", "label": "Profile", "active": "profile", "href":"/#/profile"});
+                this.$.globals.values.menus.push({"icon": "event", "label": "Team", "active": "team", "href":"/#/team"});
             },
 
             logoutCallback: function() {
                 document.querySelector('app-router').go('/login');
+            },
+
+            jumpToDashboard: function() {
+                this.$.globals.values.showSetting = false;
+                document.querySelector('app-router').go('/dashboard');
             }
         });
     </script>

@@ -6,15 +6,23 @@ require './models/team.rb'
 require './models/user.rb'
 require './models/users_teams.rb'
 require './models/dashboard_record'
+require './models/notification'
+require './models/local_avatar'
 require 'gravatar-ultimate'
+require 'sinatra-websocket'
+require "bcrypt"
 
 class App < Sinatra::Base
 
   register Sinatra::ActiveRecordExtension
   register Sinatra::Namespace
 
+  include BCrypt
+
   set :show_exceptions, :after_handler
   set :bind, '0.0.0.0'
+  set :server, 'thin'
+  set :sockets, []
 
   use Rack::Session::Cookie, :key => 'rack.session',
       :path => '/',
@@ -28,8 +36,25 @@ class App < Sinatra::Base
   end
 
   get '/' do
-    content_type 'text/html'
-    send_file File.join(settings.public_folder, 'index.html')
+    if request.websocket?
+      request.websocket do |ws|
+        ws.onopen do
+          ws.send("Hello World!")
+          settings.sockets[session[:user][:id]] = ws
+        end
+        ws.onmessage do |msg|
+          EM.next_tick { ws.send(msg) }
+        end
+        ws.onclose do
+          warn("websocket closed")
+          settings.sockets.delete(ws)
+        end
+      end
+    else
+      content_type 'text/html'
+      send_file File.join(settings.public_folder, 'index.html')
+    end
+
   end
 
   def login_required!
@@ -37,7 +62,7 @@ class App < Sinatra::Base
   end
 
   before do
-    login_required! unless ["/platform/login", "/platform/signup", "/platform/loggedOnUser"].include?(request.path_info)
+    login_required! unless ["/platform/login", "/platform/users", "/platform/loggedOnUser", "/"].include?(request.path_info)
     content_type 'application/json'
     if request.media_type == 'application/json'
       body = request.body.read
@@ -87,11 +112,62 @@ class App < Sinatra::Base
 
     #gravatar related
     get '/gravatar/:userId' do
-      user = User.find(params[:userId])
+      @user_id = params[:userId]
+      @user = User.find(params[:userId])
       gravatar = {}
-      gravatar["url"] = Gravatar.new(user.email).image_url
-      gravatar["username"] = user.realname
+      gravatar["username"] = @user.realname
+      gravatar["url"] = get_image_url
       gravatar.to_json
+    end
+
+    get '/gravatar' do
+      gravatars = []
+      @params.each do |param|
+        @user = User.find(param[1])
+        @user_id = param[1]
+        gravatar = {}
+        gravatar["url"] = get_image_url
+        gravatar["username"] = @user.realname
+        gravatars << gravatar
+      end
+      gravatars.to_json
+    end
+
+    def get_image_url
+      if @local_avatar.nil?
+        @local_avatar = @user.local_avatar
+      end
+
+      if @local_avatar.nil?
+        url = Gravatar.new(@user.email).image_url
+      else
+        url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}" + "/platform/avatar/" + @user_id
+      end
+
+      return url
+    end
+
+    get '/avatar/:userId' do
+      if @local_avatar.nil?
+        @local_avatar = User.find(params[:userId]).local_avatar
+      end
+      if @local_avatar.nil?
+        404
+      else
+        content_type 'image/png'
+        @local_avatar["image_data"]
+      end
+    end
+
+    post '/avatar' do
+      tempfile = params[:file][:tempfile]
+      image_data = ""
+      tempfile.readlines.each do |line|
+        image_data = image_data + line
+      end
+
+      avatar = {:image_data => image_data}
+      User.find(session[:user][:id]).local_avatar = LocalAvatar.create!(avatar)
     end
 
     get '/teams' do
@@ -115,15 +191,27 @@ class App < Sinatra::Base
       200
     end
 
+    post '/teams/:teamId/users' do
+      team = Team.find(params[:teamId])
+      @body.each do |userId|
+        user = User.find(userId)
+        team.users << user
+      end
+      200
+    end
+
     post '/login' do
       session[:user] = nil
-      user = User.where(email: @body["email"], encrypted_password: @body["password"]).first
+      password = Password.create(@body["password"]).first
+      user = User.find_by(email: @body["email"])
       if user.nil?
-        401
+        status 410
+      elsif user.password == @body["password"]
+        session[:user] = { :id => user.id }
+        user.to_json(:except => :encrypted_password)
+      else
+        status 401
       end
-
-      session[:user] = { :id => user.read_attribute("id") }
-      user.to_json
     end
 
     post '/logout' do
@@ -152,6 +240,10 @@ class App < Sinatra::Base
       User.create!(@body)
     end
 
+    post '/user/:userId' do
+      User.update(params[:userId], @body)
+    end
+
     get '/teams_users' do
       Team.all.to_json(include: [:users]);
     end
@@ -175,6 +267,31 @@ class App < Sinatra::Base
       content["from_user_id"] = session[:user][:id]
       users.each do |user|
         record = User.find(user).dashboard_records.create!(content)
+      end
+      200
+    end
+
+    get '/users/:userId/notifications' do
+      User.find(params[:userId]).notifications.to_json
+    end
+
+    # add a notification to one user
+    post '/users/:userId/notifications' do
+      User.find(params[:userId]).notifications.create!(@body)
+      content = [@body].to_json
+      socket_id = params[:userId].to_i
+      unless settings.sockets[socket_id].nil?
+        EM.next_tick { settings.sockets[socket_id].send(content) }
+      end
+    end
+
+    # add a notification to many users
+    post '/users/notifications' do
+      users = @body["users"]
+      content =@body["content"]
+      content["from_user_id"] = session[:user][:id]
+      users.each do |user|
+        record = User.find(user).notifications.create!(content)
       end
       200
     end

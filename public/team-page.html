@@ -1,0 +1,101 @@
+<link rel="import" href="home-container.html">
+<link rel="import" href="elements/app-globals/app-globals.html">
+<link rel="import" href="elements/member-select/member-element.html">
+<link rel="import" href="elements/member-select/member-select.html">
+<link rel="import" href="bower_components/core-list/core-list.html">
+<link rel="import" href="bower_components/core-item/core-item.html">
+<link rel="import" href="bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="bower_components/paper-dialog/paper-action-dialog.html">
+
+<polymer-element name="team-element" attributes="team">
+    <template>
+        <style>
+            paper-fab.blue {
+                background: #5677fc;
+            }
+        </style>
+        <core-ajax id="getTeams"
+                   auto
+                   url="/platform/teams/{{team.id}}/users"
+                   handleAs="json"
+                   response="{{users}}"></core-ajax>
+        <!--<label>{{users}}</label>-->
+        <div horizontal layout center>
+            <h3>{{team.name}}</h3>
+            <paper-fab icon="add" mini class="blue" title="invite new member" role="button" tabindex="0" aria-label="invite new member" on-tap="{{inviteNewMember}}" style="margin-left: 10px"></paper-fab>
+        </div>
+        <div horizontal layout flex>
+            <template repeat="{{user in users}}">
+                <member-element userid="{{user.id}}"></member-element>
+            </template>
+        </div>
+
+        <paper-action-dialog id="inviteDialog" heading="Invite new members to {{team.name}}" role="dialog" layout="" vertical="" aria-label="Invite new members to {{team.name}" tabindex="-1" style="position: fixed; outline: none; display: none;">
+
+            <core-ajax id="addMember"
+                       url="/platform/teams/{{team.id}}/users"
+                       method="post"
+                       contentType="application/json"
+                       body="{{newMember}}"
+                       on-core-response="{{newMemberResponse}}"></core-ajax>
+            <member-select id="memberSelect" teamsUrl="/platform/teams_users"></member-select>
+
+            <paper-button affirmative="" role="button" tabindex="0">Cancel</paper-button>
+            <paper-button affirmative="" autofocus="" role="button" tabindex="0" on-tap="{{addMemberToTeam}}" style="color: dodgerblue">Invite</paper-button>
+        </paper-action-dialog>
+
+    </template>
+    <script>
+        Polymer("team-element", {
+            inviteNewMember: function() {
+                var dialog = this.$.inviteDialog;
+                if (!dialog) {
+                    console.log("dialog not found");
+                } else {
+                    dialog.toggle();
+                }
+            },
+
+            addMemberToTeam: function() {
+                this.selectedUser = [];
+                var select = this.$.memberSelect.selected;
+                for (index in select) {
+                    this.selectedUser.push(select[index].id);
+                }
+                this.newMember = JSON.stringify(this.selectedUser);
+                var ajax = this.$.addMember;
+                ajax.go();
+            },
+
+            newMemberResponse: function() {
+                for (index in this.selectedUser) {
+                    this.users.push({"id" : this.selectedUser[index]});
+                }
+            }
+        });
+    </script>
+</polymer-element>
+
+<polymer-element name="team-page">
+    <template>
+        <home-container selected="team">
+            <div class="title">Team</div>
+            <core-ajax id="getTeams"
+                       auto
+                       url="/platform/users/{{$.globals.values.currentUser.id}}/teams"
+                       handleAs="json"
+                       response="{{teams}}"></core-ajax>
+            <div vertical layout fit>
+                <template repeat="{{team in teams}}">
+                    <team-element team="{{team}}"></team-element>
+                </template>
+            </div>
+
+        </home-container>
+        <app-globals id="globals"></app-globals>
+    </template>
+    <script>
+        Polymer();
+    </script>
+</polymer-element>
