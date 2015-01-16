@@ -1,10 +1,357 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
+<link rel="import" href="../../bower_components/core-animated-pages/core-animated-pages.html">
+<link rel="import" href="../../bower_components/polymer-filters/polymer-filters.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../../home-container.html">
+<link rel="import" href="../../elements/member-select/member-select.html">
+<link rel="import" href="../../elements/datetime-input/datetime-input.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/core-pages/core-pages.html">
+<link rel="import" href="../../bower_components/core-style/core-style.html">
+<link rel="import" href="../../bower_components/core-animated-pages/transitions/slide-up.html">
+<link rel="import" href="../../elements/smart-time-display/smart-time-display.html">
+<link rel="import" href="../../bower_components/core-list/core-list.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 
-<polymer-element name="calendar-plugin" noscript>
+<core-style id="calendar">
+    paper-tabs::shadow #selectionBar{
+    background-color: {{g.theme.accentBgColor}};
+    }
+    paper-tabs paper-tab::shadow #ink {
+    color: {{g.theme.accentBgColor}};
+    }
+    paper-toggle-button::shadow #toggleBar[checked], paper-toggle-button::shadow paper-radio-button::shadow #onRadio {
+    background-color: {{g.theme.accentBgColor}};
+    }
+    :host {
+    background-color: white;
+    }
+    div.container {
+    padding: 1em;
+    overflow-y: auto;
+    overflow-x: hidden;
+    }
+
+    div.timeline {
+    position: relative;
+    padding: 2em 0;
+    margin-top: 2em;
+    margin-bottom: 2em;
+    height:100%;
+    }
+    .listitem::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 18px;
+    height: 100%;
+    width: 4px;
+    background-color: {{g.theme.thirdBgColor}};
+    }
+
+    .content {
+    margin-left: 40px;
+    }
+    .block {
+    position: relative;
+    cursor: pointer;
+    }
+    .listitem{
+        padding: 2em 0;
+    }
+
+    .time {
+    margin-top: 4px;
+    }
+
+    p.description {
+    margin-bottom: 0;
+    }
+
+    div.detail {
+    padding: 60px;
+    overflow-y: auto;
+    }
+
+    .main-button {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    }
+
+    .tabs, .pages, .fullday {
+    max-width: 320px;
+    }
+
+    .fullday {
+    margin: 1em 0;
+    }
+
+    .event {
+    border-radius: 50%;
+    padding:8px;
+    }
+    time-input.upper {
+    margin-top: -35px;
+    }
+    date-input {
+    z-index: 1;
+    }
+    #title {
+    font-size: 25px;
+    }
+    .page.core-selected {
+    position: relative;
+    display: block;
+    }
+    paper-fab {
+    position: absolute;
+    left: 16px;
+    top: -20px;
+    z-index: 1000000000;
+    }
+
+    .list {
+    margin-top: 50px;
+    }
+
+    .subTitle {
+    font-size: 21px;
+    margin-left: 90px;
+    padding-bottom: 10px;
+    }
+
+    paper-fab {
+    position: absolute;
+    top: 24px;
+    }
+
+    .wrapper {
+    padding-bottom: 20px;
+    }
+</core-style>
+
+<polymer-element name="schedule-list">
     <template>
+        <core-style ref="theme"></core-style>
+        <core-style ref="calendar"></core-style>
+        <div layout vertical fit>
+            <div class="mainColor wrapper">
+                <template if="{{mode=='list'}}">
+                    <paper-fab mini icon="add" class="accentColor" on-tap="{{jumpToAdd}}"></paper-fab>
+                </template>
+                <template if="{{mode=='edit'}}">
+                    <paper-fab mini icon="done" class="accentColor" on-tap="{{saveEvent}}"></paper-fab>
+                </template>
+                <span class="subTitle">Schedule</span>
+            </div>
+            <div flex vertical layout class="list">
+                <core-animated-pages selected="0" transitions="cross-fade-all" id="pages" flex>
+                    <section>
+                        <div class="container" fit>
+                            <div class="timeline" vertical layout>
+                                <core-list data="{{events | orderBy('from')}}" flex>
+                                    <template>
+                                        <div class="listitem">
+                                        <div layout horizontal class="block" center on-tap="{{select}}">
+                                            <div class="event mainColor">
+                                                <core-icon icon="event"></core-icon>
+                                            </div>
+                                            <div hero hero-id="{{event.id}}" vertical layout flex class="content">
+                                                <div>{{model.title}}</div>
+                                                <div class="time iconColor">
+                                                    <smart-time-display from="{{model.from}}" to="{{model.to}}"
+                                                                        period="{{model.period}}"
+                                                                        full_day="{{model.full_day}}"></smart-time-display>
+                                                </div>
+                                            </div>
+                                            <!--<div class="info">-->
+                                            <!--<core-icon icon="info" class="iconColor"></core-icon>-->
+                                            <!--</div>-->
+                                            <paper-ripple fit></paper-ripple>
+                                        </div>
+                                        </div>
+                                    </template>
+                                </core-list>
+                            </div>
+                        </div>
+                    </section>
+                    <section>
+                        <div hero hero-id="{{selected.id}}" class="detail" vertical layout fit center slide-up>
+                            <paper-icon-button icon="arrow-back" class="main-button"
+                                               on-tap="{{main}}"></paper-icon-button>
+                            <div class="detail-content" vertical layout center>
+                                <div>
+                                    <paper-input-decorator label="Title" floatingLabel id="title"
+                                                           disabled="{{modeDisabled}}">
+                                        <template if="{{!modeDisabled}}">
+                                            <input is="core-input" value="{{selected.title}}">
+                                        </template>
+                                        <template if="{{modeDisabled}}">
+                                            <span>{{selected.title}}</span>
+                                        </template>
+                                    </paper-input-decorator>
+
+                                    <paper-input-decorator label="Description" floatingLabel id="decorator"
+                                                           disabled="{{modeDisabled}}">
+                                        <paper-autogrow-textarea id="autogrowArea">
+                                        <textarea id="textArea" wrap="virtual" value="{{selected.description}}"
+                                                  disabled?="{{modeDisabled}}"></textarea>
+                                        </paper-autogrow-textarea>
+                                    </paper-input-decorator>
+                                    <template if="{{!modeDisabled}}">
+                                        <div center horizontal layout class="fullday">
+                                            <div flex>Full Day</div>
+                                            <paper-toggle-button checked="{{selected.full_day}}"
+                                                                 disabled="{{modeDisabled}}"></paper-toggle-button>
+                                        </div>
+                                        <paper-tabs selected="{{tabSelected}}" class="tabs">
+                                            <paper-tab>Period</paper-tab>
+                                            <paper-tab>Point</paper-tab>
+                                        </paper-tabs>
+                                    </template>
+                                    <core-pages selected="{{tabSelected}}" class="pages">
+                                        <div class="page">
+                                            <div layout horizontal justified end>
+                                                <div layout vertical>
+                                                    <date-input label="From" disabled="{{modeDisabled}}"
+                                                                date="{{selected.from}}"></date-input>
+                                                    <template if="{{!selected.full_day}}">
+                                                        <time-input class="upper"
+                                                                    disabled="{{modeDisabled}}"
+                                                                    time="{{selected.from}}"></time-input>
+                                                    </template>
+                                                </div>
+                                                <div layout vertical>
+                                                    <date-input label="To" disabled="{{modeDisabled}}"
+                                                                date="{{selected.to}}"></date-input>
+                                                    <template if="{{!selected.full_day}}">
+                                                        <time-input class="upper"
+                                                                    disabled="{{modeDisabled}}"
+                                                                    time="{{selected.to}}"></time-input>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="page">
+                                            <div layout horizontal justified end>
+                                                <date-input label="Date" disabled="{{modeDisabled}}"
+                                                            date="{{selected.from}}"></date-input>
+                                                <template if="{{!selected.full_day}}">
+                                                    <time-input label="Time" disabled="{{modeDisabled}}"
+                                                                time="{{selected.from}}"></time-input>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </core-pages>
+                                    <member-select teamsUrl="/platform/teams_users"
+                                                   disabled="{{modeDisabled}}"
+                                                   selected="{{selected.participants}}"
+                                                   label="Participants"></member-select>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </core-animated-pages>
+            </div>
+        </div>
+        <app-globals id="globals"></app-globals>
+        <core-ajax
+                auto
+                url="/platform/users/{{$.globals.values.currentUser.id}}/events"
+                handleAs="json"
+                on-core-response="{{handleEvents}}"></core-ajax>
+        <core-ajax id="postEvent"
+                   url="/platform/events"
+                   method="POST"
+                   body="{{eventBody}}"
+                   contentType="application/json"
+                   on-core-response="{{eventSaved}}"
+                >
+        </core-ajax>
+        <paper-toast id="eventSavedToast" text="Event has been saved!"></paper-toast>
+    </template>
+    <script src="../../bower_components/moment/moment.js"></script>
+    <script>
+        Polymer({
+            mode: "list",
+            computed:{
+                modeDisabled: 'mode=="view"'
+            },
+            tabSelectedChanged: function (oldV, newV) {
+                this.selected.period = newV == 0;
+            },
+            selected: {},
+            observe: {
+                'selected.period': 'changeTab'
+            },
+            handleEvents: function (event, detail) {
+                this.events = detail.response;
+                this.events.forEach(function (event) {
+                    event.participants = event.participants.map(function (p) {
+                        return p.id;
+                    });
+                });
+            },
+            changeTab: function (oldV, newV) {
+                this.tabSelected = newV ? 0 : 1;
+                if (newV && !this.selected.to) {
+                    this.selected.to = new Date();
+                }
+            },
+            toTime: function (date) {
+                return moment(date).format('HH:mm');
+            },
+            select: function (event, detail, target) {
+                this.selected = target.templateInstance.model.model;
+                var self = this;
+                setTimeout(function () {
+                    self.$.autogrowArea.update(self.$.textArea);
+                    self.$.decorator.updateLabelVisibility(self.$.textArea.value);
+                    self.$.pages.selected = 1;
+                }, 100);
+                this.mode = 'view';
+            },
+            main: function () {
+                this.$.pages.selected = 0;
+                this.mode = 'list';
+            },
+            jumpToAdd: function () {
+                this.selected = {from: new Date(), to: new Date(), participants: [], full_day: false, period: true};
+                var self = this;
+                setTimeout(function () {
+                    self.$.autogrowArea.update(self.$.textArea);
+                    self.$.decorator.updateLabelVisibility(self.$.textArea.value);
+                    self.$.pages.selected = 1;
+                }, 100);
+                this.mode = 'edit';
+            },
+            saveEvent: function(){
+                this.eventBody = JSON.stringify(this.selected);
+                this.$.postEvent.go();
+            },
+            eventSaved: function(){
+                this.events.push(this.selected);
+                this.mode = 'view';
+                this.$.eventSavedToast.show();
+            }
+        });
+    </script>
+</polymer-element>
+
+<polymer-element name="calendar-plugin">
+    <template>
+        <core-style ref="theme"></core-style>
+        <style>
+
+        </style>
         <home-container>
-            <div class="title">Calendar</div>
-            <div></div>
+            <schedule-list></schedule-list>
         </home-container>
     </template>
+    <script>
+        Polymer({});
+    </script>
 </polymer-element>

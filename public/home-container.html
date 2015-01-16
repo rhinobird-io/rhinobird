@@ -14,10 +14,24 @@
 <link rel="import" href="bower_components/paper-item/paper-item.html">
 <link rel="import" href="elements/app-globals/app-globals.html">
 <link rel="import" href="notification.html">
+<link rel="import" href="bower_components/core-style/core-style.html">
 
+<core-style id="toolbar">
+    .toolbar {
+        background-color: {{g.theme.thirdBgColor}};
+    }
+    :host /deep/ core-toolbar {
+        background-color: {{g.theme.mainBgColor}};
+    }
+    :host /deep/ #headerPanel {
+        background-color: white;
+    }
+</core-style>
 <polymer-element name="home-container" attributes="selected">
     <template>
+        <core-style ref="toolbar"></core-style>
         <style>
+
             .content {
                 padding:30px;
             }
@@ -54,7 +68,7 @@
         </style>
         <core-scaffold>
             <core-header-panel navigation flex mode="seamed">
-                <core-toolbar><core-icon icon="menu"></core-icon><paper-button on-tap="{{jumpToDashboard}}">Team Work</paper-button></core-toolbar>
+                <core-toolbar class="toolbar"><paper-button on-tap="{{jumpToDashboard}}">Team Work</paper-button></core-toolbar>
                 <core-menu theme="core-light-theme" hidden?="{{$.globals.values.showSetting}}">
                     <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="/#/dashboard"></a></core-item>
                     <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="/#/calendar"></a></core-item>
@@ -121,7 +135,6 @@
                     </paper-dropdown>
                 </paper-menu-button>
             </div>
-            <div fit class="content">
                 <content></content>
             </div>
             <app-globals id="globals"></app-globals>

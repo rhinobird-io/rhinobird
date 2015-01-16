@@ -1,0 +1,55 @@
+<link rel="import" href="../../bower_components/paper-input/paper-input-decorator.html">
+<link rel="import" href="../../bower_components/polymer-filters/polymer-filters.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../../bower_components/paper-date-picker/paper-date-picker-dialog.html">
+<script src="../../bower_components/moment/moment.js"></script>
+
+<polymer-element name="date-input" attributes="date label disabled">
+    <template>
+        <style>
+            .date {
+                position: relative;
+                cursor: pointer;
+            }
+        </style>
+        <paper-input-decorator floatingLabel label="{{label}}" disabled="{{disabled}}">
+            <div layout horizontal>
+                <div class="date" on-tap="{{openDateDialog}}">
+                    <div>{{date | date('yyyy-MM-dd')}}</div>
+                    <template if="{{!disabled}}">
+                        <paper-ripple fit></paper-ripple>
+                    </template>
+                </div>
+            </div>
+        </paper-input-decorator>
+        <paper-date-picker-dialog id="dateDialog" value="{{innerDate}}"></paper-date-picker-dialog>
+    </template>
+    <script>
+        Polymer({
+            dateChanged: function (oldV, newV) {
+                if (newV) {
+                    this.innerDate = newV;
+                }
+            },
+            innerDateChanged: function (oldV, newV) {
+                var m = moment(this.date), d = moment(newV);
+                m.year(d.year());
+                m.month(d.month());
+                m.day(d.day());
+                //avoid infinite loop
+                var tmp = this.dateChanged;
+                this.dateChanged = undefined;
+                this.date = m.toDate();
+                var self = this;
+                setTimeout(function () {
+                    self.dateChanged = tmp;
+                }, 0);
+            },
+            openDateDialog: function () {
+                if (!this.disabled) {
+                    this.$.dateDialog.open();
+                }
+            }
+        });
+    </script>
+</polymer-element>

@@ -18,7 +18,7 @@
         </style>
         <core-item>
             <div flex>
-                <div class="time" horizontal layout center><member-element userid="{{record.from_user_id}}"></member-element> {{record.created_at | date('yyyy-MM-dd HH:mm:ss')}}</div>
+                <div class="time" horizontal layout center><member-element userid="{{record.from_user_id}}"></member-element> {{record.created_at | date('yyyy-MM-dd HH:mm')}}</div>
                 <div class="content"><html-echo html="{{record.content}}"></html-echo></div>
             </div>
         </core-item>
