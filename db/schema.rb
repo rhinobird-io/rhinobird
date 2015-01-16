@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150116022048) do
+ActiveRecord::Schema.define(version: 20150116094621) do
 
   create_table "appointments", force: :cascade do |t|
     t.integer "event_id"
@@ -82,15 +82,12 @@ ActiveRecord::Schema.define(version: 20150116022048) do
   end
 
   create_table "users", force: :cascade do |t|
-    t.string   "name"
     t.string   "realname"
     t.string   "email"
     t.string   "encrypted_password"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
-
-  add_index "users", ["name"], name: "index_users_on_name", unique: true
 
   create_table "users_teams", force: :cascade do |t|
     t.integer  "user_id",    null: false
