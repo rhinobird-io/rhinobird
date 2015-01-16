@@ -11,7 +11,6 @@
                    url="/platform/gravatar"
                    handleAs="json"
                    params="{{notificationFromsJson}}"
-                   response="{{gravatars}}"
                    on-core-response="{{avatarCallback}}"></core-ajax>
 
         <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
@@ -95,7 +94,8 @@
                 this.$.getGravatarForNotification.go();
             },
 
-            avatarCallback: function() {
+            avatarCallback: function(event, detail, target) {
+                this.gravatars = detail.response;
                 for (index in this.gravatars) {
                     var notification = new Notification(this.gravatars[index].username, {
                         icon: this.gravatars[index].url + "?d=identicon",
