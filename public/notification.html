@@ -9,7 +9,6 @@
 
         <core-ajax id="getGravatarForNotification"
                    url="/platform/gravatar"
-                   handleAs="json"
                    params="{{notificationFromsJson}}"
                    on-core-response="{{avatarCallback}}"></core-ajax>
 
@@ -43,7 +42,7 @@
             connect: function(that) {
                 try {
                     var socket, host;
-                    host = "ws://localhost:9292";
+                    host = "ws://" + window.location.hostname + ":9292";
                     socket = new WebSocket(host);
 
                     console.log("Socket State: " + socket.readyState);
@@ -95,7 +94,7 @@
             },
 
             avatarCallback: function(event, detail, target) {
-                this.gravatars = detail.response;
+                this.gravatars = JSON.parse(detail.response);
                 for (index in this.gravatars) {
                     var notification = new Notification(this.gravatars[index].username, {
                         icon: this.gravatars[index].url + "?d=identicon",

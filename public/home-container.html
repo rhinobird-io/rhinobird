@@ -188,39 +188,6 @@
                 this.$.globals.values.showSetting = false;
                 document.querySelector('app-router').go('/dashboard');
             }
-
-//            newNotification: function() {
-//                if (!Notification) {
-//                    alert('Please use a modern version of Chrome');
-//                    return;
-//                }
-//
-//                if (Notification.permission !== "granted")
-//                    Notification.requestPermission();
-//
-//                this.notificationFroms = [];
-//                for (index in this.notifications) {
-//                    this.notificationFroms.push(this.notifications[index].from_user_id);
-//                }
-//
-//                this.notificationFromsJson = JSON.stringify(this.notificationFroms);
-//                this.$.getGravatarForNotification.go();
-//            },
-//
-//            avatarCallback: function() {
-//                for (index in this.gravatars) {
-//                    var notification = new Notification(this.gravatars[index].username, {
-//                        icon: this.gravatars[index].url + "?d=identicon",
-//                        body: this.notifications[index].content
-//                    });
-//
-//                    setTimeout((function(notify) {
-//                        return function() {
-//                            notify.close();
-//                        }
-//                    })(notification), 5000);
-//                }
-//            }
         });
     </script>
 </polymer-element>
