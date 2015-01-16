@@ -10,6 +10,7 @@ gem 'bcrypt'
 gem 'uuid'
 gem 'sinatra-cross_origin'
 gem 'gravatar-ultimate'
+gem 'sinatra-websocket'
 
 group :development do
   gem 'sqlite3'
