@@ -29,14 +29,17 @@ module.exports = function (socket) {
   // broadcast a user's message to other users
   socket.on('send:message', function (data, callback) {
     Channel.find(data.channelId).then(function (channel) {
-      Message.create({message: data.message, UserId: userId, ChannelId: channel.id}).then(function () {
+      Message.create({message: data.message, 
+                      UserId: userId, 
+                      ChannelId: channel.id}).then(function (afterCreate) {
         socket.broadcast.to(data.channelId).emit('send:message', {
           userId: userId,
           text: data.message
         });
         var message = {};
         message.userId = userId;
-        message.text = data.message;
+        message.guid = data.guid;
+        message.id = afterCreate.dataValues.id;
         callback(message); 
       });
     });
