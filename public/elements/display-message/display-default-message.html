@@ -2,7 +2,7 @@
 
 <template>
 	<template repeat="{{t in processedText}}">
-		<p>{{t}}</p>
+		{{t}}
 	</template>
 </template>
 
@@ -11,7 +11,7 @@
 		processedText : [],
 		domReady: function(){
 			this.processedText = this.text.split("\n");
-		}, 
+		}
 	});
 </script>
 </polymer-element>
