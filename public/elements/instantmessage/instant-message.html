@@ -33,30 +33,37 @@
 
             #messageInput {
                 width: 100%;
-                min-height: 55px;
+                min-height: 40px;
 
+            }
+            .mainBackground{
+                background-color: white;
+            }
+            .inputbox{
+                //border: 1px solid gray;
             }
 
         </style>
         <core-style ref="theme"></core-style>
         <home-container>
-            <div horizontal layout fit>
+            <div class="mainBackground" horizontal layout fit>
                 <div id="historyAndInput" four flex vertical layout reverse class="mainBgColor">
-                    <div id="inputArea" horizontal layout reverse>
-                        <div>
-                            <paper-button on-click="{{sendMessage}}" class="mainColor">Send</paper-button>
-                        </div>
-                        <div flex>
-                            <paper-autogrow-textarea id="messageInput">
-                                <textarea id="t1" value="{{message}}"></textarea>
+                    <div id="inputArea" horizontal layout center>
+                    
+                        <div flex class="inputbox">
+                            <paper-autogrow-textarea id="messageInput" maxRows="6">
+                                <textarea id="textInput" value="{{message}}"></textarea>
                             </paper-autogrow-textarea>
+                        </div>
+                        <div center>
+                            <paper-button raised on-click="{{sendMessage}}" class="accentColor">Send</paper-button>
                         </div>
                     </div>
 
                     <div id="history">
                         old messages in room {{ channelName }}
                         <template repeat="{{m in messages}}">
-                            <display-message user="{{m.userId}}" text="{{m.text}}" on-loaded="{{messageLoaded}}" on-ready="{{messageReady}}"></display-message>
+                            <display-message user="{{m.userId}}" text="{{m.text}}" on-loaded="{{messageLoaded}}"  messageStatus="{{m.messageStatus}}" on-ready="{{messageReady}}"></display-message>
                         </template>
                     </div>
 
@@ -227,15 +234,23 @@
 
             sendMessage: function () {
                 var self = this;
-                this.socket.emit('send:message', {
-                    message: self.message,
-                    channelId: self.channel.id
-                });
-
                 // add the message to our model locally
                 this.messages.push({
                     userId: self.userId,
-                    text: self.message
+                    text: self.message, 
+                    messageStatus: 'unsend'
+                });
+
+                this.socket.emit('send:message', {
+                    message: self.message,
+                    channelId: self.channel.id
+                }, function(message){
+                    for (var i = self.messages.length-1; i >0; i--) {
+                       if(self.messages[i].text === message.text){
+                            self.messages[i].messageStatus = 'done';
+                            break;
+                       }
+                    };
                 });
                 this.message = '';
                 this.$.messageInput.update();

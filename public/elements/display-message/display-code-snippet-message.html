@@ -1,11 +1,12 @@
+<link rel="import" href="../../bower_components/core-style/core-style.html">
 <polymer-element name="display-code-snippet-message" attributes="text">
 
 <template>
+<core-style ref="theme"></core-style>
 	<style>
 		#codeSnippet{
 			margin: .5rem 0 .2rem 0;
 			line-height: 1.15rem;
-			background: #fbfaf8;
 			padding: .5rem;
 			word-break: normal;
 			border-radius: 4px;
@@ -16,7 +17,7 @@
 			white-space: pre-wrap;
 		}
 	</style>
-	<div id="codeSnippet">
+	<div id="codeSnippet" class="thirdColor">
 		<template repeat="{{t in processedText}}">
 		<span id="line">{{t}}</span>
 		<br/></template>

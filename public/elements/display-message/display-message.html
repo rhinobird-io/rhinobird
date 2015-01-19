@@ -2,12 +2,18 @@
 <link rel="import" href="display-default-message.html">
 <link rel="import" href="display-code-snippet-message.html">
 <link rel="import" href="display-url-message.html">
-<polymer-element name="display-message" attributes="user text">
+<polymer-element name="display-message" attributes="user text messageStatus">
 
 <template>
+<style>
+	.unsend {
+			color: gray;
+		}	
+	</style>
+
 <div horizontal layout>
 	<div><p>{{user}}:</p></div>
-	<div flex>
+	<div class="{{messageStatus}}" flex>
 		<template repeat="{{t in processedText}}">
 			<template if="{{!t.process}}">
 				<display-default-message text="{{t.text}}"></display-default-message>
