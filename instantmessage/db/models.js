@@ -24,6 +24,7 @@ var Channel = sequelize.define('Channel', {
     type: Sequelize.STRING,
     unique: true
   },
+  teamId : Sequelize.INTEGER,
   'private': Sequelize.BOOLEAN
 });
 
@@ -63,22 +64,22 @@ module.exports = {
       var channels = [];
       async.series([
         function (callback) {
-          Channel.create({name: 'lobby', 'private': false}).then(function (channel) {
+          Channel.create({name: 'lobby', teamId:1, 'private': false}).then(function (channel) {
             callback(null, channel);
           });
         },
         function (callback) {
-          Channel.create({name: 'ate', 'private': false}).then(function (channel) {
+          Channel.create({name: 'ate', teamId:1, 'private': false}).then(function (channel) {
             callback(null, channel);
           });
         },
         function (callback) {
-          Channel.create({name: 'cws', 'private': false}).then(function (channel) {
+          Channel.create({name: 'cws', teamId:1, 'private': false}).then(function (channel) {
             callback(null, channel);
           });
         },
         function (callback) {
-          Channel.create({name: '1:2', 'private': true}).then(function (channel) {
+          Channel.create({name: '1:2', teamId:-1, 'private': true}).then(function (channel) {
             callback(null, channel);
           });
         }
