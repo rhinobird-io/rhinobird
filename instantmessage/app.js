@@ -3,12 +3,12 @@
  */
 
 var express = require('express'),
-    socket = require('./routes/socket.js')
-    , User = require('./db/models.js').User
-    , Message = require('./db/models.js').Message
-    , Channel = require('./db/models.js').Channel
-    , ogp = require("open-graph")
-    , _ = require('lodash');
+  socket = require('./routes/socket.js')
+  , User = require('./db/models.js').User
+  , Message = require('./db/models.js').Message
+  , Channel = require('./db/models.js').Channel
+  , ogp = require("open-graph")
+  , _ = require('lodash');
 
 var async = require('async');
 
@@ -44,7 +44,7 @@ app.configure(function () {
 });
 
 app.configure('development', function () {
-  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+  app.use(express.errorHandler({dumpExceptions: true, showStack: true}));
 });
 
 app.configure('production', function () {
@@ -71,7 +71,8 @@ app.get('/api/channels/:channelId/messages', function (req, res) {
   if (req.query.limit) {
     limit = req.query.limit;
   }
-  Message.findAndCountAll({where: {channelId: req.params.channelId}, order: 'createdAt DESC', offset: offset, limit: limit
+  Message.findAndCountAll({
+    where: {channelId: req.params.channelId}, order: 'createdAt DESC', offset: offset, limit: limit
   }).then(function (messages) {
     res.json(_(messages.rows).reverse().value());
   });
@@ -84,10 +85,26 @@ app.get('/api/channels/:channelId/users', function (req, res) {
     });
   });
 });
-app.post('/api/channels', function (req, res) {
-  var isPrivate = req.body.isPrivate === 'true';
-  var userId = req.body.from;
-  var channelName = req.body.name;
+
+app.post('/api/channels/:channelId/users', function (req, res) {
+  var userId = req.body.userId;
+  Channel.find(req.params.channelId).then(function (channel) {
+    User.find(userId).then(function(user) {
+      channel.addUser(user).then(function(){
+        channel.getUsers().then(function(users) {
+          res.json(users);
+        });
+      });
+    });
+  });
+});
+
+
+app.get('/api/channels', function (req, res) {
+  var isPrivate = req.query.isPrivate === 'true';
+  var userId = req.query.from;
+  var channelName = req.query.name;
+
   if (isPrivate) {
     User.find({where: {name: channelName.substr(1)}}).then(function (user) {
       var minId = user.id > userId ? userId : user.id;
@@ -113,10 +130,73 @@ app.post('/api/channels', function (req, res) {
       });
     });
   } else {
-    Channel.find({where: {name: channelName}}).then(function (channel) {
+    Channel.find({where : { name : channelName}}).then(function(channel) {
       res.json(channel);
     });
   }
+});
+
+app.post('/api/channels', function (req, res) {
+  var isPrivate = req.body.isPrivate === 'true';
+  var userId = req.body.from;
+  var channelName = req.body.name;
+  var teamId = req.body.teamId;
+  if (isPrivate) {
+    User.find({where: {name: channelName.substr(1)}}).then(function (user) {
+      var minId = user.id > userId ? userId : user.id;
+      var maxId = user.id > userId ? user.id : userId;
+      Channel.findOrCreate({where: {name: '' + minId + ':' + maxId, 'private': true}}).then(function (channels) {
+        var channel = channels[0];
+        async.parallel([
+          function (callback) {
+            User.find(minId).then(function (user) {
+              channel.addUser(user);
+              callback(user);
+            })
+          },
+          function (callback) {
+            User.find(maxId).then(function (user) {
+              channel.addUser(user);
+              callback(user);
+            })
+          }
+        ], function (err, results) {
+          res.json(channel);
+        });
+      });
+    });
+  } else {
+    Channel.count({where: {teamId: teamId}}).then(function (channelCount) {
+      if (0 === channelCount) {
+        // create this team
+        Channel.create({ name : channelName, teamId : teamId, isPrivate : isPrivate }).then(function(channel) {
+          res.json(channel);
+        });
+      } else {
+        Channel.find({ teamId : teamId, isPrivate : isPrivate}).then(function(channel) {
+          res.json(channel);
+        });
+      }
+    });
+  }
+});
+
+
+app.post('/api/users', function (req, res) {
+  var userId = req.body.id;
+  var name = req.body.name;
+  User.count({id: userId}).then(function (count) {
+    var promise;
+    if (count === 0) {
+      // create a new user
+      promise = User.create({name: name, id: userId});
+    } else {
+      promise = User.find(userId);
+    }
+    promise.then(function (user) {
+      res.json(user);
+    });
+  });
 });
 
 app.get('/api/urlMetadata', function (req, res) {
