@@ -160,7 +160,7 @@
 
                     //filter selected
                     users.forEach(function (u) {
-                        if (selected.indexOf(u.id) == -1 && (u.name.toLowerCase().indexOf(searchText) != -1 || u.realname.toLowerCase().indexOf(searchText) != -1)) {
+                        if (selected.indexOf(u.id) == -1 && (u.realname.toLowerCase().indexOf(searchText) != -1)) {
                             result.push(u);
                         }
                     });
@@ -242,11 +242,11 @@
                 this.users = [];
                 this.teams.forEach(function (t) {
                     t.users.forEach(function (u, idx) {
-                        if (!this.usersNameMap[u.name]) {
-                            this.usersNameMap[u.name] = u;
+                        if (!this.usersNameMap[u.realname]) {
+                            this.usersNameMap[u.realname] = u;
                             this.users.push(u);
                         } else {
-                            u = this.usersNameMap[u.name];
+                            u = this.usersNameMap[u.realname];
                             t.users[idx] = u;
                         }
                         u.teams = u.teams || [];
@@ -273,26 +273,27 @@
 
             addUserHandler: function (event, detail, sender) {
                 var user = event.target.templateInstance.model.u;
-                this.addOneUser(user);
+                this.addOneUser(user.id);
             },
 
-            addOneUser: function (user) {
-                if (!this.userSelectedMap[user.id]) {
-                    this.selected.push(user.id);
+            addOneUser: function (userid) {
+                if (!this.userSelectedMap[userid]) {
+                    this.selected.push(userid);
                     this.searchText = '';
                 }
-                this.userSelectedMap[user.id] = true;
+                this.userSelectedMap[userid] = true;
             },
 
             removeUserHandler: function (event, detail, target) {
-                var user = target.templateInstance.model.u;
-                this.removeOneUser(user);
+                var userid = target.templateInstance.model.uid;
+                this.removeOneUser(userid);
                 event.stopPropagation();
             },
 
             removeOneUser: function (userid) {
                 this.userSelectedMap[userid] = false;
-                this.selected.splice(userid, 1);
+                index = this.selected.indexOf(userid);
+                this.selected.splice(index, 1);
             },
 
             // public attributes
