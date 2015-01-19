@@ -50,6 +50,9 @@
         <core-style ref="theme"></core-style>
         <home-container>
             <div class="mainBackground" horizontal layout fit>
+             <paper-action-dialog id="connectingDialog" backdrop autoCloseDisabled layered="false">
+              <p>{{connectinStatus}}</p>
+             </paper-action-dialog>
                 <div id="historyAndInput" four flex vertical layout class="mainBgColor">
 
                     <div id="history" flex>
@@ -100,7 +103,7 @@
 
         Polymer({
             messages:[],
-
+            connectinStatus: "connecting",
             ready: function () {
                 // Init the plugin name
                 this.pluginName = 'instantmessage';
@@ -109,6 +112,7 @@
                 this.users = [];
 
                 this.scrollToBottom(100);
+                this.$.connectingDialog.toggle();
             },
 
             /**
@@ -126,6 +130,7 @@
 
                             self.socket = io(serverUrl).connect();
                             self.socket.on('connect', function () {
+                                self.$.connectingDialog.opened = false;
                                 self.socket.emit('init', {
                                     userId: self.userId,
                                     channelName: self.channel.name
@@ -152,10 +157,28 @@
                                     text: 'User ' + data.userId + ' has left.'
                                 });
                             });
+                            self.socket.on('disconnect', function(){
+                                self.$.connectingDialog.opened = true;
+                                self.connectinStatus = "disconnected.";
+                            });
+
+                            self.socket.on('reconnecting', function(number){
+                                self.$.connectingDialog.opened = true;
+                                self.connectinStatus = "reconnecting... (" + number + ")";
+                            });
+                            self.socket.on('reconnecting_failed', function(){
+                                self.$.connectingDialog.opened = true;
+                                self.connectinStatus = "reconnecting failed.";
+                            });
+                            self.socket.on('reconnect', function(){
+                                self.$.connectingDialog.opened = false;
+                                self.connectinStatus = "connected";
+                            })
+
                         });
                     });
                 }).fail(function(err){ //getScript fail
-                    //TODO: need to retry
+                    self.connectinStatus = "Cannot connect to server. Please refresh.";
                 });
 
             },
