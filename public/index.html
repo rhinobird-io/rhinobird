@@ -81,7 +81,6 @@
                     element = document.createElement("app-route");
                     element.setAttribute("path", "/" + plugins[index].name);
                     element.setAttribute("import", "/plugins/" + plugins[index].name + "/" + plugins[index].name + "-plugin.html");
-                    console.log(router.lastElementChild);
                     router.insertBefore(element, router.lastElementChild);
                 }
 
