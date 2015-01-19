@@ -32,18 +32,18 @@
 
             #messageInput {
                 width: 100%;
-                min-height: 40px;
 
             }
             .mainBackground{
                 background-color: white;
             }
-            #textInput {
-                border: 1px solid grey;
-                border-radius: 0.25em;
-            }
+
             .inputbox {
                 margin-top: 1em;
+                margin-bottom: 2em;
+                padding: 0.5em;
+                border: 1px solid grey;
+                border-radius: 0.25em;
             }
 
         </style>
@@ -63,9 +63,11 @@
                     </div>
 
                     <div class="inputbox">
-                        <paper-autogrow-textarea id="messageInput" maxRows="6" on-keydown="{{keyDown}}" on-input="{{inputChanging}}">
-                            <textarea id="textInput" value="{{message}}"></textarea>
-                        </paper-autogrow-textarea>
+                        <div layout horizontal>
+                            <paper-autogrow-textarea id="messageInput" maxRows="6" on-keydown="{{keyDown}}" on-input="{{inputChanging}}" flex>
+                                <textarea row="1" id="textInput" value="{{message}}"></textarea>
+                            </paper-autogrow-textarea>
+                        </div>
                     </div>
                 </div>
 
