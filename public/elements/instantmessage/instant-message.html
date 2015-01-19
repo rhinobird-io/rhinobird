@@ -58,7 +58,7 @@
                     <div id="history" flex>
                         old messages in room {{ channelName }}
                         <template repeat="{{m in messages}}">
-                            <display-message user="{{m.userId}}" text="{{m.text}}" on-loaded="{{messageLoaded}}"  messageStatus="{{m.messageStatus}}" on-ready="{{messageReady}}"></display-message>
+                            <display-message user="{{m.userId}}" text="{{m.text}}" on-loaded="{{messageLoaded}}"  messageStatus="{{m.messageStatus}}" updatedAt="{{m.updatedAt}}" on-ready="{{messageReady}}"></display-message>
                         </template>
                     </div>
 
@@ -151,14 +151,12 @@
 
                                 self.socket.on('user:join', function (data) {
                                     self.messages.push({
-                                        userId: 0,
                                         text: 'User ' + data.userId + ' has joined.'
                                     });
                                 });
 
                                 self.socket.on('user:left', function (data) {
                                     self.messages.push({
-                                        userId: 0,
                                         text: 'User ' + data.userId + ' has left.'
                                     });
                                 });
@@ -214,7 +212,7 @@
                 $.get(serverUrl + '/api/channels/' + self.channel.id + '/messages').done(function(messages) {
                     var temp = [];
                     messages.forEach(function(message) {
-                        temp.push({userId : message.UserId, text: message.message});
+                        temp.push({userId : message.UserId, text: message.message, updatedAt: message.updatedAt});
                     });
                     self.messages = temp.concat(self.messages);
 
@@ -289,8 +287,7 @@
                 }, function(message){
                     for (var i = self.messages.length-1; i >0; i--) {
                        if(self.messages[i].guid === message.guid){
-                            self.messages[i].messageStatus = 'done';
-                            self.messages[i].id = message.id; 
+                            self.messages[i] = message;
                             break;
                        }
                     }

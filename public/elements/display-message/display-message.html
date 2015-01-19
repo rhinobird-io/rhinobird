@@ -3,7 +3,8 @@
 <link rel="import" href="display-code-snippet-message.html">
 <link rel="import" href="display-url-message.html">
 <link rel="import" href="../member-select/member-element.html">
-<polymer-element name="display-message" attributes="user text messageStatus">
+<link rel="import" href="../../bower_components/polymer-filters/polymer-filters.html">
+<polymer-element name="display-message" attributes="user text messageStatus updatedAt">
 
 <template>
 <style>
@@ -24,7 +25,14 @@
 	</style>
 
 <div vertical layout class="box">
-	<div horizontal layout center><member-element userid="{{user}}"></member-element><span class="time">17:00</span></div>
+	<div horizontal layout center>
+		<template if="{{user}}">
+			<member-element userid="{{user}}"></member-element>
+		</template>
+		<template if="{{updatedAt}}">
+			<span class="time">{{updatedAt | date('mm:ss')}}</span>
+		</template>
+	</div>
 	<div class="{{messageStatus}} msg">
 		<template repeat="{{t in processedText}}">
 			<template if="{{!t.process}}">
