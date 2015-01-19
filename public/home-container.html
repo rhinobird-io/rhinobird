@@ -87,13 +87,6 @@
             </div>
             <div tool horizontal layout center flex end-justified class="bottom">
                 <core-ajax
-                        auto='true'
-                        method="GET"
-                        url="/platform/users"
-                        handleAs="json"
-                        response="{{users}}"></core-ajax>
-
-                <core-ajax
                         id="logoutAjax"
                         method="post"
                         contentType="application/json"

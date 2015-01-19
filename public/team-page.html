@@ -5,6 +5,7 @@
 <link rel="import" href="bower_components/core-list/core-list.html">
 <link rel="import" href="bower_components/core-item/core-item.html">
 <link rel="import" href="bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="bower_components/core-collapse/core-collapse.html">
 <link rel="import" href="bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="bower_components/paper-dialog/paper-action-dialog.html">
 
@@ -14,24 +15,51 @@
             paper-fab.blue {
                 background: #5677fc;
             }
+
+            paper-action-dialog::shadow #scroller {
+                width : 800px;
+                height : 600px;
+            }
+
+            .heading {
+                padding: 10px 15px;
+                background-color: #f3f3f3;
+                border: 1px solid #dedede;
+                border-top-left-radius: 5px;
+                border-top-right-radius: 5px;
+                font-size: 18px;
+                cursor: pointer;
+                height: 20px;
+            }
         </style>
         <core-ajax id="getTeams"
                    auto
                    url="/platform/teams/{{team.id}}/users"
                    handleAs="json"
                    response="{{users}}"></core-ajax>
-        <!--<label>{{users}}</label>-->
-        <div horizontal layout center>
-            <h3>{{team.name}}</h3>
-            <paper-fab icon="add" mini class="blue" title="invite new member" role="button" tabindex="0" aria-label="invite new member" on-tap="{{inviteNewMember}}" style="margin-left: 10px"></paper-fab>
+        <div horizontal layout center justified class="heading">
+            <span on-tap="{{showTeamContent}}" flex>{{team.name}}</span>
+            <paper-button on-tap="{{deleteTeam}}"><core-icon icon="delete"></core-icon>Delete Team</paper-button>
         </div>
-        <div horizontal layout flex>
-            <template repeat="{{user in users}}">
-                <member-element userid="{{user.id}}"></member-element>
-            </template>
+        <div>
+            <core-collapse id="teamContent" allowOverflow>
+                <div class="content">
+                    <div>
+                        <div horizontal layout center>
+                            <h3>{{team.name}}</h3>
+                            <paper-fab icon="add" mini class="blue" title="invite new member" role="button" tabindex="0" aria-label="invite new member" on-tap="{{inviteNewMember}}" style="margin-left: 10px"></paper-fab>
+                        </div>
+                        <div>
+                            <template repeat="{{user in users}}">
+                                <member-element userid="{{user.id}}" style="width: 250px"></member-element>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </core-collapse>
         </div>
 
-        <paper-action-dialog id="inviteDialog" heading="Invite new members to {{team.name}}" role="dialog" layout="" vertical="" aria-label="Invite new members to {{team.name}" tabindex="-1" style="position: fixed; outline: none; display: none;">
+        <paper-action-dialog id="inviteDialog" heading="Invite new members to {{team.name}}" role="dialog" layered="false" aria-label="Invite new members to {{team.name}" tabindex="-1" style="position: fixed; outline: none; display: none;">
 
             <core-ajax id="addMember"
                        url="/platform/teams/{{team.id}}/users"
@@ -68,6 +96,12 @@
                 for (index in this.selectedUser) {
                     this.users.push({"id" : this.selectedUser[index]});
                 }
+            },
+
+            showTeamContent: function() {
+                var collapse = this.$.teamContent;
+                console.log(collapse);
+                collapse.toggle();
             }
         });
     </script>
@@ -75,6 +109,17 @@
 
 <polymer-element name="team-page">
     <template>
+        <style type="text/css">
+            paper-action-dialog::shadow #scroller {
+                width : 800px;
+                height : 600px;
+            }
+
+            .teamBlock {
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
+        </style>
         <home-container selected="team">
             <div class="title">Team</div>
             <core-ajax id="getTeams"
@@ -82,16 +127,62 @@
                        url="/platform/users/{{$.globals.values.currentUser.id}}/teams"
                        handleAs="json"
                        response="{{teams}}"></core-ajax>
-            <div vertical layout fit>
-                <template repeat="{{team in teams}}">
-                    <team-element team="{{team}}"></team-element>
-                </template>
+
+            <div vertical layout flex>
+                <div class="teamBlock">
+                    <paper-button raised on-tap="{{newTeam}}"><core-icon icon="add"></core-icon>New Team</paper-button>
+                </div>
+
+                <div vertical layout>
+                    <template repeat="{{team in teams}}">
+                        <team-element team="{{team}}" class="teamBlock"></team-element>
+                    </template>
+                </div>
             </div>
 
+            <paper-action-dialog id="newTeamDialog" class="dialog" heading="CreateNewTeam" role="dialog" layered="false" aria-label="Create New Team" tabindex="-1" style="position: fixed; outline: none; display: none;">
+
+                <core-ajax id="addTeam"
+                           url="/platform/teams/users"
+                           method="post"
+                           contentType="application/json"
+                           body="{{newTeamJson}}"
+                           on-core-response="{{newTeamResponse}}"></core-ajax>
+                <div vertical layout>
+                    <paper-input label="Team Name" floatinglabel value="{{teamName}}"></paper-input>
+
+                    <member-select id="memberSelect" teamsUrl="/platform/teams_users"></member-select>
+                </div>
+
+                <paper-button affirmative="" role="button" tabindex="0">Cancel</paper-button>
+                <paper-button affirmative="" autofocus="" role="button" tabindex="0" on-tap="{{addNewTeam}}" style="color: dodgerblue">Create</paper-button>
+            </paper-action-dialog>
         </home-container>
         <app-globals id="globals"></app-globals>
     </template>
     <script>
-        Polymer();
+        Polymer("team-page", {
+            newTeam: function() {
+                var dialog = this.$.newTeamDialog;
+                if (!dialog) {
+                    console.log("dialog not found");
+                } else {
+                    dialog.toggle();
+                }
+            },
+
+            addNewTeam: function() {
+                var newTeamData = {};
+                newTeamData.team = {"name": this.teamName};
+                newTeamData.user = this.$.memberSelect.selected;
+                this.newTeamJson = JSON.stringify(newTeamData);
+                this.$.addTeam.go();
+            },
+
+            newTeamResponse: function(event, response) {
+                var team = JSON.parse(response.response);
+                this.teams.push(team);
+            }
+        });
     </script>
 </polymer-element>

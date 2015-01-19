@@ -190,6 +190,16 @@ class App < Sinatra::Base
       Team.create!(@body)
     end
 
+    #create team with initial users
+    post '/teams/users' do
+      team = Team.create(@body["team"])
+      @body["user"].each do |userId|
+        user = User.find(userId)
+        team.users << user
+      end
+      team.to_json
+    end
+
     #get all users in a team
     get '/teams/:teamId/users' do
       Team.find(params[:teamId]).users.to_json
@@ -203,6 +213,7 @@ class App < Sinatra::Base
       200
     end
 
+    #add multiple user to a team
     post '/teams/:teamId/users' do
       team = Team.find(params[:teamId])
       @body.each do |userId|
