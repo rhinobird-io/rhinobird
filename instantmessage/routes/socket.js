@@ -12,9 +12,6 @@ module.exports = function (socket) {
 
   socket.on('init', function (data, callback) {
     userId = data.userId;
-
-    console.log(data);
-
     Channel.find({where : { name : data.channelName}}).then(function(channel) {
       socket.join(channel.id);
       // notify other clients that a new user has joined
@@ -31,7 +28,8 @@ module.exports = function (socket) {
     Channel.find(data.channelId).then(function (channel) {
       Message.create({message: data.message, 
                       UserId: userId, 
-                      ChannelId: channel.id}).then(function (afterCreate) {
+                      ChannelId: channel.id, 
+                      guid: data.guid}).then(function (afterCreate) {
         socket.broadcast.to(data.channelId).emit('send:message', {
           userId: userId,
           text: data.message
