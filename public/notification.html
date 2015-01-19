@@ -1,3 +1,6 @@
+<link rel="import" href="bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="bower_components/core-ajax/core-xhr.html">
+
 <polymer-element name="notification-element">
     <template>
         <core-ajax
@@ -6,11 +9,6 @@
                 url="/platform/users/{{$.globals.values.currentUser.id}}/notifications"
                 handleAs="json"
                 response="{{notifications}}"></core-ajax>
-
-        <core-ajax id="getGravatarForNotification"
-                   url="/platform/gravatar"
-                   params="{{notificationFromsJson}}"
-                   on-core-response="{{avatarCallback}}"></core-ajax>
 
         <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
             <label style="margin-left:10px;color: red">{{notifications.length}}</label>
@@ -42,7 +40,7 @@
             connect: function(that) {
                 try {
                     var socket, host;
-                    host = "ws://" + window.location.hostname + ":9292";
+                    host = "ws://" + window.location.hostname + ":" + window.location.port;
                     socket = new WebSocket(host);
 
                     console.log("Socket State: " + socket.readyState);
@@ -89,24 +87,32 @@
                     this.notificationFroms.push(this.notificationData[index].from_user_id);
                 }
 
-                this.notificationFromsJson = JSON.stringify(this.notificationFroms);
-                this.$.getGravatarForNotification.go();
-            },
+                that = this;
+                xhr = new XMLHttpRequest();
+                xhr.onload = function(){
+                    that.gravatars = JSON.parse(this.responseText);
+                    for (index in that.gravatars) {
+                        var notification = new Notification(that.gravatars[index].username, {
+                            icon: that.gravatars[index].url + "?d=identicon",
+                            body: that.notificationData[index].content
+                        });
 
-            avatarCallback: function(event, detail, target) {
-                this.gravatars = JSON.parse(detail.response);
-                for (index in this.gravatars) {
-                    var notification = new Notification(this.gravatars[index].username, {
-                        icon: this.gravatars[index].url + "?d=identicon",
-                        body: this.notificationData[index].content
-                    });
-
-                    setTimeout((function(notify) {
-                        return function() {
-                            notify.close();
-                        }
-                    })(notification), 5000);
+                        setTimeout((function(notify) {
+                            return function() {
+                                notify.close();
+                            }
+                        })(notification), 5000);
+                    }
+                };
+                var r = [];
+                params = this.notificationFroms;
+                for (var n in params) {
+                    var v = params[n];
+                    n = encodeURIComponent(n);
+                    r.push(v == null ? n : (n + '=' + encodeURIComponent(v)));
                 }
+                xhr.open("GET", "/platform/gravatar?" + r.join('&'), true);
+                xhr.send();
             }
         });
     </script>
