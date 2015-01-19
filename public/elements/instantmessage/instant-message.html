@@ -175,8 +175,7 @@
                 // the users in this room
                 this.users = [];
 
-                var objDiv = this.$.history;
-                objDiv.scrollTop = objDiv.scrollHeight;
+                scrollToBottom(100);
             },
 
             /**
@@ -204,7 +203,7 @@
                                 self.messages.push(message);
                                 self.$.messageInput.update();
                                 var objDiv = self.$.history;
-                                objDiv.scrollTop = objDiv.scrollHeight;
+                                self.scrollToBottom(100);
                             });
 
                             self.socket.on('user:join', function (data) {
@@ -257,7 +256,7 @@
                     });
                     self.messages = temp.concat(self.messages);
 
-                    self.$.history.scrollTop = self.$.history.scrollHeight;
+                    self.scrollToBottom(100);
                 });
             },
 
@@ -298,8 +297,14 @@
                 });
             },
             inputChanging: function(){
-                var history = this.$.history;
-                history.scrollTop = history.scrollHeight;
+                //var history = this.$.history;
+                //history.scrollTop = history.scrollHeight;
+            },
+            scrollToBottom: function(delay){
+                var self = this;
+                setTimeout(function(){
+                    self.$.history.scrollTop = self.$.history.scrollHeight;
+                }, delay);
             },
             sendMessage: function () {
                 var self = this;
@@ -309,7 +314,7 @@
                     text: self.message, 
                     messageStatus: 'unsend'
                 });
-
+                this.scrollToBottom(100);
                 this.socket.emit('send:message', {
                     message: self.message,
                     channelId: self.channel.id
@@ -327,8 +332,7 @@
             },
 
             messageReady: function(event){
-                var objDiv = this.$.history;
-                objDiv.scrollTop = objDiv.scrollHeight;
+                this.scrollToBottom(100);
             },
 
             keypressHandler: function (event, detail, sender) {
@@ -346,8 +350,7 @@
                 }
             },
             messageLoaded: function(event){
-                var objDiv = this.$.history;
-                objDiv.scrollTop = objDiv.scrollHeight;
+                this.scrollToBottom(100);
             },
 
             roomId: ''
