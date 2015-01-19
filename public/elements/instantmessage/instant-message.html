@@ -127,7 +127,7 @@
                     </div>
 
                     <div class="inputbox">
-                        <paper-autogrow-textarea id="messageInput" maxRows="6" on-input="{{inputChanging}}">
+                        <paper-autogrow-textarea id="messageInput" maxRows="6" on-keydown="{{keyDown}}" on-input="{{inputChanging}}">
                             <textarea id="textInput" value="{{message}}"></textarea>
                         </paper-autogrow-textarea>
                     </div>
@@ -296,9 +296,16 @@
                     previousRoom: self.channel.id
                 });
             },
-            inputChanging: function(){
-                //var history = this.$.history;
-                //history.scrollTop = history.scrollHeight;
+            keyDown: function(event, detail, target){
+                var history = this.$.history;
+                target.atBottom = history.scrollTop == history.scrollHeight - history.clientHeight;
+            },
+            inputChanging: function(event, detail, target){
+                var history = this.$.history;
+                // if already bottom
+                if (target.atBottom){
+                    history.scrollTop = history.scrollHeight;
+                }
             },
             scrollToBottom: function(delay){
                 var self = this;
