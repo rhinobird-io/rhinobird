@@ -2,18 +2,30 @@
 <link rel="import" href="display-default-message.html">
 <link rel="import" href="display-code-snippet-message.html">
 <link rel="import" href="display-url-message.html">
+<link rel="import" href="../member-select/member-element.html">
 <polymer-element name="display-message" attributes="user text messageStatus">
 
 <template>
 <style>
 	.unsend {
 			color: gray;
-		}	
+		}
+	.msg {
+		margin-left: 18px;
+	}
+	.box {
+		margin-top: 1em;
+	}
+	.time {
+		font-size: smaller;
+		color: grey;
+		margin-left: 5px;
+	}
 	</style>
 
-<div horizontal layout>
-	<div><p>{{user}}:</p></div>
-	<div class="{{messageStatus}}" flex>
+<div vertical layout class="box">
+	<div horizontal layout center><member-element userid="{{user}}"></member-element><span class="time">17:00</span></div>
+	<div class="{{messageStatus}} msg">
 		<template repeat="{{t in processedText}}">
 			<template if="{{!t.process}}">
 				<display-default-message text="{{t.text}}"></display-default-message>

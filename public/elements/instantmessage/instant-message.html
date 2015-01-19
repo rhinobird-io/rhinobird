@@ -7,7 +7,6 @@
 <link rel="import" href="../../../home-container.html">
 <link rel="import" href="../display-message/display-message.html">
 
-
 <polymer-element name="instant-message" attributes="userId channelName" on-keypress="{{keypressHandler}}">
     <template>
         <style>
@@ -39,45 +38,43 @@
             .mainBackground{
                 background-color: white;
             }
-            .inputbox{
-                //border: 1px solid gray;
+            #textInput {
+                border: 1px solid grey;
+                border-radius: 0.25em;
+            }
+            .inputbox {
+                margin-top: 1em;
             }
 
         </style>
         <core-style ref="theme"></core-style>
         <home-container>
             <div class="mainBackground" horizontal layout fit>
-                <div id="historyAndInput" four flex vertical layout reverse class="mainBgColor">
-                    <div id="inputArea" horizontal layout center>
-                    
-                        <div flex class="inputbox">
-                            <paper-autogrow-textarea id="messageInput" maxRows="6">
-                                <textarea id="textInput" value="{{message}}"></textarea>
-                            </paper-autogrow-textarea>
-                        </div>
-                        <div center>
-                            <paper-button raised on-click="{{sendMessage}}" class="accentColor">Send</paper-button>
-                        </div>
-                    </div>
+                <div id="historyAndInput" four flex vertical layout class="mainBgColor">
 
-                    <div id="history">
+                    <div id="history" flex>
                         old messages in room {{ channelName }}
                         <template repeat="{{m in messages}}">
                             <display-message user="{{m.userId}}" text="{{m.text}}" on-loaded="{{messageLoaded}}"  messageStatus="{{m.messageStatus}}" on-ready="{{messageReady}}"></display-message>
                         </template>
                     </div>
 
+                    <div class="inputbox">
+                        <paper-autogrow-textarea id="messageInput" maxRows="6" on-keydown="{{keyDown}}" on-input="{{inputChanging}}">
+                            <textarea id="textInput" value="{{message}}"></textarea>
+                        </paper-autogrow-textarea>
+                    </div>
                 </div>
 
                 <div flex>
                     <div id="groupChannel">
-                        <h3 class="thirdColor">Group Channel</h3>
+                        <h3 class="secondColor">Group Channel</h3>
                         <template repeat="{{ g in group }}">
                             <paper-item on-click="{{ handleChannelSelect }}" hash="{{g.name}}">{{ g.name }}</paper-item>
                         </template>
                     </div>
                     <div id="privateChannel">
-                        <h3 class="thirdColor">Private Channel</h3>
+                        <h3 class="secondColor">Private Channel</h3>
                         <template repeat="{{ g in private }}">
                             <paper-item on-click="{{ handleChannelSelect }}" hash="{{'@'+g.displayName}}">{{ g.displayName }}
                             </paper-item>
@@ -111,8 +108,7 @@
                 // the users in this room
                 this.users = [];
 
-                var objDiv = this.$.history;
-                objDiv.scrollTop = objDiv.scrollHeight;
+                this.scrollToBottom(100);
             },
 
             /**
@@ -140,7 +136,7 @@
                                 self.messages.push(message);
                                 self.$.messageInput.update();
                                 var objDiv = self.$.history;
-                                objDiv.scrollTop = objDiv.scrollHeight;
+                                self.scrollToBottom(100);
                             });
 
                             self.socket.on('user:join', function (data) {
@@ -194,6 +190,8 @@
                         temp.push({userId : message.UserId, text: message.message});
                     });
                     self.messages = temp.concat(self.messages);
+
+                    self.scrollToBottom(100);
                 });
             },
 
@@ -233,7 +231,23 @@
                     previousRoom: self.channel.id
                 });
             },
-
+            keyDown: function(event, detail, target){
+                var history = this.$.history;
+                target.atBottom = history.scrollTop == history.scrollHeight - history.clientHeight;
+            },
+            inputChanging: function(event, detail, target){
+                var history = this.$.history;
+                // if already bottom
+                if (target.atBottom){
+                    history.scrollTop = history.scrollHeight;
+                }
+            },
+            scrollToBottom: function(delay){
+                var self = this;
+                setTimeout(function(){
+                    self.$.history.scrollTop = self.$.history.scrollHeight;
+                }, delay);
+            },
             sendMessage: function () {
                 var self = this;
                 var uuid = this.guid();
@@ -244,7 +258,7 @@
                     guid: uuid,
                     messageStatus: 'unsend'
                 });
-
+                this.scrollToBottom(100);
                 this.socket.emit('send:message', {
                     message: self.message,
                     channelId: self.channel.id,
@@ -270,8 +284,7 @@
             },
 
             messageReady: function(event){
-                var objDiv = this.$.history;
-                objDiv.scrollTop = objDiv.scrollHeight;
+                this.scrollToBottom(100);
             },
 
             keypressHandler: function (event, detail, sender) {
@@ -289,8 +302,7 @@
                 }
             },
             messageLoaded: function(event){
-                var objDiv = this.$.history;
-                objDiv.scrollTop = objDiv.scrollHeight;
+                this.scrollToBottom(100);
             },
 
             roomId: ''
