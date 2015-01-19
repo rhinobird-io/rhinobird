@@ -28,7 +28,8 @@ var Channel = sequelize.define('Channel', {
 });
 
 var Message = sequelize.define('Message', {
-  message: Sequelize.TEXT
+  message: Sequelize.TEXT, 
+  guid: Sequelize.UUID
 });
 
 User.belongsToMany(Channel);
