@@ -27,13 +27,13 @@ module.exports = function (socket) {
   });
 
   // broadcast a user's message to other users
-  socket.on('send:message', function (data) {
+  socket.on('send:message', function (data, callback) {
     Channel.find(data.channelId).then(function (channel) {
       Message.create({message: data.message, UserId: userId, ChannelId: channel.id}).then(function () {
-        socket.broadcast.to(data.channelId).emit('send:message', {
-          userId: userId,
-          text: data.message
-        });
+        var message = {};
+        message.userId = userId;
+        message.text = data.message;
+        callback(message); 
       });
     });
   });
