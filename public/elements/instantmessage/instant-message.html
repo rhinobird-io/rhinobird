@@ -8,7 +8,7 @@
 <link rel="import" href="../display-message/display-message.html">
 
 
-<polymer-element name="instant-message" attributes="userId channelName" on-keypress="{{keypressHandler}}">
+<polymer-element name="instant-message" attributes="channelName" on-keypress="{{keypressHandler}}">
     <template>
         <style>
             h3 {
@@ -105,6 +105,7 @@
             messages:[],
 
             ready: function () {
+                debugger;
                 // Init the plugin name
                 this.pluginName = 'instantmessage';
 
@@ -121,45 +122,50 @@
             domReady: function () {
 
                 var self = this;
-                $.getScript(serverUrl+'/socket.io/socket.io.js', function(){
-                    self.loadChannels().done(function(){
-                        // get channel id by name
-                        self.getChannel(self.channelName, self.userId, self.channelName.indexOf('@') === 0).done(function(resp) {
-                            self.channel = resp;
-                            self.loadHistory(self.channel.id);
 
-                            self.socket = io(serverUrl).connect();
-                            self.socket.on('connect', function () {
-                                self.socket.emit('init', {
-                                    userId: self.userId,
-                                    channelName: self.channel.name
+                $.get('/platform/loggedOnUser').done(function (user) {
+                    self.currentUser = user;
+                    self.userId = self.currentUser.id;
+
+                    $.getScript(serverUrl+'/socket.io/socket.io.js', function(){
+                        self.loadChannels().done(function(){
+                            // get channel id by name
+                            self.getChannel(self.channelName, self.userId, self.channelName.indexOf('@') === 0).done(function(resp) {
+                                self.channel = resp;
+                                self.loadHistory(self.channel.id);
+
+                                self.socket = io(serverUrl).connect();
+                                self.socket.on('connect', function () {
+                                    self.socket.emit('init', {
+                                        userId: self.userId,
+                                        channelName: self.channel.name
+                                    });
                                 });
-                            });
 
-                            self.socket.on('send:message', function (message) {
-                                self.messages.push(message);
-                                self.$.messageInput.update();
-                                var objDiv = self.$.history;
-                                objDiv.scrollTop = objDiv.scrollHeight;
-                            });
-
-                            self.socket.on('user:join', function (data) {
-                                self.messages.push({
-                                    userId: 0,
-                                    text: 'User ' + data.userId + ' has joined.'
+                                self.socket.on('send:message', function (message) {
+                                    self.messages.push(message);
+                                    self.$.messageInput.update();
+                                    var objDiv = self.$.history;
+                                    objDiv.scrollTop = objDiv.scrollHeight;
                                 });
-                            });
 
-                            self.socket.on('user:left', function (data) {
-                                self.messages.push({
-                                    userId: 0,
-                                    text: 'User ' + data.userId + ' has left.'
+                                self.socket.on('user:join', function (data) {
+                                    self.messages.push({
+                                        userId: 0,
+                                        text: 'User ' + data.userId + ' has joined.'
+                                    });
+                                });
+
+                                self.socket.on('user:left', function (data) {
+                                    self.messages.push({
+                                        userId: 0,
+                                        text: 'User ' + data.userId + ' has left.'
+                                    });
                                 });
                             });
                         });
                     });
                 });
-
             },
 
             loadChannels: function () {
@@ -200,12 +206,8 @@
                 return $.get(serverUrl + '/api/channels/' + channelId + '/users');
             },
 
-            getChannel : function(channelName, fromUserId, isPrivate) {
-                return $.post(serverUrl + '/api/channels', {
-                    name : channelName,
-                    from : fromUserId,
-                    isPrivate : isPrivate
-                });
+            getChannel : function(channelName, fromUserId, isPrivate, teamId) {
+                return $.get(serverUrl + '/api/channels?name='+ channelName + '&from=' + fromUserId + '&isPrivate=' + isPrivate);
             },
 
             goToDefaultChannel: function () {
@@ -224,7 +226,7 @@
                 }
 
                 var hash = target.attributes['hash'].value;
-                document.querySelector('app-router').go('/' + self.pluginName +'/users/' + this.userId + '/messages/' + hash);
+                document.querySelector('app-router').go('/channels/' + hash);
 
                 this.socket.emit('change:room', {
                     newRoom: target.templateInstance.model.g.id,
@@ -250,7 +252,7 @@
                             self.messages[i].messageStatus = 'done';
                             break;
                        }
-                    };
+                    }
                 });
                 this.message = '';
                 this.$.messageInput.update();

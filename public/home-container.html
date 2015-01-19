@@ -71,6 +71,7 @@
                 <core-toolbar class="toolbar"><paper-button on-tap="{{jumpToDashboard}}">Team Work</paper-button></core-toolbar>
                 <core-menu theme="core-light-theme" hidden?="{{$.globals.values.showSetting}}">
                     <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="/#/dashboard"></a></core-item>
+                    <core-item icon="dashboard" label="InstantMessage" active?="{{selected == 'instantmessage'}}"><a is="pushstate-anchor" href="/#/instantmessage/config"></a></core-item>
                     <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="/#/calendar"></a></core-item>
                     <template repeat="{{plugin in $.globals.values.plugins}}">
                         <core-item icon="{{plugin.icon}}" label="{{plugin.label}}" active?="{{selected == plugin.active}}"><a is="pushstate-anchor" href="{{plugin.href}}"></a></core-item>
