@@ -1,41 +1,33 @@
 <link rel="import" href="../../bower_components/core-style/core-style.html">
+<link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
+<script src="../../bower_components/highlightjs/highlight.pack.js"></script>
 <polymer-element name="display-code-snippet-message" attributes="text">
 
 <template>
+	<link rel="stylesheet" href="../../bower_components/highlightjs/styles/default.css">
 <core-style ref="theme"></core-style>
-	<style>
-		#codeSnippet{
-			margin: .5rem 0 .2rem 0;
-			line-height: 1.15rem;
-			padding: .5rem;
-			word-break: normal;
+	<core-style>
+		code {
 			border-radius: 4px;
-			border: 1px solid rgba(0,0,0,0.15);
-			
 		}
-		#line{
-			white-space: pre-wrap;
-		}
-	</style>
-	<div id="codeSnippet" class="thirdColor">
-		<template repeat="{{t in processedText}}">
-		<span id="line">{{t}}</span>
-		<br/></template>
-	</div>
+	</core-style>
+	<paper-shadow>
+		<pre><code id="codeBlock" class="{{language}} thirdColor">{{code(text)}}</code></pre>
+	</paper-shadow>
 </template>
-
 <script>
 	Polymer({
-		processedText : [],
-		domReady: function(){
-			this.text = this.text.replace(/^```/, "");
-			this.text = this.text.replace(/^\n/, "");
-			this.text = this.text.replace(/```$/, "");
-			this.text = this.text.replace(/```\n$/, "");
-
-			this.processedText = this.text.split("\n");
-
-		}, 
+		code: function(text){
+			var code = text.replace(/^```/, "");
+			this.language = code.match(/.*/);
+			code = code.replace(/^.*\n/, "");
+			code = code.replace(/```$/, "");
+			var self=this;
+			setTimeout(function(){
+				hljs.highlightBlock(self.$.codeBlock);
+			}, 0);
+			return code;
+		}
 	});
 </script>
 </polymer-element>
