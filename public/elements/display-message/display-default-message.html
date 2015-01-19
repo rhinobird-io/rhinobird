@@ -1,17 +1,16 @@
 <polymer-element name="display-default-message" attributes="text">
 
-<template>
-	<template repeat="{{t in processedText}}">
-		{{t}}
-	</template>
-</template>
+    <template>
+        <style>
+            pre {
+                margin: 0;
+            }
+        </style>
+        <pre>{{text}}</pre>
+    </template>
 
-<script>
-	Polymer({
-		processedText : [],
-		domReady: function(){
-			this.processedText = this.text.split("\n");
-		}
-	});
-</script>
+    <script>
+        Polymer({
+        });
+    </script>
 </polymer-element>
