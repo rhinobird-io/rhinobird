@@ -30,14 +30,15 @@ module.exports = function (socket) {
                       UserId: userId, 
                       ChannelId: channel.id, 
                       guid: data.guid}).then(function (afterCreate) {
-        socket.broadcast.to(data.channelId).emit('send:message', {
-          userId: userId,
-          text: data.message
-        });
         var message = {};
         message.userId = userId;
         message.guid = data.guid;
         message.id = afterCreate.dataValues.id;
+        message.text = data.message;
+        message.updatedAt = afterCreate.dataValues.updatedAt;
+        message.messageStatus = "done";
+        socket.broadcast.to(data.channelId).emit('send:message', message);
+        
         callback(message); 
       });
     });
