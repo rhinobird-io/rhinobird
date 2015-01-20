@@ -49,8 +49,9 @@
                         <paper-shadow class="container" layout vertical hero hero-id="1">
                             <h1 hero hero-id="2">Sign In</h1>
                             <paper-input label="Email" value="{{userInfo.email}}" hero hero-id="email"></paper-input>
-                            <paper-input on-keypress="{{keyPressInPassword}}" id="passwordIn" label="Password"
-                                         value="{{userInfo.password}}" hero hero-id="password"></paper-input>
+                            <paper-input-decorator id="passwordIn" label="Password" value="{{userInfo.password}}" hero hero-id="password">
+                                <input is="core-input" id="signInPassword" on-keypress="{{keyPressInPassword}}" value="{{userInfo.password}}" type="password">
+                            </paper-input-decorator>
                             <div horizontal layout justified center>
                                 <paper-button class="switch" on-tap="{{switch}}" hero hero-id="3">Sign Up</paper-button>
                                 <div></div>
@@ -74,11 +75,15 @@
                                 on-core-response="{{signUpResponse}}"></core-ajax>
                         <paper-shadow class="container" layout vertical hero hero-id="1">
                             <h1 hero hero-id="2">Sign Up</h1>
+                            <paper-input label="Email" value="{{userInfo.email}}" hero hero-id="email"></paper-input>
                             <paper-input id="realname" label="RealName" value="{{userInfo.realname}}" hero
                                          hero-id="realname"></paper-input>
-                            <paper-input label="Email" value="{{userInfo.email}}" hero hero-id="email"></paper-input>
-                            <paper-input label="Password" value="{{userInfo.password}}" hero
-                                         hero-id="password"></paper-input>
+                            <paper-input-decorator label="Password" value="{{userInfo.password}}" hero hero-id="password">
+                                <input is="core-input" value="{{userInfo.password}}" type="password">
+                            </paper-input-decorator>
+                            <paper-input-decorator label="Password" value="{{confirmPassword}}" hero hero-id="confirmPassword">
+                                <input is="core-input" id="signUpPassword" on-keypress="{{keyPressInPassword}}" value="{{confirmPassword}}" type="password">
+                            </paper-input-decorator>
                             <div horizontal layout justified center>
                                 <paper-button class="switch" on-tap="{{switch}}" hero hero-id="3">Sign In</paper-button>
                                 <div></div>
@@ -87,6 +92,10 @@
                             </div>
                         </paper-shadow>
                         <paper-toast id="toastSignUpSuccess" text="Account created." role="status" touch-action="none"
+                                     tabindex="-1"
+                                     class="core-transition core-transition-bottom"
+                                     style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
+                        <paper-toast id="toastSignUpFail" text="{{errMsg}}" role="status" touch-action="none"
                                      tabindex="-1"
                                      class="core-transition core-transition-bottom"
                                      style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
@@ -102,7 +111,11 @@
                     },
                     keyPressInPassword: function (e) {
                         if (e.keyCode == 13) {
-                            this.$.signInBtn.fire("tap");
+                            if (e.target.id == "signInPassword") {
+                                this.$.signInBtn.fire("tap");
+                            } else {
+                                this.$.signUpBtn.fire("tap");
+                            }
                         }
                     },
                     signIn: function () {
@@ -123,13 +136,19 @@
                     }
                     ,
                     signUp: function () {
-                        this.userJson = JSON.stringify(this.userInfo);
-                        this.$.signUpAjax.go();
+                        if (this.confirmPassword != this.userInfo.password) {
+                            this.errMsg = "Password does not match";
+                            this.$.toastSignUpFail.show();
+                        } else {
+                            this.userJson = JSON.stringify(this.userInfo);
+                            this.$.signUpAjax.go();
+                        }
                     }
                     ,
 
                     signUpResponse: function () {
                         this.$.toastSignUpSuccess.show();
+                        this.$.pages.selected = 0;
                     }
                     ,
                     switch: function () {
