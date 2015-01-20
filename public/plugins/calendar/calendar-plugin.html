@@ -29,10 +29,11 @@
     :host {
     background-color: white;
     }
+    
     div.container {
-    padding: 1em;
-    overflow-y: hidden;
-    overflow-x: hidden;
+        padding: 1em;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     div.timeline {
@@ -391,10 +392,6 @@
                 'selected.period': 'changeTab'
             },
             refresh: function() {
-
-            },
-            handleEvents: function (event, detail) {
-                this.events = detail.response;
                 this.events.sort(function(o1, o2) {
                     if (o1.from < o2.from) return -1;
                     else if (o1.from > o2.from) return 1;
@@ -423,6 +420,10 @@
                         oldDayGroup.length++;
                     }
                 }
+            },
+            handleEvents: function (event, detail) {
+                this.events = detail.response;
+                this.refresh();
 
                 /*
                 for (var i = 0; i < this.events.length; i++) {
@@ -482,31 +483,13 @@
                 this.$.postEvent.go();
             },
             eventSaved: function(event, detail) {
+                this.mode = 'view';
+
                 this.selected.from = this.selected.from.toISOString();
                 this.events.push(this.selected);
-                this.mode = 'view';
                 this.$.eventSavedToast.show();
 
-                this.events.sort(function(o1, o2) {
-                    if (o1.from < o2.from) return -1;
-                    else if (o1.from > o2.from) return 1;
-                    else return 0;
-                });
-                var added = false;
-                for (var i = 0; i < this.eventGroups.length; i++) {
-                    var eventGroup = this.eventGroups[i];
-                    if (eventGroup.data.date == new Date(this.selected.from).toDateString()) {
-                        eventGroup.length++;
-                        added = true;
-                        break;
-                    }
-                }
-                if (!added) {
-                    var newDayGroup = {};
-                    newDayGroup.data = {date: this.selected.from.toDateString()};
-                    newDayGroup.length = 1;
-                    this.eventGroups.push(newDayGroup);
-                }
+                this.refresh();
             }
         });
     </script>
