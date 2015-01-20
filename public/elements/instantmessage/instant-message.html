@@ -7,7 +7,7 @@
 <link rel="import" href="../../../home-container.html">
 <link rel="import" href="../display-message/display-message.html">
 
-<polymer-element name="instant-message" attributes="channelName" on-keypress="{{keypressHandler}}">
+<polymer-element name="instant-message" attributes="channelName">
     <template>
         <style>
             h3 {
@@ -15,8 +15,6 @@
                 padding: 20px;
                 margin: 0px;
             }
-
-
 
             #history {
                 overflow: auto
@@ -34,7 +32,8 @@
                 width: 100%;
 
             }
-            .mainBackground{
+
+            .mainBackground {
                 background-color: white;
             }
 
@@ -42,29 +41,33 @@
                 margin-top: 1em;
                 margin-bottom: 2em;
                 padding: 0.5em;
-                border: 2px solid rgba(0,0,0,0.12);
+                border: 2px solid rgba(0, 0, 0, 0.12);
                 border-radius: 0.25em;
+                cursor: text;
             }
 
         </style>
         <core-style ref="theme"></core-style>
         <home-container>
             <div class="mainBackground" horizontal layout fit>
-             <paper-action-dialog id="connectingDialog" backdrop autoCloseDisabled layered="false">
-              <p>{{connectinStatus}}</p>
-             </paper-action-dialog>
+                <paper-action-dialog id="connectingDialog" backdrop autoCloseDisabled layered="false">
+                    <p>{{connectinStatus}}</p>
+                </paper-action-dialog>
                 <div id="historyAndInput" four flex vertical layout class="mainBgColor">
 
                     <div id="history" flex>
                         old messages in room {{ channelName }}
                         <template repeat="{{m in messages}}">
-                            <display-message user="{{m.userId}}" text="{{m.text}}" on-loaded="{{messageLoaded}}"  messageStatus="{{m.messageStatus}}" updatedAt="{{m.updatedAt}}" on-ready="{{messageReady}}"></display-message>
+                            <display-message user="{{m.userId}}" text="{{m.text}}" on-loaded="{{messageLoaded}}"
+                                             messageStatus="{{m.messageStatus}}" updatedAt="{{m.updatedAt}}"
+                                             on-ready="{{messageReady}}"></display-message>
                         </template>
                     </div>
 
-                    <div class="inputbox">
+                    <div class="inputbox" on-tap="{{boxTapped}}">
                         <div layout horizontal>
-                            <paper-autogrow-textarea id="messageInput" maxRows="6" on-keydown="{{keyDown}}" on-input="{{inputChanging}}" flex>
+                            <paper-autogrow-textarea id="messageInput" maxRows="6" on-keydown="{{keyDown}}"
+                                                     on-input="{{inputChanging}}" flex>
                                 <textarea row="1" id="textInput" value="{{message}}"></textarea>
                             </paper-autogrow-textarea>
                         </div>
@@ -81,7 +84,8 @@
                     <div id="privateChannel">
                         <h3 class="secondColor">Private Channel</h3>
                         <template repeat="{{ g in private }}">
-                            <paper-item on-click="{{ handleChannelSelect }}" hash="{{'@'+g.displayName}}">{{ g.displayName }}
+                            <paper-item on-click="{{ handleChannelSelect }}" hash="{{'@'+g.displayName}}">{{
+                                g.displayName }}
                             </paper-item>
                         </template>
                     </div>
@@ -97,14 +101,17 @@
     <script>
         var defaultChannel = 'lobby';
         var hostname = window.location.hostname;
-        var serverUrl = 'http://'+ hostname +':3000';
+        var serverUrl = 'http://' + hostname + ':3000';
     </script>
     <!-- this was provided by var io = require('socket.io').listen(app); -->
     <script src="../../bower_components/jquery/dist/jquery.min.js"></script>
     <script>
 
         Polymer({
-            messages:[],
+            boxTapped: function () {
+                this.$.textInput.focus();
+            },
+            messages: [],
             connectinStatus: "connecting",
             ready: function () {
                 // Init the plugin name
@@ -115,6 +122,22 @@
 
                 this.scrollToBottom(100);
                 this.$.connectingDialog.toggle();
+                var self = this;
+                window.onkeypress = function (event) {
+                    if (event.keyCode === 13 && self.message === '') {
+                        event.preventDefault();
+                        return;
+                    }
+                    if (event.shiftKey && event.keyCode === 13) {
+                        return;
+                    }
+                    if (!event.shiftKey && event.keyCode === 13) {
+                        self.sendMessage();
+                        event.preventDefault();
+                        return;
+                    }
+                    self.$.textInput.focus();
+                }
             },
 
             /**
@@ -128,10 +151,10 @@
                     self.currentUser = user;
                     self.userId = self.currentUser.id;
 
-                    $.getScript(serverUrl+'/socket.io/socket.io.js', function(){
-                        self.loadChannels().done(function(){
+                    $.getScript(serverUrl + '/socket.io/socket.io.js', function () {
+                        self.loadChannels().done(function () {
                             // get channel id by name
-                            self.getChannel(self.channelName, self.userId, self.channelName.indexOf('@') === 0).done(function(resp) {
+                            self.getChannel(self.channelName, self.userId, self.channelName.indexOf('@') === 0).done(function (resp) {
                                 self.channel = resp;
                                 self.loadHistory(self.channel.id);
 
@@ -162,40 +185,40 @@
                                         text: 'User ' + data.userId + ' has left.'
                                     });
                                 });
-                                self.socket.on('disconnect', function(){
+                                self.socket.on('disconnect', function () {
                                     self.$.connectingDialog.opened = true;
                                     self.connectinStatus = "disconnected.";
                                 });
 
-                                self.socket.on('reconnecting', function(number){
+                                self.socket.on('reconnecting', function (number) {
                                     self.$.connectingDialog.opened = true;
                                     self.connectinStatus = "reconnecting... (" + number + ")";
                                 });
-                                self.socket.on('reconnecting_failed', function(){
+                                self.socket.on('reconnecting_failed', function () {
                                     self.$.connectingDialog.opened = true;
                                     self.connectinStatus = "reconnecting failed.";
                                 });
-                                self.socket.on('reconnect', function(){
+                                self.socket.on('reconnect', function () {
                                     self.$.connectingDialog.opened = false;
                                     self.connectinStatus = "connected";
                                 });
                             });
                         });
-                    }).fail(function(err){ //getScript fail
-                            self.connectinStatus = "Cannot connect to server. Please refresh.";
-                        });
+                    }).fail(function (err) { //getScript fail
+                        self.connectinStatus = "Cannot connect to server. Please refresh.";
+                    });
                 });
             },
 
             loadChannels: function () {
                 var self = this;
-                return $.get(serverUrl + '/api/users/' + self.userId + '/channels').done(function(channels){
+                return $.get(serverUrl + '/api/users/' + self.userId + '/channels').done(function (channels) {
                     self.private = [];
                     self.group = [];
                     channels.forEach(function (channel) {
                         if (channel.private) {
-                            self.loadChannelUsers(channel.id).done(function(users){
-                                users.forEach(function(user) {
+                            self.loadChannelUsers(channel.id).done(function (users) {
+                                users.forEach(function (user) {
                                     if (user.id !== self.userId) {
                                         channel.displayName = user.name;
                                     }
@@ -211,10 +234,10 @@
 
             loadHistory: function (roomId) {
                 var self = this;
-                $.get(serverUrl + '/api/channels/' + self.channel.id + '/messages').done(function(messages) {
+                $.get(serverUrl + '/api/channels/' + self.channel.id + '/messages').done(function (messages) {
                     var temp = [];
-                    messages.forEach(function(message) {
-                        temp.push({userId : message.UserId, text: message.message, updatedAt: message.updatedAt});
+                    messages.forEach(function (message) {
+                        temp.push({userId: message.UserId, text: message.message, updatedAt: message.updatedAt});
                     });
                     self.messages = temp.concat(self.messages);
 
@@ -222,13 +245,13 @@
                 });
             },
 
-            loadChannelUsers : function(channelId) {
+            loadChannelUsers: function (channelId) {
                 var self = this;
                 return $.get(serverUrl + '/api/channels/' + channelId + '/users');
             },
 
-            getChannel : function(channelName, fromUserId, isPrivate, teamId) {
-                return $.get(serverUrl + '/api/channels?name='+ channelName + '&from=' + fromUserId + '&isPrivate=' + isPrivate);
+            getChannel: function (channelName, fromUserId, isPrivate, teamId) {
+                return $.get(serverUrl + '/api/channels?name=' + channelName + '&from=' + fromUserId + '&isPrivate=' + isPrivate);
             },
 
             goToDefaultChannel: function () {
@@ -254,20 +277,20 @@
                     previousRoom: self.channel.id
                 });
             },
-            keyDown: function(event, detail, target){
+            keyDown: function (event, detail, target) {
                 var history = this.$.history;
                 target.atBottom = history.scrollTop == history.scrollHeight - history.clientHeight;
             },
-            inputChanging: function(event, detail, target){
+            inputChanging: function (event, detail, target) {
                 var history = this.$.history;
                 // if already bottom
-                if (target.atBottom){
+                if (target.atBottom) {
                     history.scrollTop = history.scrollHeight;
                 }
             },
-            scrollToBottom: function(delay){
+            scrollToBottom: function (delay) {
                 var self = this;
-                setTimeout(function(){
+                setTimeout(function () {
                     self.$.history.scrollTop = self.$.history.scrollHeight;
                 }, delay);
             },
@@ -277,7 +300,7 @@
                 // add the message to our model locally
                 this.messages.push({
                     userId: self.userId,
-                    text: self.message, 
+                    text: self.message,
                     guid: uuid,
                     messageStatus: 'unsend'
                 });
@@ -286,44 +309,29 @@
                     message: self.message,
                     channelId: self.channel.id,
                     guid: uuid
-                }, function(message){
-                    for (var i = self.messages.length-1; i >0; i--) {
-                       if(self.messages[i].guid === message.guid){
+                }, function (message) {
+                    for (var i = self.messages.length - 1; i > 0; i--) {
+                        if (self.messages[i].guid === message.guid) {
                             self.messages[i] = message;
                             break;
-                       }
+                        }
                     }
                 });
                 this.message = '';
                 this.$.messageInput.update();
 
             },
-            guid: function(){
-                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+            guid: function () {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
                     return v.toString(16);
                 });
             },
 
-            messageReady: function(event){
+            messageReady: function (event) {
                 this.scrollToBottom(100);
             },
-
-            keypressHandler: function (event, detail, sender) {
-                if (event.keyCode === 13 && this.message === '') {
-                    event.preventDefault();
-                    return;
-                }
-                if (event.shiftKey && event.keyCode === 13) {
-                    return;
-                }
-                if (!event.shiftKey && event.keyCode === 13) {
-                    this.sendMessage();
-                    event.preventDefault();
-                    return;
-                }
-            },
-            messageLoaded: function(event){
+            messageLoaded: function (event) {
                 this.scrollToBottom(100);
             },
 
