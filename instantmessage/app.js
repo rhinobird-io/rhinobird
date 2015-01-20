@@ -108,12 +108,13 @@ app.get('/api/channels', function (req, res) {
   if (isPrivate) {
     User.find({where: {name: channelName.substr(1)}}).then(function (user) {
       if (!user) {
+        console.log('user ' + channelName.substr(1) + ' is not in the im db');
         res.json(null);
         return;
       }
       var minId = user.id > userId ? userId : user.id;
       var maxId = user.id > userId ? user.id : userId;
-      Channel.findOrCreate({where: {name: '' + minId + ':' + maxId, 'private': true}}).then(function (channels) {
+      Channel.findOrCreate({where: {name: '' + minId + ':' + maxId, 'isPrivate': true}}).then(function (channels) {
         var channel = channels[0];
         async.parallel([
           function (callback) {
@@ -149,7 +150,7 @@ app.post('/api/channels', function (req, res) {
     User.find({where: {name: channelName.substr(1)}}).then(function (user) {
       var minId = user.id > userId ? userId : user.id;
       var maxId = user.id > userId ? user.id : userId;
-      Channel.findOrCreate({where: {name: '' + minId + ':' + maxId, 'private': true}}).then(function (channels) {
+      Channel.findOrCreate({where: {name: '' + minId + ':' + maxId, 'isPrivate': true}}).then(function (channels) {
         var channel = channels[0];
         async.parallel([
           function (callback) {
@@ -173,11 +174,13 @@ app.post('/api/channels', function (req, res) {
     Channel.count({where: {teamId: teamId}}).then(function (channelCount) {
       if (0 === channelCount) {
         // create this team
-        Channel.create({name: channelName, teamId: teamId, isPrivate: false}).then(function (channel) {
+        Channel.create({name: channelName, teamId: teamId, 'isPrivate': false}).then(function (channel) {
+          console.log('create channel : ' + channel);
           res.json(channel);
         });
       } else {
-        Channel.find({teamId: teamId, isPrivate: false }).then(function (channel) {
+        Channel.find({ where : {teamId: teamId, 'isPrivate': false} }).then(function (channel) {
+          console.log('found channel : ' + channel);
           res.json(channel);
         });
       }
