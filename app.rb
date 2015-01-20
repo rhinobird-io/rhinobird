@@ -46,7 +46,7 @@ class App < Sinatra::Base
 
   get '/login' do
     content_type 'text/html'
-    send_file File.join(settings.public_folder, 'index.html')
+    send_file File.join(settings.public_folder, 'login.html')
   end
 
   get '/' do

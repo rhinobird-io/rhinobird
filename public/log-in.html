@@ -127,7 +127,7 @@
                     signInResponse: function (event, response) {
                         user = JSON.parse(response.response);
                         this.$.globals.values.currentUser = user;
-                        document.querySelector('app-router').go('/dashboard');
+                        window.location.href = "/";
                     }
                     ,
 
