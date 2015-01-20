@@ -11,11 +11,15 @@
 <core-style id="login">
     .container {
     padding: 1.5em;
+        background-color: white;
     }
     .switch {
     color: {{g.theme.mainBgColor}};
     min-width: 0;
     margin: 0;
+    }
+    .bg {
+        background-color: {{g.theme.thirdBgColor}};
     }
 </core-style>
 
@@ -30,7 +34,7 @@
                 top: 0;
             }
         </style>
-        <div vertical layout center fit>
+        <div vertical layout center fit class="bg">
             <div vertical layout center>
                 <core-animated-pages selected="0" id="pages" transitions="hero-transition">
                     <section>
