@@ -68,19 +68,28 @@
         </style>
         <core-scaffold>
             <core-header-panel navigation flex mode="seamed">
-                <core-toolbar class="toolbar"><paper-button on-tap="{{jumpToDashboard}}">Team Work</paper-button></core-toolbar>
-                <core-menu theme="core-light-theme" hidden?="{{$.globals.values.showSetting}}">
-                    <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="/#/dashboard"></a></core-item>
-                    <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="/#/calendar"></a></core-item>
-                    <template repeat="{{plugin in $.globals.values.plugins}}">
-                        <core-item icon="{{plugin.icon}}" label="{{plugin.label}}" active?="{{selected == plugin.active}}"><a is="pushstate-anchor" href="{{plugin.href}}"></a></core-item>
-                    </template>
-                </core-menu>
-                <core-menu theme="core-light-theme" hidden?="{{!$.globals.values.showSetting}}">
-                    <template repeat="{{menu in $.globals.values.menus}}">
-                        <core-item icon="{{menu.icon}}" label="{{menu.label}}" active?="{{selected == menu.active}}"><a is="pushstate-anchor" href="{{menu.href}}"></a></core-item>
-                    </template>
-                </core-menu>
+                <div vertical layout fit justified>
+                    <div flex>
+                        <core-toolbar class="toolbar"><paper-button on-tap="{{jumpToDashboard}}">Team Work</paper-button></core-toolbar>
+                        <core-menu theme="core-light-theme" hidden?="{{$.globals.values.showSetting}}">
+                            <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="/#/dashboard"></a></core-item>
+                            <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="/#/calendar"></a></core-item>
+                            <template repeat="{{plugin in $.globals.values.plugins}}">
+                                <core-item icon="{{plugin.icon}}" label="{{plugin.label}}" active?="{{selected == plugin.active}}"><a is="pushstate-anchor" href="{{plugin.href}}"></a></core-item>
+                            </template>
+                        </core-menu>
+                    </div>
+
+                    <div>
+                        <core-toolbar class="toolbar"><label>{{$.globals.values.currentUser.realname}}</label></core-toolbar>
+                        <core-menu theme="core-light-theme">
+                            <core-item icon="event" label="Profile" active?="{{selected == 'profile'}}"><a is="pushstate-anchor" href="/#/profile"></a></core-item>
+                            <core-item icon="event" label="Team" active?="{{selected == 'team'}}"><a is="pushstate-anchor" href="/#/team"></a></core-item>
+                            <core-item icon="event" label="Logout" on-tap="{{logoutFunc}}"></core-item>
+                        </core-menu>
+                    </div>
+                </div>
+
             </core-header-panel>
             <div tool>
                 <content select=".title"></content>
@@ -104,7 +113,6 @@
                 <div class="userSignIn">
                     <a href="/#/login" hidden?="{{$.globals.values.currentUser}}" style='padding-top: 20px'>Sign In</a>
                     <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
-                        <label>{{$.globals.values.currentUser.realname}}</label>
                         <paper-dropdown class="dropdown" halign="right" style="color:#000;" on-core-select="{{onUserInfoSelect}}">
                             <core-menu class="menu">
                                 <paper-item>Profile</paper-item>
@@ -128,8 +136,7 @@
                     </paper-dropdown>
                 </paper-menu-button>
             </div>
-                <content></content>
-            </div>
+            <content></content>
             <app-globals id="globals"></app-globals>
         </core-scaffold>
     </template>
@@ -154,37 +161,41 @@
                 this.userName = "Sign In";
             },
 
-            onUserSelect : function (event, detail, target){
-                if (detail.isSelected){
-                    this.$.globals.values.currentUser = detail.item.templateInstance.model;
-                }
+            logoutFunc: function() {
+                this.$.logoutAjax.go();
             },
 
-            onUserInfoSelect: function(event, detail, target) {
-                option = detail.item.textContent;
+//            onUserSelect : function (event, detail, target){
+//                if (detail.isSelected){
+//                    this.$.globals.values.currentUser = detail.item.templateInstance.model;
+//                }
+//            },
+//
+//            onUserInfoSelect: function(event, detail, target) {
+//                option = detail.item.textContent;
+//
+//                switch(option){
+//                    case "Logout":
+//                        this.$.logoutAjax.go();
+//                        break;
+//                    case "Profile":
+//                    case "Team":
+//                    case "Notification":
+//                        if (!this.$.globals.values.menus) {
+//                            this.buildNewSideMenu();
+//                        }
+//
+//                        this.$.globals.values.showSetting = true;
+//                        document.querySelector('app-router').go('/' + option.toLowerCase());
+//                        break;
+//                }
+//            },
 
-                switch(option){
-                    case "Logout":
-                        this.$.logoutAjax.go();
-                        break;
-                    case "Profile":
-                    case "Team":
-                    case "Notification":
-                        if (!this.$.globals.values.menus) {
-                            this.buildNewSideMenu();
-                        }
-
-                        this.$.globals.values.showSetting = true;
-                        document.querySelector('app-router').go('/' + option.toLowerCase());
-                        break;
-                }
-            },
-
-            buildNewSideMenu: function() {
-                this.$.globals.values.menus = [];
-                this.$.globals.values.menus.push({"icon": "event", "label": "Profile", "active": "profile", "href":"/#/profile"});
-                this.$.globals.values.menus.push({"icon": "event", "label": "Team", "active": "team", "href":"/#/team"});
-            },
+//            buildNewSideMenu: function() {
+//                this.$.globals.values.menus = [];
+//                this.$.globals.values.menus.push({"icon": "event", "label": "Profile", "active": "profile", "href":"/#/profile"});
+//                this.$.globals.values.menus.push({"icon": "event", "label": "Team", "active": "team", "href":"/#/team"});
+//            },
 
             logoutCallback: function() {
                 document.querySelector('app-router').go('/login');

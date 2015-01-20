@@ -1,5 +1,7 @@
 <link rel="import" href="bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="bower_components/core-ajax/core-xhr.html">
+<link rel="import" href="bower_components/core-icon/core-icon.html">
+<link rel="import" href="bower_components/core-icons/social-icons.html">
 
 <polymer-element name="notification-element">
     <template>
@@ -11,14 +13,18 @@
                 response="{{notifications}}"></core-ajax>
 
         <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
-            <label style="margin-left:10px;color: red">{{notifications.length}}</label>
+            <core-icon icon="social:notifications"></core-icon>
+            <label style="color:red">{{notifications.length}}</label>
             <paper-dropdown class="dropdown" halign="right" style="color:#000;">
                 <core-menu class="menu">
                     <template repeat="{{notification in notifications}}">
                         <paper-item>
                             <div>
-                                <member-element userid="{{notification.from_user_id}}"></member-element>
-                                <p>{{notification.content}}</p>
+                                <div horizontal layout center>
+                                    <member-element userid="{{notification.from_user_id}}"></member-element>
+                                    {{notification.created_at | date('yyyy-MM-dd HH:mm')}}
+                                </div>
+                                <label>{{notification.content}}</label>
                             </div>
                         </paper-item>
                     </template>
@@ -66,9 +72,7 @@
             },
 
             handleNotification: function() {
-                for (index in this.notificationData) {
-                    this.notifications.push(this.notificationData[index]);
-                }
+                this.notifications.unshift(this.notificationData);
 
                 this.showNotification();
             },
@@ -82,36 +86,22 @@
                 if (Notification.permission !== "granted")
                     Notification.requestPermission();
 
-                this.notificationFroms = [];
-                for (index in this.notificationData) {
-                    this.notificationFroms.push(this.notificationData[index].from_user_id);
-                }
-
                 that = this;
                 xhr = new XMLHttpRequest();
                 xhr.onload = function(){
                     that.gravatars = JSON.parse(this.responseText);
-                    for (index in that.gravatars) {
-                        var notification = new Notification(that.gravatars[index].username, {
-                            icon: that.gravatars[index].url + "?d=identicon",
-                            body: that.notificationData[index].content
-                        });
+                    var notification = new Notification(that.gravatars[0].username, {
+                        icon: that.gravatars[0].url + "?d=identicon",
+                        body: that.notificationData.content
+                    });
 
-                        setTimeout((function(notify) {
-                            return function() {
-                                notify.close();
-                            }
-                        })(notification), 5000);
-                    }
+                    setTimeout((function(notify) {
+                        return function() {
+                            notify.close();
+                        }
+                    })(notification), 5000);
                 };
-                var r = [];
-                params = this.notificationFroms;
-                for (var n in params) {
-                    var v = params[n];
-                    n = encodeURIComponent(n);
-                    r.push(v == null ? n : (n + '=' + encodeURIComponent(v)));
-                }
-                xhr.open("GET", "/platform/gravatar?" + r.join('&'), true);
+                xhr.open("GET", "/platform/gravatar?0=" + encodeURIComponent(this.notificationData.from_user_id), true);
                 xhr.send();
             }
         });

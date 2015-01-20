@@ -37,6 +37,17 @@ class App < Sinatra::Base
     body env['sinatra.error'].message
   end
 
+  def login_required!
+    if session[:user].nil?
+      redirect '/login', 303
+    end
+  end
+
+  get '/login' do
+    content_type 'text/html'
+    send_file File.join(settings.public_folder, 'index.html')
+  end
+
   get '/' do
     if request.websocket?
       request.websocket do |ws|
@@ -59,12 +70,8 @@ class App < Sinatra::Base
 
   end
 
-  def login_required!
-    halt 401 if session[:user].nil?
-  end
-
   before do
-    login_required! unless ["/platform/login", "/platform/users", "/platform/loggedOnUser", "/"].include?(request.path_info)
+    login_required! unless ["/platform/login", "/platform/users", "/login"].include?(request.path_info)
     content_type 'application/json'
     if request.media_type == 'application/json'
       body = request.body.read
@@ -314,12 +321,13 @@ class App < Sinatra::Base
 
     # add a notification to one user
     post '/users/:userId/notifications' do
-      User.find(params[:userId]).notifications.create!(@body)
-      content = [@body].to_json
+      notification = User.find(params[:userId]).notifications.create!(@body)
+      notify = notification.to_json(:except => [:id, :user_id])
       socket_id = params[:userId].to_i
       unless settings.sockets[socket_id].nil?
-        EM.next_tick { settings.sockets[socket_id].send(content) }
+        EM.next_tick { settings.sockets[socket_id].send(notify) }
       end
+      200
     end
 
     # add a notification to many users
@@ -328,7 +336,11 @@ class App < Sinatra::Base
       content =@body["content"]
       content["from_user_id"] = session[:user][:id]
       users.each do |user|
-        record = User.find(user).notifications.create!(content)
+        notification = User.find(user).notifications.create!(content)
+        notify = notification.to_json(:except => [:id, :user_id])
+        unless settings.sockets[user].nil?
+          EM.next_tick { settings.sockets[user].send(notify) }
+        end
       end
       200
     end
