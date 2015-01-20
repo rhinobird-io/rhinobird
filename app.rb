@@ -282,11 +282,13 @@ class App < Sinatra::Base
     end
 
     post '/user/invite' do
+      email = @body["email"]
       user = User.find(session[:user][:id])
       Pony.mail({
-                    :to => 'ding_a@worksap.co.jp',
+                    :to => email,
                     :subject => user.realname + ' invited you to join teamwork',
-                    :body => '',
+                    :headers => { 'Content-Type' => 'text/html' },
+                    :body => 'Hi there, ' + user.realname + ' invited you to join teamwork' + '<br></br><a href="http://localhost:9292/#/login">Join now</a>',
                     :via => :smtp,
                     :via_options => {
                         :address        => 'smtp.gmail.com',

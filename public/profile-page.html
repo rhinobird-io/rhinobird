@@ -47,7 +47,8 @@
                 <core-ajax id="inviteUserAjax"
                            url="/platform/user/invite"
                            method="post"
-                           params="{{userEmail}}"></core-ajax>
+                           contentType="application/json"
+                           body="{{newUserJson}}"></core-ajax>
                 <paper-input label="Email" floatinglabel value="{{userEmail}}"></paper-input>
                 <paper-button raised on-tap="{{inviteNewMember}}">Invite New Member</paper-button>
             </div>
@@ -78,6 +79,10 @@
             },
 
             inviteNewMember: function() {
+                this.newUser = {};
+                this.newUser.email = this.userEmail;
+                this.newUserJson = JSON.stringify(this.newUser);
+                console.log(this.newUserJson);
                 this.$.inviteUserAjax.go();
             }
         });
