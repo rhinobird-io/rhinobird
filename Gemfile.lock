@@ -212,8 +212,13 @@ GEM
     json (1.8.2)
     macaddr (1.7.1)
       systemu (~> 2.6.2)
+    mail (2.6.3)
+      mime-types (>= 1.16, < 3)
+    mime-types (2.4.3)
     minitest (5.5.1)
     multi_json (1.10.1)
+    pony (1.11)
+      mail (>= 2.0)
     rack (1.6.0)
     rack-protection (1.5.3)
       rack
@@ -263,6 +268,7 @@ DEPENDENCIES
   bcrypt
   faker
   gravatar-ultimate
+  pony
   rake
   rubyzip
   shotgun
