@@ -45,15 +45,10 @@ Polymer({
 
     var self = this;
 
-    $.get('/platform/loggedOnUser').fail(function(){
-      console.log('cannot get logged on user');
+    $.get('/platform/loggedOnUser').fail(function () {
+
       document.querySelector('app-router').go('/');
     }).done(function (user) {
-
-      if (!user) {
-        document.querySelector('app-router').go('/');
-        return;
-      }
 
       self.$.connectingDialog.toggle();
       self.currentUser = user;
@@ -79,19 +74,25 @@ Polymer({
             if (err) {
               console.log(err);
             } else {
-              self.userId = self.currentUser.id;
-
               async.waterfall([
-                function (callback) {
+                /**
+                 * load socket.io.js
+                 * @param callback
+                 */
+                  function (callback) {
                   $.getScript(serverUrl + '/socket.io/socket.io.js').done(function () {
-                    // socket.io.js is loaded
                     callback();
                   }).fail(function () {
                     self.connectinStatus = "Cannot connect to server. Please refresh.";
                     callback(self.connectinStatus);
                   });
                 },
-                function (callback) {
+
+                /**
+                 * load the channels current user has
+                 * @param callback
+                 */
+                  function (callback) {
                   self.loadChannels().done(function () {
                     if (self.channelName === defaultChannel) {
                       // by default using the default setting, later use localstorage
@@ -102,11 +103,20 @@ Polymer({
                     }
                   });
                 },
+
+                /**
+                 * try to initialize current channel (if it is private, it might not be created in db)
+                 * @param callback
+                 */
+                  function (callback) {
+                  callback();
+                },
+
                 /**
                  * get current channel
                  * @param callback
                  */
-                function (callback) {
+                  function (callback) {
                   self.getChannel(self.channelName, self.currentUser.id, self.channelName.indexOf('@') === 0).done(function (channel) {
                     if (!channel) {
                       // the channel not exists
@@ -114,17 +124,40 @@ Polymer({
                       return;
                     }
                     self.channel = channel;
+
                     callback(null, channel);
+
                   });
                 },
 
-                function(channel, callback) {
+                /**
+                 * extra operation if the channel is private
+                 * @param channel
+                 * @param callback
+                 */
+                  function (channel, callback) {
                   if (!channel.isPrivate) {
                     console.log('current channel is not private');
                     callback();
                   } else {
                     console.log('current channel is private');
-                    callback();
+                    // if this channel is not in the direct message group, just add it
+                    if (!_.find(self.private, {id: channel.id})) {
+                      self.private.splice(0, 0, channel);
+
+                      // and get its displayname
+                      self.loadChannelUsers(channel.id).done(function (users) {
+                        users.forEach(function (user) {
+                          if (user.id !== self.currentUser.id) {
+                            channel.displayName = user.name;
+                          }
+                        });
+                        callback();
+                      });
+
+                    } else {
+                      callback();
+                    }
                   }
                 },
 
@@ -132,7 +165,7 @@ Polymer({
                  * load history
                  * @param callback
                  */
-                function (callback) {
+                  function (callback) {
                   self.loadHistory(self.channel.id).done(function () {
                     callback();
                   });
@@ -142,7 +175,7 @@ Polymer({
                  * init socket
                  * @param callback
                  */
-                function (callback) {
+                  function (callback) {
                   self.initSocket();
                   callback();
                 }
@@ -165,7 +198,7 @@ Polymer({
     self.socket.on('connect', function () {
       self.$.connectingDialog.toggle();
       self.socket.emit('init', {
-        userId: self.userId,
+        userId: self.currentUser.id,
         channelName: self.channel.name
       });
     });
@@ -209,14 +242,14 @@ Polymer({
 
   loadChannels: function () {
     var self = this;
-    return $.get(serverUrl + '/api/users/' + self.userId + '/channels').done(function (channels) {
+    return $.get(serverUrl + '/api/users/' + self.currentUser.id + '/channels').done(function (channels) {
       self.private = [];
       self.group = [];
       channels.forEach(function (channel) {
-        if (channel.private) {
+        if (channel.isPrivate) {
           self.loadChannelUsers(channel.id).done(function (users) {
             users.forEach(function (user) {
-              if (user.id !== self.userId) {
+              if (user.id !== self.currentUser.id) {
                 channel.displayName = user.name;
               }
             })
@@ -296,7 +329,7 @@ Polymer({
     var uuid = this.guid();
     // add the message to our model locally
     this.messages.push({
-      userId: self.userId,
+      userId: self.currentUser.id,
       text: self.message,
       guid: uuid,
       messageStatus: 'unsend'
