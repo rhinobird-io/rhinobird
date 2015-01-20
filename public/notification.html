@@ -11,12 +11,12 @@
             .count {
                 position: absolute;
                 border-radius: 50%;
-                width: 10px;
-                height: 10px;
+                width: 8px;
+                height: 8px;
                 font-size: small;
                 text-align: center;
-                bottom: 38px;
-                right: 16px;
+                bottom: 40px;
+                right: 26px;
             }
         </style>
         <core-ajax
@@ -27,7 +27,7 @@
                 response="{{notifications}}"></core-ajax>
 
         <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
-            <core-icon icon="social:notifications"></core-icon>
+            <paper-icon-button icon="social:notifications"></paper-icon-button>
             <paper-dropdown class="dropdown" halign="right" style="color:#000;">
                 <core-menu class="menu">
                     <template repeat="{{notification in notifications}}">
