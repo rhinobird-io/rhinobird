@@ -13,6 +13,7 @@ require './models/appointment'
 require 'gravatar-ultimate'
 require 'sinatra-websocket'
 require "bcrypt"
+require "pony"
 
 class App < Sinatra::Base
 
@@ -278,6 +279,22 @@ class App < Sinatra::Base
 
     get '/users' do
       User.all.to_json
+    end
+
+    post '/user/invite' do
+      # Pony.mail(:to => 'ding_a@worksap.co.jp', :from => 'ding_a@worksap.co.jp', :subject => 'hi', :body => 'Hello there.')
+      Pony.mail({
+                    :to => 'ding_a@worksap.co.jp',
+                    :via => :smtp,
+                    :via_options => {
+                        :address        => 'smtp.gmail.com',
+                        :port           => '25',
+                        :user_name      => 'teamwork.ate@gmail.com',
+                        :password       => 'ateshanghai',
+                        :authentication => :plain, # :plain, :login, :cram_md5, no auth by default
+                        :domain         => "localhost.localdomain" # the HELO domain provided by the client to the server
+                    }
+                })
     end
 
     post '/users' do
