@@ -205,7 +205,7 @@ Polymer({
       channelId: self.channel.id,
       guid: uuid
     }, function (message) {
-      for (var i = self.messages.length - 1; i > 0; i--) {
+      for (var i = self.messages.length - 1; i >= 0; i--) {
         if (self.messages[i].guid === message.guid) {
           self.messages[i] = message;
           break;
