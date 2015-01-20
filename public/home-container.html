@@ -59,10 +59,6 @@
             paper-dropdown-menu {
                 border-bottom: none;
             }
-            .userSignIn /deep/ .core-opened{
-                left:auto !important;
-                right: 0;
-            }
             .user-item /deep/ #scroller {
                 max-width: none !important;
             }
@@ -123,19 +119,6 @@
                         url="/platform/loggedOnUser"
                         on-core-response="{{currentUserCallback}}"
                         on-core-error="{{noUserCallback}}"></core-ajax>
-
-                <div class="userSignIn">
-                    <a href="/#/login" hidden?="{{$.globals.values.currentUser}}" style='padding-top: 20px'>Sign In</a>
-                    <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
-                        <paper-dropdown class="dropdown" halign="right" style="color:#000;" on-core-select="{{onUserInfoSelect}}">
-                            <core-menu class="menu">
-                                <paper-item>Profile</paper-item>
-                                <paper-item>Team</paper-item>
-                                <paper-item>Logout</paper-item>
-                            </core-menu>
-                        </paper-dropdown>
-                    </paper-menu-button>
-                </div>
 
                 <notification-element></notification-element>
             </div>
