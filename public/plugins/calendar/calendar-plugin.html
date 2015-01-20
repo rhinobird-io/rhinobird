@@ -29,22 +29,25 @@
     :host {
     background-color: white;
     }
-    
+
     div.container {
-        padding: 1em;
+        padding: 40px 16px;
         overflow-y: auto;
         overflow-x: hidden;
     }
 
     div.timeline {
-    position: relative;
-    padding: 2em 0;
-    *margin-top: 2em;
-    *margin-bottom: 2em;
-    height:100%;
+        position: relative;
+        padding: 0;
+        *margin-top: 2em;
+        *margin-bottom: 2em;
+        height:100%;
     }
    
-
+    core-list {
+        overflow-y: visible;
+    }
+    
     .content {
     margin-left: 40px;
     }
@@ -57,14 +60,15 @@
         padding: 2em 0;
 
     }
-    .listitem::before {
-    content: '';
-    position: absolute;
-    top: 0.5em;
-    left: 18px;
-    height: 100%;
-    width: 4px;
-    background-color: {{g.theme.thirdBgColor}};
+    .listitem::before,
+    .dayDivider::before {
+        content: '';
+        position: absolute;
+        top: 0.5em;
+        left: 18px;
+        height: 100%;
+        width: 4px;
+        background-color: {{g.theme.thirdBgColor}};
     }
 
     .time {
@@ -81,9 +85,9 @@
     }
 
     .main-button {
-    position: absolute;
-    top: 8px;
-    left: 16px;
+        position: absolute;
+        top: 20px;
+        left: 16px;
     }
 
     .tabs, .pages, .fullday {
@@ -119,7 +123,7 @@
     }
 
     .list {
-    margin-top: 20px;
+    *margin-top: 20px;
     }
 
     .subTitle {
@@ -140,16 +144,6 @@
     * {
         -webkit-box-sizing: border-box;
                 box-sizing: border-box;
-    }
-
-    .dayDivider::before {
-        content: '';
-        position: absolute;
-        top: 0.5em;
-        left: 18px;
-        height: 100%;
-        width: 4px;
-        background-color: {{g.theme.thirdBgColor}};
     }
 
     .dayDivider {
@@ -246,7 +240,7 @@
                                 -->
 
                                 
-                                <core-list data="{{events}}" groups="{{eventGroups}}" flex>
+                                <core-list data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;">
                                     <template>
                                         <div divider class="dayDivider">
                                             <div class="dayDividerLabel">
