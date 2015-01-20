@@ -14,8 +14,10 @@
 <link rel="import" href="bower_components/paper-item/paper-item.html">
 <link rel="import" href="elements/app-globals/app-globals.html">
 <link rel="import" href="notification.html">
+<link rel="import" href="elements/member-select/member-element.html">
 <link rel="import" href="bower_components/core-style/core-style.html">
-<link rel="import" href="../../bower_components/polymer-filters/polymer-filters.html">
+<link rel="import" href="bower_components/polymer-filters/polymer-filters.html">
+<link rel="import" href="bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 
 <core-style id="toolbar">
     .toolbar {
@@ -64,6 +66,13 @@
             .user-item /deep/ #scroller {
                 max-width: none !important;
             }
+            .userbar{
+                cursor: pointer;
+            }
+            a.nostyle {
+                color:inherit;
+                text-decoration: none;
+            }
 
 
         </style>
@@ -82,12 +91,19 @@
                     </div>
 
                     <div>
-                        <core-toolbar class="toolbar"><label>{{$.globals.values.currentUser.realname}}</label></core-toolbar>
-                        <core-menu theme="core-light-theme">
-                            <core-item icon="event" label="Profile" active?="{{selected == 'profile'}}"><a is="pushstate-anchor" href="/#/profile"></a></core-item>
-                            <core-item icon="event" label="Team" active?="{{selected == 'team'}}"><a is="pushstate-anchor" href="/#/team"></a></core-item>
-                            <core-item icon="event" label="Logout" on-tap="{{logoutFunc}}"></core-item>
-                        </core-menu>
+                        <core-toolbar class="toolbar userbar" on-tap="">
+                            <member-element userid="{{$.globals.values.currentUser.id}}"></member-element>
+                            <paper-menu-button>
+                                <paper-icon-button icon="expand-less" noink></paper-icon-button>
+                                <paper-dropdown class="dropdown" halign="right" valign="bottom">
+                                    <core-menu class="menu">
+                                        <paper-item noink><a class="nostyle" href="/#/profile">Profile</a></paper-item>
+                                        <paper-item noink><a class="nostyle" href="/#/team">Team</a></paper-item>
+                                        <paper-item noink on-tap="{{logoutFunc}}">Logout</paper-item>
+                                    </core-menu>
+                                </paper-dropdown>
+                            </paper-menu-button>
+                        </core-toolbar>
                     </div>
                 </div>
 
