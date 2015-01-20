@@ -168,8 +168,8 @@
 
     .dayDivider .dayDividerLabel hr {
         position: absolute;
-        top: 0.6em;
-        left: 0px;
+        top: 0.5em;
+        left: -60px;
         right: 0px;
         border: 0;
         margin: 0;
@@ -245,7 +245,7 @@
                                 -->
 
                                 
-                                <core-list data="{{events | orderBy('from')}}" groups="{{eventGroups}}" flex>
+                                <core-list data="{{events}}" groups="{{eventGroups}}" flex>
                                     <template>
                                         <div divider class="dayDivider">
                                             <div class="dayDividerLabel">
@@ -390,18 +390,17 @@
             observe: {
                 'selected.period': 'changeTab'
             },
+            refresh: function() {
+
+            },
             handleEvents: function (event, detail) {
                 this.events = detail.response;
                 this.events.sort(function(o1, o2) {
-                    /*var fromDate1 = new Date(o1.from);
-                    var fromDate2 = new Date(o2.from);
-                    if (fromDate1.getDateString() == fromDate2.getDateString()) return 0;
-                    if (fromDate1.getFullYear())*/
                     if (o1.from < o2.from) return -1;
                     else if (o1.from > o2.from) return 1;
                     else return 0;
                 });
-                console.log(this.events);
+
                 this.eventGroups = [];
                 this.events.forEach(function (event) {
                     event.participants = event.participants.map(function (p) {
@@ -466,6 +465,7 @@
             main: function () {
                 this.$.pages.selected = 0;
                 this.mode = 'list';
+                console.log(this.selected);
             },
             jumpToAdd: function () {
                 this.selected = {from: new Date(), to: new Date(), participants: [], full_day: false, period: true};
@@ -481,10 +481,32 @@
                 this.eventBody = JSON.stringify(this.selected);
                 this.$.postEvent.go();
             },
-            eventSaved: function(){
+            eventSaved: function(event, detail) {
+                this.selected.from = this.selected.from.toISOString();
                 this.events.push(this.selected);
                 this.mode = 'view';
                 this.$.eventSavedToast.show();
+
+                this.events.sort(function(o1, o2) {
+                    if (o1.from < o2.from) return -1;
+                    else if (o1.from > o2.from) return 1;
+                    else return 0;
+                });
+                var added = false;
+                for (var i = 0; i < this.eventGroups.length; i++) {
+                    var eventGroup = this.eventGroups[i];
+                    if (eventGroup.data.date == new Date(this.selected.from).toDateString()) {
+                        eventGroup.length++;
+                        added = true;
+                        break;
+                    }
+                }
+                if (!added) {
+                    var newDayGroup = {};
+                    newDayGroup.data = {date: this.selected.from.toDateString()};
+                    newDayGroup.length = 1;
+                    this.eventGroups.push(newDayGroup);
+                }
             }
         });
     </script>
