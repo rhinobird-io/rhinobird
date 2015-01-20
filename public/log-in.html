@@ -3,16 +3,25 @@
 <link rel="import" href="bower_components/paper-input/paper-input.html">
 <link rel="import" href="bower_components/paper-button/paper-button.html">
 <link rel="import" href="bower_components/paper-toast/paper-toast.html">
-
+<link rel="import" href="bower_components/core-icons/core-icons.html">
+<link rel="import" href="bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="bower_components/paper-shadow/paper-shadow.html">
+<link rel="import" href="bower_components/core-animated-pages/core-animated-pages.html">
+<link rel="import" href="bower_components/core-pages/core-pages.html">
+<core-style id="login">
+    .container {
+    padding: 1.5em;
+    }
+    .switch {
+    color: {{g.theme.mainBgColor}};
+    min-width: 0;
+    margin: 0;
+    }
+</core-style>
 <polymer-element name="sign-in">
     <template>
-        <style>
-            .signIn {
-                width: 400px;
-                height: 200px;
-                background: transparent;
-            }
-        </style>
+        <core-style ref="theme"></core-style>
+        <core-style ref="login"></core-style>
         <core-ajax
                 id="signInAjax"
                 method="post"
@@ -21,34 +30,44 @@
                 body="{{userJson}}"
                 on-core-response="{{signInResponse}}"
                 on-core-error="{{showError}}"></core-ajax>
-        <div class="signIn" layout vertical>
+        <paper-shadow class="container" layout vertical>
+            <h1>Sign In</h1>
             <paper-input id="email" label="Email" value="{{userInfo.email}}"></paper-input>
             <paper-input id="password" label="Password" value="{{userInfo.password}}"></paper-input>
-            <paper-button id="signInBtn" raised on-tap="{{signIn}}">Sign In</paper-button>
-        </div>
+            <div horizontal layout justified center>
+                <paper-button class="switch" on-tap="{{switch}}">Sign Up</paper-button>
+                <div></div>
+                <paper-fab icon="done" id="signInBtn" on-tap="{{signIn}}" class="mainColor"></paper-fab>
+            </div>
+        </paper-shadow>
         <app-globals id="globals"></app-globals>
-        <paper-toast id="toastLoginFail" text="Login failed, please check your credential." role="status" touch-action="none" tabindex="-1" class="core-transition core-transition-bottom" style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
+        <paper-toast id="toastLoginFail" text="Login failed, please check your credential." role="status"
+                     touch-action="none" tabindex="-1" class="core-transition core-transition-bottom"
+                     style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
     </template>
     <script>
         Polymer("sign-in", {
 
-            ready: function() {
+            ready: function () {
                 this.userInfo = {};
             },
 
-            signIn: function() {
+            signIn: function () {
                 this.userJson = JSON.stringify(this.userInfo);
                 this.$.signInAjax.go();
             },
 
-            signInResponse: function(event, response) {
+            signInResponse: function (event, response) {
                 user = JSON.parse(response.response);
                 this.$.globals.values.currentUser = user;
                 document.querySelector('app-router').go('/dashboard');
             },
 
-            showError: function() {
+            showError: function () {
                 this.$.toastLoginFail.show();
+            },
+            switch: function () {
+                this.fire("switch", {});
             }
         })
     </script>
@@ -56,6 +75,8 @@
 
 <polymer-element name="sign-up">
     <template>
+        <core-style ref="theme"></core-style>
+        <core-style ref="login"></core-style>
         <style>
             .signUp {
                 width: 400px;
@@ -70,38 +91,72 @@
                 body="{{userJson}}"
                 url="/platform/users"
                 on-core-response="{{signUpResponse}}"></core-ajax>
-        <div class="signUp" layout vertical>
+        <paper-shadow class="container" layout vertical>
+            <h1>Sign Up</h1>
             <paper-input id="name" label="Name" value="{{userInfo.name}}"></paper-input>
             <paper-input id="realname" label="RealName" value="{{userInfo.realname}}"></paper-input>
             <paper-input id="email" label="Email" value="{{userInfo.email}}"></paper-input>
             <paper-input id="password" label="Password" value="{{userInfo.password}}"></paper-input>
-            <paper-button id="signUpBtn" raised on-tap="{{signUp}}">Sign Up</paper-button>
-        </div>
-        <paper-toast id="toastSignUpSuccess" text="Account created." role="status" touch-action="none" tabindex="-1" class="core-transition core-transition-bottom" style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
+            <div horizontal layout justified center>
+                <paper-button class="switch" on-tap="{{switch}}">Sign In</paper-button>
+                <div></div>
+                <paper-fab icon="done" id="signUpBtn" on-tap="{{signUp}}" class="mainColor"></paper-fab>
+            </div>
+        </paper-shadow>
+        <paper-toast id="toastSignUpSuccess" text="Account created." role="status" touch-action="none" tabindex="-1"
+                     class="core-transition core-transition-bottom"
+                     style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
         <app-globals id="globals"></app-globals>
     </template>
     <script>
         Polymer("sign-up", {
 
-            ready: function() {
+            ready: function () {
                 this.userInfo = {};
             },
 
-            signUp: function() {
+            signUp: function () {
                 this.userJson = JSON.stringify(this.userInfo);
                 this.$.signUpAjax.go();
             },
 
-            signUpResponse: function() {
+            signUpResponse: function () {
                 this.$.toastSignUpSuccess.show();
+            },
+            switch: function () {
+                this.fire("switch", {});
             }
         })
     </script>
 </polymer-element>
 
-<polymer-element name="log-in" noscript>
+<polymer-element name="log-in">
     <template>
-        <sign-in></sign-in>
-        <sign-up></sign-up>
+        <style>
+            core-pages {
+                margin-top: 150px;
+                width: 300px;
+                top: 0;
+            }
+        </style>
+        <div vertical layout center fit>
+            <div vertical layout center>
+                <core-pages selected="0" id="pages">
+                    <div>
+                        <sign-in on-switch="{{switch}}"></sign-in>
+                    </div>
+                    <div>
+                        <sign-up on-switch="{{switch}}"></sign-up>
+                    </div>
+                </core-pages>
+            </div>
+        </div>
     </template>
+    <script>
+        Polymer({
+            switch: function () {
+                this.$.pages.selected = this.$.pages.selected == "0" ? 1 : 0;
+            }
+        });
+    </script>
 </polymer-element>
