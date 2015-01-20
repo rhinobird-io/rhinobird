@@ -1,6 +1,9 @@
 var hostname = window.location.hostname;
 var serverUrl = 'http://' + hostname + ':3000';
 var defaultChannel = 'default';
+var lastHistory = 0;
+var noMoreHistory = false;
+var currentChannel = null;
 
 
 Polymer({
@@ -124,7 +127,7 @@ Polymer({
                       return;
                     }
                     self.channel = channel;
-
+                    currentChannel = channel;
                     callback(null, channel);
 
                   });
@@ -162,23 +165,16 @@ Polymer({
                 },
 
                 /**
-                 * load history
-                 * @param callback
-                 */
-                  function (callback) {
-                  self.loadHistory(self.channel.id).done(function () {
-                    callback();
-                  });
-                },
-
-                /**
                  * init socket
                  * @param callback
                  */
                   function (callback) {
                   self.initSocket();
                   callback();
-                }
+                }, 
+                  function (callback) {
+                    self.$.infiniteScroll.attached();
+                },
 
               ], function (err, result) {
                 if (err) {
@@ -260,6 +256,31 @@ Polymer({
         }
       });
     });
+  },
+
+  loadOldHistory: function(element){
+    if (!currentChannel){
+      return false;
+    }
+    if (noMoreHistory ){
+      this.observerStatus = true;
+      return false;
+    }
+    var pass = true;
+    $.get(serverUrl + '/api/channels/' + currentChannel.id + '/messages?offset='+lastHistory + '&limit=1' ).done(function (messages) {
+      
+      if (messages.length < 1){
+        noMoreHistory = true;
+        this.observerStatus = true;
+        pass = false;
+        return ;
+      }
+      element[0].setAttribute('text', messages[0].message);
+      element[0].setAttribute('user', messages[0].UserId);
+      element[0].setAttribute('updatedAt', messages[0].updatedAt);
+    });
+    lastHistory++;
+    return pass;
   },
 
   loadHistory: function (roomId) {

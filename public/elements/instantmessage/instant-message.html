@@ -3,6 +3,7 @@
 <link rel="import" href="../../bower_components/core-style/core-style.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
 <link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
+<link rel="import" href="quetzal-infinite-scroll.html">
 
 <link rel="import" href="../../../home-container.html">
 <link rel="import" href="../display-message/display-message.html">
@@ -19,11 +20,13 @@
                 <div id="historyAndInput" four flex vertical layout class="mainBgColor">
 
                     <div id="history" flex>
+
+                        <quetzal-infinite-scroll id="infiniteScroll" disableDown addedTopElements="{{loadOldHistory}}"><display-message on-loaded="{{messageLoaded}}" on-ready="{{messageReady}}"></display-message></quetzal-infinite-scroll>
                         <template repeat="{{m in messages}}">
                             <display-message user="{{m.userId}}" text="{{m.text}}" on-loaded="{{messageLoaded}}"
                                              messageStatus="{{m.messageStatus}}" updatedAt="{{m.updatedAt}}"
                                              on-ready="{{messageReady}}"></display-message>
-                        </template>
+                        </template> 
                     </div>
 
                     <div class="inputbox" on-tap="{{boxTapped}}">

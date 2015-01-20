@@ -1,0 +1,121 @@
+<!--
+An infinite surface that generates additional elements as necessary to always
+permit scrolling.
+
+For now, this handles infinite scrolling in both direction: up.
+-->
+
+<polymer-element name="quetzal-infinite-scroll" attributes="elementsPerPage addedTopElements disableUp">
+
+<template>
+  <style>
+  :host {
+    display: block;
+    overflow-y: auto;
+  }
+
+  polyfill-next-selector {
+    content: '*';
+  }
+  ::content > * {
+    display: none;
+  }
+  </style>
+  <content id="itemTemplate"></content>
+  <div id="hello"></div>
+</template>
+
+<script>
+Polymer( "quetzal-infinite-scroll", {
+
+  
+  addedTopElements: function(element){
+    element = [""];
+    // Subclasses can override to set up new elements.
+  },
+
+  addElementToTop: function() {
+    var nodes = this.$.itemTemplate.getDistributedNodes();
+    // If we're polyfilled, nodes will already be an Array, not a NodeList.
+    var template = nodes.array ? nodes.array() : nodes;
+    var newElements = [];
+    template.forEach( function( templateNode ) {
+      newElements.push( templateNode.cloneNode( true ));
+    });
+    if (!this.addedTopElements( newElements )){
+      return;
+    }
+    var self = this;
+    newElements.forEach( function( newElement ) {
+      this.shadowRoot.insertBefore(newElement, this.shadowRoot.firstChild);
+        
+        if (newElement.scrollHeight){
+          self.parentNode.scrollTop += newElement.scrollHeight;
+        }else{
+          self.parentNode.scrollTop += 10;
+        }
+     
+    }.bind( this ));
+  },
+
+  addPageToTop: function(num) {
+    if (!num){
+      num = this.elementsPerPage;
+    }
+    for ( var i = 0; i < num && this.observerStatus; i++ ) {
+      this.addElementToTop();
+    }
+    // HACK until bug https://code.google.com/p/chromium/issues/detail?id=317895
+    // is fixed.
+    this.$.itemTemplate.style.backgroundColor = "";
+  },
+
+  addPageIfNeeded: function() {
+
+    if (this._needsMoreElementsAtTop() ){
+      this.addPageToTop();
+    }
+  },
+
+  attached: function() {
+    this.addPageToTop(20);
+    var self = this;
+    setTimeout(function () {
+      self.parentNode.scrollTop = self.parentNode.scrollHeight;
+    }, 800);
+  },
+
+  elementsPerPage: 10,
+  observerStatus: true,
+  observer: null,
+
+  ready: function() {
+    this.parentNode.addEventListener( "scroll", function() {
+      this.scrolled();
+    }.bind( this ));
+    var self = this;
+    this.observer = new MutationObserver( function() {
+      window.setTimeout( function() {
+        if (!self.observerStatus){
+          this.observer.disconnect();
+          return;
+        }
+        this.addPageIfNeeded();
+      }.bind( this ), 10 );
+    }.bind( this ));
+    this.observer.observe( this.shadowRoot, {
+      childList: true
+    });
+  },
+  scrolled: function() {
+    this.addPageIfNeeded();
+  },
+
+  _needsMoreElementsAtTop: function() {
+    return ( this.parentNode.scrollTop <  this.parentNode.clientHeight/10 );
+  }
+
+});
+</script>
+
+</polymer-element>
