@@ -19,7 +19,6 @@
                 <div id="historyAndInput" four flex vertical layout class="mainBgColor">
 
                     <div id="history" flex>
-                        old messages in room {{ channelName }}
                         <template repeat="{{m in messages}}">
                             <display-message user="{{m.userId}}" text="{{m.text}}" on-loaded="{{messageLoaded}}"
                                              messageStatus="{{m.messageStatus}}" updatedAt="{{m.updatedAt}}"
@@ -44,8 +43,8 @@
                             <paper-item on-click="{{ handleChannelSelect }}" hash="{{g.name}}">{{ g.name }}</paper-item>
                         </template>
                     </div>
-                    <div id="privateChannel">
-                        <h3 class="secondColor">Private Channel</h3>
+                    <div id="directMessage">
+                        <h3 class="secondColor">Direct Message</h3>
                         <template repeat="{{ g in private }}">
                             <paper-item on-click="{{ handleChannelSelect }}" hash="{{'@'+g.displayName}}">{{
                                 g.displayName }}
@@ -63,5 +62,6 @@
     </template>
 
     <script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="../../bower_components/async/lib/async.js"></script>
     <script src="instant-message.web.js"></script>
 </polymer-element>

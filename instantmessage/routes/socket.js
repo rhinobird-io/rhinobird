@@ -18,8 +18,6 @@ module.exports = function (socket) {
       socket.broadcast.to(channel.id).emit('user:join', {
         userId: userId
       });
-
-      // callback(channel);
     });
   });
 
@@ -37,8 +35,8 @@ module.exports = function (socket) {
         message.text = data.message;
         message.updatedAt = afterCreate.dataValues.updatedAt;
         message.messageStatus = "done";
+
         socket.broadcast.to(data.channelId).emit('send:message', message);
-        
         callback(message); 
       });
     });
@@ -67,6 +65,7 @@ module.exports = function (socket) {
             socket.broadcast.to(channel.dataValues.name).emit('user:left', {
               userId: userId
             });
+            socket.leave(channel.id);
           });
         });
       }

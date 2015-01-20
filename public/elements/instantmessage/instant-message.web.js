@@ -1,5 +1,6 @@
 var hostname = window.location.hostname;
 var serverUrl = 'http://' + hostname + ':3000';
+var defaultChannel = 'default';
 
 
 Polymer({
@@ -8,6 +9,7 @@ Polymer({
   },
   messages: [],
   connectinStatus: "connecting",
+
   ready: function () {
     // Init the plugin name
     this.pluginName = 'instantmessage';
@@ -16,8 +18,9 @@ Polymer({
     this.users = [];
 
     this.scrollToBottom(100);
-    this.$.connectingDialog.toggle();
+
     var self = this;
+
     window.onkeypress = function (event) {
       if (event.keyCode === 13 && self.message === '') {
         event.preventDefault();
@@ -42,66 +45,165 @@ Polymer({
 
     var self = this;
 
-    $.get('/platform/loggedOnUser').done(function (user) {
+    $.get('/platform/loggedOnUser').fail(function(){
+      console.log('cannot get logged on user');
+      document.querySelector('app-router').go('/');
+    }).done(function (user) {
+
+      if (!user) {
+        document.querySelector('app-router').go('/');
+        return;
+      }
+
+      self.$.connectingDialog.toggle();
       self.currentUser = user;
-      self.userId = self.currentUser.id;
 
-      $.getScript(serverUrl + '/socket.io/socket.io.js', function () {
-        self.loadChannels().done(function () {
-          // get channel id by name
-          self.getChannel(self.channelName, self.userId, self.channelName.indexOf('@') === 0).done(function (resp) {
-            self.channel = resp;
-            self.loadHistory(self.channel.id);
-
-            self.socket = io(serverUrl).connect();
-            self.socket.on('connect', function () {
-              self.$.connectingDialog.opened = false;
-              self.socket.emit('init', {
-                userId: self.userId,
-                channelName: self.channel.name
+      $.post(serverUrl + '/api/users', {
+        id: self.currentUser.id,
+        name: self.currentUser.name
+      }).done(function (user) {
+        $.get('/platform/users/' + user.id + '/teams').done(function (teams) {
+          async.each(teams, function (team, callback) {
+            $.post(serverUrl + '/api/channels', {
+              isPrivate: 'false',
+              name: team.name,
+              teamId: team.id
+            }).done(function (channel) {
+              // after channel is added, add user to this channel
+              $.post(serverUrl + '/api/channels/' + channel.id + '/users', {userId: self.currentUser.id}).done(function (users) {
+                // users in this channel
+                callback();
               });
             });
+          }, function (err) {
+            if (err) {
+              console.log(err);
+            } else {
+              self.userId = self.currentUser.id;
 
-            self.socket.on('send:message', function (message) {
-              self.messages.push(message);
-              self.$.messageInput.update();
-              var objDiv = self.$.history;
-              self.scrollToBottom(100);
-            });
+              async.waterfall([
+                function (callback) {
+                  $.getScript(serverUrl + '/socket.io/socket.io.js').done(function () {
+                    // socket.io.js is loaded
+                    callback();
+                  }).fail(function () {
+                    self.connectinStatus = "Cannot connect to server. Please refresh.";
+                    callback(self.connectinStatus);
+                  });
+                },
+                function (callback) {
+                  self.loadChannels().done(function () {
+                    if (self.channelName === defaultChannel) {
+                      // by default using the default setting, later use localstorage
+                      self.channelName = self.group[0].name;
+                      document.querySelector('app-router').go('/' + self.pluginName + '/channels/' + self.channelName);
+                    } else {
+                      callback();
+                    }
+                  });
+                },
+                /**
+                 * get current channel
+                 * @param callback
+                 */
+                function (callback) {
+                  self.getChannel(self.channelName, self.currentUser.id, self.channelName.indexOf('@') === 0).done(function (channel) {
+                    if (!channel) {
+                      // the channel not exists
+                      callback('the channel not exists');
+                      return;
+                    }
+                    self.channel = channel;
+                    callback(null, channel);
+                  });
+                },
 
-            self.socket.on('user:join', function (data) {
-              self.messages.push({
-                text: 'User ' + data.userId + ' has joined.'
+                function(channel, callback) {
+                  if (!channel.isPrivate) {
+                    console.log('current channel is not private');
+                    callback();
+                  } else {
+                    console.log('current channel is private');
+                    callback();
+                  }
+                },
+
+                /**
+                 * load history
+                 * @param callback
+                 */
+                function (callback) {
+                  self.loadHistory(self.channel.id).done(function () {
+                    callback();
+                  });
+                },
+
+                /**
+                 * init socket
+                 * @param callback
+                 */
+                function (callback) {
+                  self.initSocket();
+                  callback();
+                }
+
+              ], function (err, result) {
+                if (err) {
+                  console.log('Error : ' + err);
+                }
               });
-            });
-
-            self.socket.on('user:left', function (data) {
-              self.messages.push({
-                text: 'User ' + data.userId + ' has left.'
-              });
-            });
-            self.socket.on('disconnect', function () {
-              self.$.connectingDialog.opened = true;
-              self.connectinStatus = "disconnected.";
-            });
-
-            self.socket.on('reconnecting', function (number) {
-              self.$.connectingDialog.opened = true;
-              self.connectinStatus = "reconnecting... (" + number + ")";
-            });
-            self.socket.on('reconnecting_failed', function () {
-              self.$.connectingDialog.opened = true;
-              self.connectinStatus = "reconnecting failed.";
-            });
-            self.socket.on('reconnect', function () {
-              self.$.connectingDialog.opened = false;
-              self.connectinStatus = "connected";
-            });
+            }
           });
         });
-      }).fail(function (err) { //getScript fail
-        self.connectinStatus = "Cannot connect to server. Please refresh.";
       });
+    });
+  },
+
+  initSocket: function () {
+    var self = this;
+    self.socket = io(serverUrl).connect();
+    self.socket.on('connect', function () {
+      self.$.connectingDialog.toggle();
+      self.socket.emit('init', {
+        userId: self.userId,
+        channelName: self.channel.name
+      });
+    });
+
+    self.socket.on('send:message', function (message) {
+      self.messages.push(message);
+      self.$.messageInput.update();
+      var objDiv = self.$.history;
+      self.scrollToBottom(100);
+    });
+
+    self.socket.on('user:join', function (data) {
+      self.messages.push({
+        text: 'User ' + data.userId + ' has joined.'
+      });
+    });
+
+    self.socket.on('user:left', function (data) {
+      self.messages.push({
+        text: 'User ' + data.userId + ' has left.'
+      });
+    });
+    self.socket.on('disconnect', function () {
+      self.$.connectingDialog.opened = true;
+      self.connectinStatus = "disconnected.";
+    });
+
+    self.socket.on('reconnecting', function (number) {
+      self.$.connectingDialog.opened = true;
+      self.connectinStatus = "reconnecting... (" + number + ")";
+    });
+    self.socket.on('reconnecting_failed', function () {
+      self.$.connectingDialog.opened = true;
+      self.connectinStatus = "reconnecting failed.";
+    });
+    self.socket.on('reconnect', function () {
+      self.$.connectingDialog.opened = false;
+      self.connectinStatus = "connected";
     });
   },
 
@@ -129,7 +231,7 @@ Polymer({
 
   loadHistory: function (roomId) {
     var self = this;
-    $.get(serverUrl + '/api/channels/' + self.channel.id + '/messages').done(function (messages) {
+    return $.get(serverUrl + '/api/channels/' + self.channel.id + '/messages').done(function (messages) {
       var temp = [];
       messages.forEach(function (message) {
         temp.push({userId: message.UserId, text: message.message, updatedAt: message.updatedAt});
@@ -165,7 +267,7 @@ Polymer({
     }
 
     var hash = target.attributes['hash'].value;
-    document.querySelector('app-router').go('/channels/' + hash);
+    document.querySelector('app-router').go('/' + this.pluginName + '/channels/' + hash);
 
     this.socket.emit('change:room', {
       newRoom: target.templateInstance.model.g.id,

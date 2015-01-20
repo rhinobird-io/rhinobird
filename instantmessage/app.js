@@ -89,9 +89,9 @@ app.get('/api/channels/:channelId/users', function (req, res) {
 app.post('/api/channels/:channelId/users', function (req, res) {
   var userId = req.body.userId;
   Channel.find(req.params.channelId).then(function (channel) {
-    User.find(userId).then(function(user) {
-      channel.addUser(user).then(function(){
-        channel.getUsers().then(function(users) {
+    User.find(userId).then(function (user) {
+      channel.addUser(user).then(function () {
+        channel.getUsers().then(function (users) {
           res.json(users);
         });
       });
@@ -107,6 +107,10 @@ app.get('/api/channels', function (req, res) {
 
   if (isPrivate) {
     User.find({where: {name: channelName.substr(1)}}).then(function (user) {
+      if (!user) {
+        res.json(null);
+        return;
+      }
       var minId = user.id > userId ? userId : user.id;
       var maxId = user.id > userId ? user.id : userId;
       Channel.findOrCreate({where: {name: '' + minId + ':' + maxId, 'private': true}}).then(function (channels) {
@@ -130,14 +134,14 @@ app.get('/api/channels', function (req, res) {
       });
     });
   } else {
-    Channel.find({where : { name : channelName}}).then(function(channel) {
+    Channel.find({where: {name: channelName}}).then(function (channel) {
       res.json(channel);
     });
   }
 });
 
 app.post('/api/channels', function (req, res) {
-  var isPrivate = req.body.isPrivate === 'true';
+  var isPrivate = (req.body.isPrivate === 'true');
   var userId = req.body.from;
   var channelName = req.body.name;
   var teamId = req.body.teamId;
@@ -169,11 +173,11 @@ app.post('/api/channels', function (req, res) {
     Channel.count({where: {teamId: teamId}}).then(function (channelCount) {
       if (0 === channelCount) {
         // create this team
-        Channel.create({ name : channelName, teamId : teamId, isPrivate : isPrivate }).then(function(channel) {
+        Channel.create({name: channelName, teamId: teamId, isPrivate: false}).then(function (channel) {
           res.json(channel);
         });
       } else {
-        Channel.find({ teamId : teamId, isPrivate : isPrivate}).then(function(channel) {
+        Channel.find({teamId: teamId, isPrivate: false }).then(function (channel) {
           res.json(channel);
         });
       }
@@ -185,17 +189,17 @@ app.post('/api/channels', function (req, res) {
 app.post('/api/users', function (req, res) {
   var userId = req.body.id;
   var name = req.body.name;
-  User.count({id: userId}).then(function (count) {
-    var promise;
+  User.count({where: {id: userId}}).then(function (count) {
     if (count === 0) {
       // create a new user
-      promise = User.create({name: name, id: userId});
+      User.create({name: name, id: userId}).then(function (user) {
+        res.json(user);
+      });
     } else {
-      promise = User.find(userId);
+      User.find(userId).then(function (user) {
+        res.json(user);
+      });
     }
-    promise.then(function (user) {
-      res.json(user);
-    });
   });
 });
 
