@@ -47,7 +47,7 @@
                                 on-core-response="{{signInResponse}}"
                                 on-core-error="{{showError}}"></core-ajax>
                         <paper-shadow class="container" layout vertical hero hero-id="1">
-                            <h1 hero hero-id="2">Sign In</h1>
+                            <h1 hero hero-id="2">Sign in</h1>
                             <paper-input label="Email" value="{{userInfo.email}}" hero hero-id="email"></paper-input>
                             <paper-input-decorator id="passwordIn" label="Password" value="{{userInfo.password}}" hero hero-id="password">
                                 <input is="core-input" id="signInPassword" on-keypress="{{keyPressInPassword}}" value="{{userInfo.password}}" type="password">
@@ -74,9 +74,9 @@
                                 url="/platform/users"
                                 on-core-response="{{signUpResponse}}"></core-ajax>
                         <paper-shadow class="container" layout vertical hero hero-id="1">
-                            <h1 hero hero-id="2">Sign Up</h1>
+                            <h1 hero hero-id="2">Sign up</h1>
                             <paper-input label="Email" value="{{userInfo.email}}" hero hero-id="email"></paper-input>
-                            <paper-input id="realname" label="RealName" value="{{userInfo.realname}}" hero
+                            <paper-input id="realname" label="Name" value="{{userInfo.realname}}" hero
                                          hero-id="realname"></paper-input>
                             <paper-input-decorator label="Password" value="{{userInfo.password}}" hero hero-id="password">
                                 <input is="core-input" value="{{userInfo.password}}" type="password">
