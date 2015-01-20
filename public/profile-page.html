@@ -4,8 +4,14 @@
 
 <polymer-element name="profile-page">
     <template>
+        <style>
+            .container {
+                padding: 1em;
+            }
+        </style>
         <home-container selected="profile">
             <div class="title">Profile</div>
+            <div class="container">
             <div vertical layout>
                 <div horizontal layout center>
                     <div style="width:400px" vertical layout>
@@ -44,6 +50,7 @@
                            params="{{userEmail}}"></core-ajax>
                 <paper-input label="Email" floatinglabel value="{{userEmail}}"></paper-input>
                 <paper-button raised on-tap="{{inviteNewMember}}">Invite New Member</paper-button>
+            </div>
             </div>
 
         </home-container>
