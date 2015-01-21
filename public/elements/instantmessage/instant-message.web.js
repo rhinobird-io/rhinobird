@@ -190,6 +190,10 @@ Polymer({
     });
 
     self.socket.on('send:message', function (message) {
+      if (self.messages.length > 0){
+        message.hideMemberElement = 
+          self.isHideMemberElement(self.messages[self.messages.length -1], message);
+      }
       self.messages.push(message);
       self.$.messageInput.update();
       var objDiv = self.$.history;
@@ -245,7 +249,18 @@ Polymer({
       });
     });
   },
-  historyOffset: 20, 
+  isHideMemberElement: function(lastMessage, newMessage){
+    if (!lastMessage || !lastMessage.UserId || !newMessage.UserId || 
+      !newMessage.updatedAt || !lastMessage.updatedAt){
+      return false;
+    }
+    if (lastMessage.UserId == newMessage.UserId && 
+      new Date(newMessage.updatedAt).getTime() - new Date(lastMessage.updatedAt).getTime() < 60*1000){
+      return true;
+    } 
+    return false;
+  },
+  historyOffset: 30, 
   historyLimit: 10,
   noMoreHistory: false,
 
@@ -262,12 +277,15 @@ Polymer({
           self.noMoreHistory = true;
         }
         var temp = [];
+        var lastMessage = null;
         messages.forEach(function (message) {
           temp.push({userId: message.UserId, 
                      text: message.message, 
                      updatedAt: message.updatedAt, 
                      disableLoadedEvent: true, 
-                     disableReadyEvent: true});
+                     disableReadyEvent: true, 
+                     hideMemberElement: self.isHideMemberElement(lastMessage, message)});
+          lastMessage = message;
         });
         self.messages = temp.concat(self.messages);
 
@@ -278,8 +296,13 @@ Polymer({
     var self = this;
     return $.get(serverUrl + '/api/channels/' + self.channel.id + '/messages?offset=0&limit=' + this.historyOffset).done(function (messages) {
       var temp = [];
+      var lastMessage = null;
       messages.forEach(function (message) {
-        temp.push({userId: message.UserId, text: message.message, updatedAt: message.updatedAt});
+        temp.push({userId: message.UserId, 
+                   text: message.message, 
+                   updatedAt: message.updatedAt,
+                   hideMemberElement: self.isHideMemberElement(lastMessage, message)});
+        lastMessage = message;
       });
       self.messages = temp.concat(self.messages);
 
@@ -383,6 +406,10 @@ Polymer({
       for (var i = self.messages.length - 1; i >= 0; i--) {
         if (self.messages[i].guid === message.guid) {
           self.messages[i] = message;
+          if (i -1 >=0){
+            self.messages[i].hideMemberElement  = 
+              self.isHideMemberElement(self.messages[i-1], message);
+          }
           break;
         }
       }

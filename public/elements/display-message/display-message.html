@@ -4,7 +4,7 @@
 <link rel="import" href="display-url-message.html">
 <link rel="import" href="../member-select/member-element.html">
 <link rel="import" href="../../bower_components/polymer-filters/polymer-filters.html">
-<polymer-element name="display-message" attributes="user text messageStatus updatedAt disableLoadedEvent disableReadyEvent">
+<polymer-element name="display-message" attributes="hideMemberElement user text messageStatus updatedAt disableLoadedEvent disableReadyEvent">
 
 <template>
 <style>
@@ -26,11 +26,13 @@
 
 <div vertical layout class="box">
 	<div horizontal layout center>
-		<template if="{{user}}">
-			<member-element userid="{{user}}"></member-element>
-		</template>
-		<template if="{{updatedAt}}">
-			<span class="time">{{updatedAt | date('hh:mm')}}</span>
+		<template if="{{!hideMemberElement}}">
+			<template if="{{user}}">
+				<member-element userid="{{user}}"></member-element>
+			</template>
+			<template if="{{updatedAt}}">
+				<span class="time">{{updatedAt | date('hh:mm')}}</span>
+			</template>
 		</template>
 	</div>
 	<div class="{{messageStatus}} msg">
@@ -54,6 +56,7 @@
 		processedText : [],
 		disableLoadedEvent: false, 
 		disableReadyEvent: false,
+		hideMemberElement: false,
 		domReady: function(){
 			var afterprocessing = this.processCodeSnippet(this.text);
 			
