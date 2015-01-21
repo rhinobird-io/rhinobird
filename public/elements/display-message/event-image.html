@@ -1,4 +1,4 @@
-<polymer-element name="event-image" attributes="src width">
+<polymer-element name="event-image" attributes="src width disableLoadedEvent">
 <script src="../../bower_components/imagesloaded/imagesloaded.pkgd.js"></script>
 <template>
 	<style>
@@ -11,11 +11,13 @@
 
 <script>
 	Polymer({
-		
+		disableLoadedEvent: false,
 		domReady: function(){
 			var self = this;
 			imagesLoaded (this.$.coreImage, function (){ 
-				self.fire('loaded','')
+				if (!self.disableLoadedEvent){
+					self.fire('loaded','');
+				}
 			});
 		}, 
 	});
