@@ -17,10 +17,6 @@
 
 <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
 <core-style id="calendar">
-    @media screen and (min-width: 1170px) {
-
-    }
-
     paper-tabs::shadow #selectionBar{
         background-color: {{g.theme.accentBgColor}};
     }
@@ -36,6 +32,7 @@
     :host {
         background-color: white;
     }
+
 
     div.container {
         padding: 40px 16px;
@@ -108,8 +105,8 @@
     }
 
     .event {
-    border-radius: 50%;
-    padding:8px;
+        border-radius: 50%;
+        padding:8px;
     }
     time-input.upper {
     margin-top: -35px;
@@ -136,9 +133,9 @@
     }
 
     .subTitle {
-    font-size: 21px;
-    margin-left: 90px;
-    padding-bottom: 10px;
+        font-size: 21px;
+        margin-left: 90px;
+        padding-bottom: 10px;
     }
 
     paper-fab {
@@ -177,12 +174,12 @@
         right: 0px;
         border: 0;
         margin: 0;
-        border-top: 2px solid #ccc;
+        border-top: 1px solid #ccc;
     }
 
     .dayDivider .dayDividerLabel .dayDividerLabelContent {
         position: relative;
-        display: inline-block;
+        *display: inline-block;
         color: #555459;
         font-family: 'Lato', san-serif;
         font-weight: 900;
@@ -200,6 +197,56 @@
     .time {
         font-size: 90%;
     }
+
+
+    @media screen and (min-width: 1170px) {
+        .event {
+            position: absolute;
+            left: 50%;
+            margin-left: -20px;
+        }
+
+        .listitem::before,
+        .dayDivider::before {
+            left: 50%;
+            margin-left: -2px;
+        }
+
+          
+        .dayDivider .dayDividerLabel.left {
+            width: 50%;
+            text-align: right;
+            margin-left: 0;
+            padding-right: 78px;
+        }
+
+        .dayDivider .dayDividerLabel.right {
+            width: 50%;
+            text-align: left;
+            margin-left: 50%;
+            padding-left: 78px;
+        }
+        .dayDivider .dayDividerLabel hr {
+            left: 0;
+        }
+
+        .block .content {
+            display: inline-block;
+            width: 50%;
+        }
+
+        .block .content.left {
+            margin-left: 0px;
+            padding-right: 78px;
+            text-align: right;
+        }
+
+        .block .content.right {
+            margin-left: 50%;
+            padding-left: 78px;
+            text-align: left;
+        }
+    }
 </core-style>
 
 <polymer-element name="schedule-list">
@@ -213,6 +260,9 @@
                 </template>
                 <template if="{{mode=='edit'}}">
                     <paper-fab mini icon="done" class="accentColor" on-tap="{{saveEvent}}"></paper-fab>
+                </template>
+                <template if="{{mode=='view'}}">
+                    <paper-fab mini icon="remove" class="accentColor" on-tap="{{removeEvent}}"></paper-fab>
                 </template>
                 <span class="subTitle">Schedule</span>
             </div>
@@ -261,7 +311,7 @@
                                 <core-list data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;">
                                     <template>
                                         <div divider class="dayDivider">
-                                            <div class="dayDividerLabel">
+                                            <div class="dayDividerLabel {{model.position}}">
                                                 <hr/>
                                                 <div class="dayDividerLabelContent">{{groupModel.date}}</div>
                                             </div>
@@ -271,7 +321,7 @@
                                                 <div class="event mainColor">
                                                     <core-icon icon="event"></core-icon>
                                                 </div>
-                                                <div hero hero-id="{{event.id}}" vertical layout flex class="content">
+                                                <div hero hero-id="{{event.id}}" vertical layout class="content {{model.position}}">
                                                     <div class="event-title">{{model.title}}</div>
                                                     <div class="time iconColor">
                                                         <smart-time-display from="{{model.from}}" to="{{model.to}}"
@@ -311,7 +361,7 @@
                                     </paper-input-decorator>
 
                                     <paper-input-decorator label="Description" floatingLabel id="decorator"
-                                                           disabled="{{modeDisabled}}">
+                                                           disabled="{{modeDisabled}}" placeholder="">
                                         <paper-autogrow-textarea id="autogrowArea">
                                         <textarea id="textArea" wrap="virtual" value="{{selected.description}}"
                                                   disabled?="{{modeDisabled}}"></textarea>
@@ -418,6 +468,8 @@
 
                 });
 
+                var position = "right";
+
                 for (var i = 0; i < this.events.length; i++) {
                     var event = this.events[i];
                     var len = this.eventGroups.length;
@@ -427,10 +479,14 @@
                         newDayGroup.data = {date: fromDate.toDateString()};
                         newDayGroup.length = 1;
                         this.eventGroups.push(newDayGroup);
+                        if (position == "left") position = "right";
+                        else position = "left";
                     } else {
                         var oldDayGroup = this.eventGroups[len - 1];
                         oldDayGroup.length++;
                     }
+
+                    event.position = position;
                 }
             },
             handleEvents: function (event, detail) {
