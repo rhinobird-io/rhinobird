@@ -55,7 +55,6 @@ Polymer({
                 },
                 dataType: 'json',
                 success: function (channels) {
-                  debugger;
                   cb(null);
                 },
                 error: function () {
