@@ -1,6 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="../../bower_components/core-style/core-style.html">
+<link rel="import" href="../../bower_components/core-icon/core-icon.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
 <link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
 <link rel="import" href="quetzal-infinite-scroll.html">
@@ -21,12 +22,15 @@
 
                     <div id="history" flex>
 
-                        <quetzal-infinite-scroll id="infiniteScroll" disableDown addedTopElements="{{loadOldHistory}}"><display-message on-loaded="{{messageLoaded}}" on-ready="{{messageReady}}"></display-message></quetzal-infinite-scroll>
+                        <quetzal-infinite-scroll id="infiniteScroll" disableDown addedTopElements="{{loadOldHistory}}">
+                            <display-message on-loaded="{{messageLoaded}}"
+                                             on-ready="{{messageReady}}"></display-message>
+                        </quetzal-infinite-scroll>
                         <template repeat="{{m in messages}}">
                             <display-message user="{{m.userId}}" text="{{m.text}}" on-loaded="{{messageLoaded}}"
                                              messageStatus="{{m.messageStatus}}" updatedAt="{{m.updatedAt}}"
                                              on-ready="{{messageReady}}"></display-message>
-                        </template> 
+                        </template>
                     </div>
 
                     <div class="inputbox" on-tap="{{boxTapped}}">
@@ -42,9 +46,20 @@
                 <div flex>
                     <div id="groupChannel">
                         <h3 class="secondColor">Group Channel</h3>
-                        <template repeat="{{ g in group }}">
-                            <paper-item on-click="{{ handleChannelSelect }}" hash="{{g.name}}">{{ g.name }}</paper-item>
-                        </template>
+
+                        <div vertical layout>
+                            <template repeat="{{ g in group }}">
+                                <div horizontal layout center>
+                                    <div flex>
+                                        <paper-item on-click="{{ handleChannelSelect }}" hash="{{g.name}}">{{ g.name }}
+                                        </paper-item>
+                                    </div>
+                                    <div>
+                                        <core-icon icon="account-child"></core-icon>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                     <div id="directMessage">
                         <h3 class="secondColor">Direct Message</h3>
