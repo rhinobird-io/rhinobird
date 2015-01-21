@@ -311,10 +311,10 @@ class App < Sinatra::Base
     post '/user/invite' do
       email = @body["email"]
       user = User.find(session[:user][:id])
-      if @body["team_id"].nil?
+      if @body["initial_team_id"].nil?
         invitation = Invitation.create({:email => email, :from_user_id => session[:user][:id], :initial_team_id => -1})
       else
-        invitation = Invitation.create({:email => email, :from_user_id => session[:user][:id], :initial_team_id => @body["team_id"]})
+        invitation = Invitation.create({:email => email, :from_user_id => session[:user][:id], :initial_team_id => @body["initial_team_id"]})
       end
 
       Pony.mail({
@@ -336,7 +336,15 @@ class App < Sinatra::Base
     end
 
     post '/users' do
-      User.create!(@body)
+      if @body["initial_team_id"].nil?
+        User.create!(@body)
+      else
+        team = Team.find(@body["initial_team_id"])
+        user_obj = { :realname => @body["realname"], :email => @body["email"], :password =>  @body["password"]}
+        user = User.create!(user_obj)
+        team.users << user
+      end
+      200
     end
 
     #change password

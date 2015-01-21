@@ -1,6 +1,74 @@
 <link rel="import" href="home-container.html">
 <link rel="import" href="elements/app-globals/app-globals.html">
 <link rel="import" href="bower_components/ajax-file-input/ajax-file-input.html">
+<link rel="import" href="bower_components/core-selector/core-selector.html">
+
+<polymer-element name="team-select">
+    <template>
+        <core-ajax id="getTeamsAjax"
+                   auto
+                   url="/platform/teams"
+                   handleAs="json"
+                   response="{{teams}}"></core-ajax>
+        <paper-input-decorator label="Invite to team(optional)" labelVisible="{{_labelVisible}}" floatinglabel value="{{initialTeam}}">
+            <div horizontal layout center wrap>
+                <template repeat="{{team in selected}}">
+                    <label>{{team.name}}</label>
+                    <core-icon class="small" icon="clear" on-click="{{ removeUserHandler }}"
+                               on-mousedown="{{preventFocus}}"></core-icon>
+                </template>
+                <input is="core-input" value="{{initialTeam}}"
+                       on-focus="{{ showMenu }}" on-blur="{{ hideMenu }}">
+            </div>
+
+        </paper-input-decorator>
+        <template if="{{isShowMenu}}">
+            <core-selector id="selector" selected="0" excludedLocalNames="label">
+                <template repeat="{{ t in teams}}">
+                    <div on-tap="{{selectTeamHandler}}">
+                        {{t.name}}
+                    </div>
+                </template>
+            </core-selector>
+        </template>
+    </template>
+    <script>
+        Polymer("team-select", {
+
+            _labelVisible: true,
+            selected: [],
+
+            showMenu: function () {
+                this.isShowMenu = true;
+            },
+
+            hideMenu: function (event, detail, sender) {
+                var self = this;
+                setTimeout(function () {
+                    self.isShowMenu = false;
+                    self.$.selector.selected = 0;
+                }, 100);
+            },
+
+            selectTeamHandler: function (event, detail, target) {
+                var team = target.templateInstance.model.t;
+                this.selected.push(team);
+                this._labelVisible = false;
+            },
+
+            removeUserHandler: function (event, detail, target) {
+                var team = target.templateInstance.model.t;
+                index = this.selected.indexOf(team);
+                this.selected.splice(index, 1);
+                if (this.selected.length === 0) {
+                    this._labelVisible = true;
+                }
+                event.stopPropagation();
+            }
+        });
+    </script>
+
+</polymer-element>
 
 <polymer-element name="profile-page">
     <template>
@@ -13,7 +81,7 @@
             <div class="title">Profile</div>
             <div class="container">
                 <div vertical layout>
-                    <div horizontal layout center>
+                    <div horizontal layout>
                         <div style="width:400px" vertical layout>
                             <paper-input label="name" floatinglabel disabled value="{{user.realname}}"></paper-input>
                             <paper-input label="email" floatinglabel disabled value="{{user.email}}"></paper-input>
@@ -26,6 +94,7 @@
                                        body="{{newUserJson}}"
                                        on-core-response="{{inviteSuccess}}"></core-ajax>
                             <paper-input label="Email" floatinglabel value="{{userEmail}}"></paper-input>
+                            <team-select id="initialTeam"></team-select>
                             <paper-button raised on-tap="{{inviteNewMember}}">Invite New Member</paper-button>
                             <paper-toast id="toastInviteSuccess" text="Invitation has been sent to {{userEmail}}" role="status" touch-action="none"
                                          tabindex="-1"
@@ -116,19 +185,15 @@
                 this.passwordMsg = "Please input correct password for current user";
                 this.$.toastChangePassword.toggle();
             },
-//            saveProfile: function() {
-//                if (this.user.realname && this.user.email) {
-//                    this.newUserData = JSON.stringify(this.user);
-//                    this.$.updateUserAjax.go();
-//                    this.$.globals.values.currentUser = this.user;
-//                } else {
-//                    alert("invalid input");
-//                }
-//            },
 
             inviteNewMember: function() {
                 this.newUser = {};
                 this.newUser.email = this.userEmail;
+                var selectedTeams = this.$.initialTeam.selected;
+                if (selectedTeams.length !== 0) {
+                    this.newUser.initial_team_id = selectedTeams[0].id;
+                }
+
                 this.newUserJson = JSON.stringify(this.newUser);
                 console.log(this.newUserJson);
                 this.$.inviteUserAjax.go();
