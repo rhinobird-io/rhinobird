@@ -236,6 +236,13 @@ class App < Sinatra::Base
       200
     end
 
+    #remove a user from team
+    post '/teams/:teamId/users/:userId/remove' do
+      team = Team.find(params[:teamId])
+      team.users.delete(params[:userId])
+      200
+    end
+
     post '/login' do
       session[:user] = nil
       password = Password.create(@body["password"]).first
@@ -293,7 +300,7 @@ class App < Sinatra::Base
                     :to => email,
                     :subject => user.realname + ' invited you to join teamwork',
                     :headers => { 'Content-Type' => 'text/html' },
-                    :body => 'Hi there, ' + user.realname + ' invited you to join teamwork' + '<br></br><a href="http://localhost:9292/#/login">Join now</a>',
+                    :body => 'Hi there, ' + user.realname + ' invited you to join teamwork' + '<br></br><a href="http://localhost:9292/login">Join now</a>',
                     :via => :smtp,
                     :via_options => {
                         :address        => 'smtp.gmail.com',

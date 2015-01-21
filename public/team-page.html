@@ -21,6 +21,12 @@
                 height : 600px;
             }
 
+            core-icon.small {
+                height: 1em;
+                width: 1em;
+                cursor: pointer;
+            }
+
             .heading {
                 padding: 10px 15px;
                 background-color: #f3f3f3;
@@ -52,32 +58,34 @@
                     <div>
                         <div horizontal layout center>
                             <h3>{{team.name}}</h3>
-                            <paper-fab icon="add" mini class="blue" title="invite new member" role="button" tabindex="0" aria-label="invite new member" on-tap="{{inviteNewMember}}" style="margin-left: 10px"></paper-fab>
                         </div>
                         <div>
+                            <core-ajax id="removeUserFromTeamAjax"
+                                       url="/platform/teams/{{team.id}}/users/{{removeUserId}}/remove"
+                                       method="post"
+                                       on-core-response="{{removeUserFromTeamResponse}}"></core-ajax>
                             <template repeat="{{user in users}}">
-                                <member-element userid="{{user.id}}" style="width: 250px"></member-element>
+                                <div horizontal layout center wrap>
+                                    <member-element userid="{{user.id}}"></member-element>
+                                    <core-icon class="small" icon="clear" on-click="{{ removeUserFromTeam }}"
+                                               on-mousedown="{{preventFocus}}"></core-icon>
+                                </div>
                             </template>
+                            <div style="width: 400px">
+                                <core-ajax id="addMember"
+                                           url="/platform/teams/{{team.id}}/users"
+                                           method="post"
+                                           contentType="application/json"
+                                           body="{{newMember}}"
+                                           on-core-response="{{newMemberResponse}}"></core-ajax>
+                                <member-select id="memberSelect" teamsUrl="/platform/teams_users"></member-select>
+                                <paper-button raised on-tap="{{addMemberToTeam}}">Invite to team</paper-button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </core-collapse>
         </div>
-
-        <paper-action-dialog id="inviteDialog" heading="Invite new members to {{team.name}}" role="dialog" layered="false" aria-label="Invite new members to {{team.name}" tabindex="-1" style="position: fixed; outline: none; display: none;">
-
-            <core-ajax id="addMember"
-                       url="/platform/teams/{{team.id}}/users"
-                       method="post"
-                       contentType="application/json"
-                       body="{{newMember}}"
-                       on-core-response="{{newMemberResponse}}"></core-ajax>
-            <member-select id="memberSelect" teamsUrl="/platform/teams_users"></member-select>
-
-            <paper-button affirmative="" role="button" tabindex="0">Cancel</paper-button>
-            <paper-button affirmative="" autofocus="" role="button" tabindex="0" on-tap="{{addMemberToTeam}}" style="color: dodgerblue">Invite</paper-button>
-        </paper-action-dialog>
-
     </template>
     <script>
         Polymer("team-element", {
@@ -112,10 +120,25 @@
                 this.fire('team-delete', {team: this.team});
             },
 
+            removeUserFromTeam: function (event, detail, target) {
+                this.removedUser = target.templateInstance.model.user;
+                this.removeUserId = this.removedUser.id;
+                this.$.removeUserFromTeamAjax.go();
+            },
+
+            removeUserFromTeamResponse: function() {
+                index = this.users.indexOf(this.removedUser);
+                this.users.splice(index, 1);
+            },
+
             showTeamContent: function() {
                 var collapse = this.$.teamContent;
                 console.log(collapse);
                 collapse.toggle();
+            },
+
+            preventFocus: function() {
+                event.stopPropagation();
             }
         });
     </script>
@@ -144,48 +167,30 @@
 
             <div vertical layout flex>
                 <div class="teamBlock">
-                    <paper-button raised on-tap="{{newTeam}}"><core-icon icon="add"></core-icon>New Team</paper-button>
+                    <core-ajax id="addTeam"
+                               url="/platform/teams/users"
+                               method="post"
+                               contentType="application/json"
+                               body="{{newTeamJson}}"
+                               on-core-response="{{newTeamResponse}}"></core-ajax>
+                    <div vertical layout center>
+                        <paper-input label="Team Name" floatinglabel value="{{teamName}}"></paper-input>
+                        <member-select id="memberSelect" teamsUrl="/platform/teams_users"></member-select>
+                        <paper-button raised on-tap="{{newTeam}}"><core-icon icon="add"></core-icon>Create Team</paper-button>
+                    </div>
                 </div>
-
                 <div vertical layout>
                     <template repeat="{{team in teams}}">
                         <team-element team="{{team}}" class="teamBlock" on-team-delete="{{teamDeleted}}"></team-element>
                     </template>
                 </div>
             </div>
-
-            <paper-action-dialog id="newTeamDialog" class="dialog" heading="CreateNewTeam" role="dialog" layered="false" aria-label="Create New Team" tabindex="-1" style="position: fixed; outline: none; display: none;">
-
-                <core-ajax id="addTeam"
-                           url="/platform/teams/users"
-                           method="post"
-                           contentType="application/json"
-                           body="{{newTeamJson}}"
-                           on-core-response="{{newTeamResponse}}"></core-ajax>
-                <div vertical layout>
-                    <paper-input label="Team Name" floatinglabel value="{{teamName}}"></paper-input>
-
-                    <member-select id="memberSelect" teamsUrl="/platform/teams_users"></member-select>
-                </div>
-
-                <paper-button affirmative="" role="button" tabindex="0">Cancel</paper-button>
-                <paper-button affirmative="" autofocus="" role="button" tabindex="0" on-tap="{{addNewTeam}}" style="color: dodgerblue">Create</paper-button>
-            </paper-action-dialog>
         </home-container>
         <app-globals id="globals"></app-globals>
     </template>
     <script>
         Polymer("team-page", {
             newTeam: function() {
-                var dialog = this.$.newTeamDialog;
-                if (!dialog) {
-                    console.log("dialog not found");
-                } else {
-                    dialog.toggle();
-                }
-            },
-
-            addNewTeam: function() {
                 var newTeamData = {};
                 newTeamData.team = {"name": this.teamName};
                 newTeamData.user = this.$.memberSelect.selected;
