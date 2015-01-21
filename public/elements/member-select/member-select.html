@@ -23,18 +23,18 @@
                 *-moz-border-radius: 5px;
                 *-webkit-border-radius: 5px;
                 position: absolute;
-                box-sizing: border-box;
+                padding: 0;
                 width: 300px;
+                z-index: 10;
+                box-shadow: 0 0 6px #555;
+                box-sizing: border-box;
+            }
+
+            #menu > div {
                 height: 200px;
                 padding: 10px 14px;
                 background-color: #C5CAE9;
                 overflow-y: auto;
-                box-shadow: 0 0 6px #555;
-                z-index: 10;
-            }
-
-            #menu > div {
-                
             }
 
             core-icon.small {
@@ -256,6 +256,7 @@
                 var wrapperHeight = this.$.wrapper.offsetHeight;
                 var menuHeight = 200;
 
+                console.log(this.$.menu.offsetWidth);
                 if (offsetTop - scrollTop + wrapperHeight + menuHeight <= parentHeight) {
                     // show menu at bottom
                     this.$.menu.style.bottom = '-' + menuHeight + 'px';

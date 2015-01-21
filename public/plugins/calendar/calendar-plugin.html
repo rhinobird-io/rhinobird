@@ -18,20 +18,23 @@
 <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
 <core-style id="calendar">
     @media screen and (min-width: 1170px) {
-        
+
     }
 
     paper-tabs::shadow #selectionBar{
-    background-color: {{g.theme.accentBgColor}};
+        background-color: {{g.theme.accentBgColor}};
     }
+
     paper-tabs paper-tab::shadow #ink {
-    color: {{g.theme.accentBgColor}};
+        color: {{g.theme.accentBgColor}};
     }
+
     paper-toggle-button::shadow #toggleBar[checked], paper-toggle-button::shadow paper-radio-button::shadow #onRadio {
-    background-color: {{g.theme.accentBgColor}};
+        background-color: {{g.theme.accentBgColor}};
     }
+
     :host {
-    background-color: white;
+        background-color: white;
     }
 
     div.container {
@@ -53,13 +56,14 @@
     }
     
     .content {
-    margin-left: 40px;
+        margin-left: 40px;
     }
 
     .block {
-    position: relative;
-    cursor: pointer;
+        position: relative;
+        cursor: pointer;
     }
+
     .listitem {
         *position: relative !important;
         padding: 2em 0;
@@ -187,6 +191,15 @@
         padding: 0 2px;
         background: white;
     }
+
+    .event-title {
+        font-size: 120%;
+        font-family: Lato, san-serif;
+    }
+
+    .time {
+        font-size: 90%;
+    }
 </core-style>
 
 <polymer-element name="schedule-list">
@@ -288,7 +301,7 @@
                             <div class="detail-content" vertical layout center>
                                 <div>
                                     <paper-input-decorator label="Title" floatingLabel id="title"
-                                                           disabled="{{modeDisabled}}">
+                                                           disabled="{{modeDisabled}}" placeholder="">
                                         <template if="{{!modeDisabled}}">
                                             <input is="core-input" value="{{selected.title}}">
                                         </template>
@@ -423,25 +436,6 @@
             handleEvents: function (event, detail) {
                 this.events = detail.response;
                 this.refresh();
-
-                /*
-                for (var i = 0; i < this.events.length; i++) {
-                    var event = this.events[i];
-                    var len = this.eventsByDays.length;
-                    var fromDate = new Date(event.from);
-                    if (len == 0 || this.eventsByDays[len - 1].date != fromDate.toDateString()) {
-                        var newDay = {};
-                        newDay.date = fromDate.toDateString();
-                        newDay.events = [];
-                        newDay.events.push(event);
-                        this.eventsByDays.push(newDay);
-                    } else {
-                        var oldDay = this.eventsByDays[len - 1];
-                        oldDay.events.push(event);
-                    }
-                }
-                console.log(this.eventsByDays);
-                */
             },
             changeTab: function (oldV, newV) {
                 this.tabSelected = newV ? 0 : 1;
