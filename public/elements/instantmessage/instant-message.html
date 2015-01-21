@@ -18,15 +18,12 @@
                     <p>{{connectinStatus}}</p>
                 </paper-action-dialog>
                 <div id="historyAndInput" four flex vertical layout class="mainBgColor">
+
                     <div id="history" flex>
                         <template repeat="{{m in messages}}">
-                            <display-message user="{{m.userId}}" 
-                                    text="{{m.text}}" on-loaded="{{messageLoaded}}"
-                                    messageStatus="{{m.messageStatus}}" 
-                                    updatedAt="{{m.updatedAt}}"
-                                    disableReadyEvent="{{m.disableReadyEvent}}"
-                                    disableLoadedEvent="{{m.disableLoadedEvent}}"
-                                    on-ready="{{messageReady}}"></display-message>
+                            <display-message user="{{m.userId}}" text="{{m.text}}" on-loaded="{{messageLoaded}}"
+                                             messageStatus="{{m.messageStatus}}" updatedAt="{{m.updatedAt}}"
+                                             on-ready="{{messageReady}}"></display-message>
                         </template>
                     </div>
 
@@ -43,9 +40,20 @@
                 <div flex>
                     <div id="groupChannel">
                         <h3 class="secondColor">Group Channel</h3>
-                        <template repeat="{{ g in group }}">
-                            <paper-item on-click="{{ handleChannelSelect }}" hash="{{g.name}}">{{ g.name }}</paper-item>
-                        </template>
+
+                        <div vertical layout>
+                            <template repeat="{{ g in group }}">
+                                <div horizontal layout center>
+                                    <div flex>
+                                        <paper-item on-click="{{ handleChannelSelect }}" hash="{{g.name}}">{{ g.name }}
+                                        </paper-item>
+                                    </div>
+                                    <div>
+                                        <core-icon icon="account-child"></core-icon>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                     <div id="directMessage">
                         <h3 class="secondColor">Direct Message</h3>
