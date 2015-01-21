@@ -17,6 +17,10 @@
 
 <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
 <core-style id="calendar">
+    @media screen and (min-width: 1170px) {
+        
+    }
+
     paper-tabs::shadow #selectionBar{
     background-color: {{g.theme.accentBgColor}};
     }
@@ -51,6 +55,7 @@
     .content {
     margin-left: 40px;
     }
+
     .block {
     position: relative;
     cursor: pointer;
@@ -254,7 +259,7 @@
                                                     <core-icon icon="event"></core-icon>
                                                 </div>
                                                 <div hero hero-id="{{event.id}}" vertical layout flex class="content">
-                                                    <div>{{model.title}}</div>
+                                                    <div class="event-title">{{model.title}}</div>
                                                     <div class="time iconColor">
                                                         <smart-time-display from="{{model.from}}" to="{{model.to}}"
                                                                             period="{{model.period}}"
