@@ -52,7 +52,6 @@ module.exports = function (socket) {
         userId: userId
       });
       socket.join(room.newRoom);
-      console.log('user ' + userId + ' join ' + room.newRoom );
     }
   });
 
@@ -62,7 +61,7 @@ module.exports = function (socket) {
       if (user) {
         user.getChannels().then(function (channels) {
           channels.forEach(function (channel) {
-            socket.broadcast.to(channel.dataValues.name).emit('user:left', {
+            socket.broadcast.to(channel.id).emit('user:left', {
               userId: userId
             });
             socket.leave(channel.id);

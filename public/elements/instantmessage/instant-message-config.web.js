@@ -1,4 +1,3 @@
-
 var hostname = window.location.hostname;
 var serverUrl = 'http://' + hostname + ':3000';
 
@@ -7,39 +6,71 @@ Polymer({
   ready: function () {
     this.pluginName = 'instantmessage';
     var self = this;
-    // Init the plugin name
-    $.get('/platform/loggedOnUser').done(function (user) {
-      self.currentUser = user;
-      // update user info in the im database
-      $.post(serverUrl + '/api/users', {
-        id: self.currentUser.id,
-        name: self.currentUser.name
-      }).done(function (user) {
-        $.get('/platform/users/' + user.id + '/teams').done(function (teams) {
+    async.waterfall(
+      [
+        // load all teams
+        function (callback) {
 
+          $.get('/platform/teams').done(function (teams) {
+            callback(null, teams);
+          });
+        },
 
-          async.each(teams, function (team, callback) {
-            $.post(serverUrl + '/api/channels', {
-              isPrivate: 'false',
-              name: team.name,
-              teamId: team.id
-            }).done(function (channel) {
-              // after channel is added, add user to this channel
-              $.post(serverUrl + '/api/channels/' + channel.id + '/users', {userId: self.currentUser.id}).done(function (users) {
-                // users store the user in this channel
-                callback();
+        /**
+         * create each team in im db and return all the channels
+         * @param teams
+         * @param callback
+         */
+          function (teams, callback) {
+          $.ajax({
+            url: serverUrl + '/api/channels',
+            type: 'PUT',
+            data: {
+              teams: teams
+            },
+            dataType: 'json',
+            success: function (channels) {
+              callback(null, channels);
+            },
+            error: function () {
+              callback('error happen in creating channels');
+              return;
+            }
+          });
+        },
+
+        /**
+         * for each channel, load its users and insert them into db
+         * @param channels
+         * @param callback
+         */
+          function (channels, callback) {
+          async.each(channels, function (channel, cb) {
+            $.get('/platform/teams/' + channel.teamId + '/users').done(function (users) {
+              $.ajax({
+                url: serverUrl + '/api/channels/' + channel.id + '/users',
+                type: 'PUT',
+                data: {
+                  users: users
+                },
+                dataType: 'json',
+                success: function (channels) {
+                  callback(null, channels);
+                },
+                error: function () {
+                  callback('error happen in appending users to channels');
+                  return;
+                }
               });
             });
           }, function (err) {
-            if (err) {
-              console.log(err);
-            } else {
-              document.querySelector('app-router').go( '/' + self.pluginName + '/channels/' + teams[0].name);
-            }
+            callback();
           });
-
-        });
-      });
-    });
+        }
+      ],
+      function (err, results) {
+        document.querySelector('app-router').go('/' + self.pluginName + '/channels/default');
+      }
+    );
   }
 });
