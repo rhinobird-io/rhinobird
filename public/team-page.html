@@ -5,6 +5,7 @@
 <link rel="import" href="bower_components/core-list/core-list.html">
 <link rel="import" href="bower_components/core-item/core-item.html">
 <link rel="import" href="bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="bower_components/core-collapse/core-collapse.html">
 <link rel="import" href="bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="bower_components/paper-dialog/paper-action-dialog.html">
 
@@ -14,40 +15,81 @@
             paper-fab.blue {
                 background: #5677fc;
             }
+
+            paper-action-dialog::shadow #scroller {
+                width : 800px;
+                height : 600px;
+            }
+
+            core-icon.small {
+                height: 1em;
+                width: 1em;
+                cursor: pointer;
+            }
+
+            .heading {
+                padding: 10px 15px;
+                background-color: #f3f3f3;
+                border: 1px solid #dedede;
+                border-top-left-radius: 5px;
+                border-top-right-radius: 5px;
+                font-size: 18px;
+                cursor: pointer;
+                height: 20px;
+            }
         </style>
         <core-ajax id="getTeams"
                    auto
                    url="/platform/teams/{{team.id}}/users"
                    handleAs="json"
                    response="{{users}}"></core-ajax>
-        <!--<label>{{users}}</label>-->
-        <div horizontal layout center>
-            <h3>{{team.name}}</h3>
-            <paper-fab icon="add" mini class="blue" title="invite new member" role="button" tabindex="0" aria-label="invite new member" on-tap="{{inviteNewMember}}" style="margin-left: 10px"></paper-fab>
-        </div>
-        <div horizontal layout flex>
-            <template repeat="{{user in users}}">
-                <member-element userid="{{user.id}}"></member-element>
-            </template>
-        </div>
+        <div horizontal layout center justified class="heading">
+            <span on-tap="{{showTeamContent}}" flex>{{team.name}}</span>
 
-        <paper-action-dialog id="inviteDialog" heading="Invite new members to {{team.name}}" role="dialog" layout="" vertical="" aria-label="Invite new members to {{team.name}" tabindex="-1" style="position: fixed; outline: none; display: none;">
-
-            <core-ajax id="addMember"
-                       url="/platform/teams/{{team.id}}/users"
+            <core-ajax id="deleteTeam"
+                       url="/platform/teams/{{team.id}}/delete"
                        method="post"
-                       contentType="application/json"
-                       body="{{newMember}}"
-                       on-core-response="{{newMemberResponse}}"></core-ajax>
-            <member-select id="memberSelect" teamsUrl="/platform/teams_users"></member-select>
-
-            <paper-button affirmative="" role="button" tabindex="0">Cancel</paper-button>
-            <paper-button affirmative="" autofocus="" role="button" tabindex="0" on-tap="{{addMemberToTeam}}" style="color: dodgerblue">Invite</paper-button>
-        </paper-action-dialog>
-
+                       on-core-response="{{deleteTeamResponse}}"></core-ajax>
+            <paper-button on-tap="{{deleteTeam}}"><core-icon icon="delete"></core-icon>Delete Team</paper-button>
+        </div>
+        <div>
+            <core-collapse id="teamContent" allowOverflow>
+                <div class="content">
+                    <div>
+                        <div horizontal layout center>
+                            <h3>{{team.name}}</h3>
+                        </div>
+                        <div>
+                            <core-ajax id="removeUserFromTeamAjax"
+                                       url="/platform/teams/{{team.id}}/users/{{removeUserId}}/remove"
+                                       method="post"
+                                       on-core-response="{{removeUserFromTeamResponse}}"></core-ajax>
+                            <template repeat="{{user in users}}">
+                                <div horizontal layout center wrap>
+                                    <member-element userid="{{user.id}}"></member-element>
+                                    <core-icon class="small" icon="clear" on-click="{{ removeUserFromTeam }}"
+                                               on-mousedown="{{preventFocus}}"></core-icon>
+                                </div>
+                            </template>
+                            <div style="width: 400px">
+                                <core-ajax id="addMember"
+                                           url="/platform/teams/{{team.id}}/users"
+                                           method="post"
+                                           contentType="application/json"
+                                           body="{{newMember}}"
+                                           on-core-response="{{newMemberResponse}}"></core-ajax>
+                                <member-select id="memberSelect" teamsUrl="/platform/teams_users"></member-select>
+                                <paper-button raised on-tap="{{addMemberToTeam}}">Invite to team</paper-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </core-collapse>
+        </div>
     </template>
     <script>
         Polymer("team-element", {
+
             inviteNewMember: function() {
                 var dialog = this.$.inviteDialog;
                 if (!dialog) {
@@ -58,11 +100,7 @@
             },
 
             addMemberToTeam: function() {
-                this.selectedUser = [];
-                var select = this.$.memberSelect.selected;
-                for (index in select) {
-                    this.selectedUser.push(select[index].id);
-                }
+                this.selectedUser = this.$.memberSelect.selected;
                 this.newMember = JSON.stringify(this.selectedUser);
                 var ajax = this.$.addMember;
                 ajax.go();
@@ -72,6 +110,35 @@
                 for (index in this.selectedUser) {
                     this.users.push({"id" : this.selectedUser[index]});
                 }
+            },
+
+            deleteTeam: function() {
+                this.$.deleteTeam.go();
+            },
+
+            deleteTeamResponse: function() {
+                this.fire('team-delete', {team: this.team});
+            },
+
+            removeUserFromTeam: function (event, detail, target) {
+                this.removedUser = target.templateInstance.model.user;
+                this.removeUserId = this.removedUser.id;
+                this.$.removeUserFromTeamAjax.go();
+            },
+
+            removeUserFromTeamResponse: function() {
+                index = this.users.indexOf(this.removedUser);
+                this.users.splice(index, 1);
+            },
+
+            showTeamContent: function() {
+                var collapse = this.$.teamContent;
+                console.log(collapse);
+                collapse.toggle();
+            },
+
+            preventFocus: function() {
+                event.stopPropagation();
             }
         });
     </script>
@@ -79,6 +146,17 @@
 
 <polymer-element name="team-page">
     <template>
+        <style type="text/css">
+            paper-action-dialog::shadow #scroller {
+                width : 800px;
+                height : 600px;
+            }
+
+            .teamBlock {
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
+        </style>
         <home-container selected="team">
             <div class="title">Team</div>
             <core-ajax id="getTeams"
@@ -86,16 +164,49 @@
                        url="/platform/users/{{$.globals.values.currentUser.id}}/teams"
                        handleAs="json"
                        response="{{teams}}"></core-ajax>
-            <div vertical layout fit>
-                <template repeat="{{team in teams}}">
-                    <team-element team="{{team}}"></team-element>
-                </template>
-            </div>
 
+            <div vertical layout flex>
+                <div class="teamBlock">
+                    <core-ajax id="addTeam"
+                               url="/platform/teams/users"
+                               method="post"
+                               contentType="application/json"
+                               body="{{newTeamJson}}"
+                               on-core-response="{{newTeamResponse}}"></core-ajax>
+                    <div vertical layout center>
+                        <paper-input label="Team Name" floatinglabel value="{{teamName}}"></paper-input>
+                        <member-select id="memberSelect" teamsUrl="/platform/teams_users"></member-select>
+                        <paper-button raised on-tap="{{newTeam}}"><core-icon icon="add"></core-icon>Create Team</paper-button>
+                    </div>
+                </div>
+                <div vertical layout>
+                    <template repeat="{{team in teams}}">
+                        <team-element team="{{team}}" class="teamBlock" on-team-delete="{{teamDeleted}}"></team-element>
+                    </template>
+                </div>
+            </div>
         </home-container>
         <app-globals id="globals"></app-globals>
     </template>
     <script>
-        Polymer();
+        Polymer("team-page", {
+            newTeam: function() {
+                var newTeamData = {};
+                newTeamData.team = {"name": this.teamName};
+                newTeamData.user = this.$.memberSelect.selected;
+                this.newTeamJson = JSON.stringify(newTeamData);
+                this.$.addTeam.go();
+            },
+
+            newTeamResponse: function(event, response) {
+                var team = JSON.parse(response.response);
+                this.teams.push(team);
+            },
+
+            teamDeleted: function(event, detail) {
+                index = this.teams.indexOf(detail.team);
+                this.teams.splice(index, 1);
+            }
+        });
     </script>
 </polymer-element>

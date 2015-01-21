@@ -11,6 +11,7 @@ gem 'uuid'
 gem 'sinatra-cross_origin'
 gem 'gravatar-ultimate'
 gem 'sinatra-websocket'
+gem 'pony'
 
 group :development do
   gem 'sqlite3'
