@@ -276,10 +276,10 @@ Polymer({
 
   loadHistory: function (roomId) {
     var self = this;
-    return $.get(serverUrl + '/api/channels/' + self.channel.id + '/messages?offset=0&limit=' + this.historyOffset).done(function (messages) {
+    return $.get(serverUrl + '/api/channels/' + self.channel.id + '/messages').done(function (messages) {
       var temp = [];
       messages.forEach(function (message) {
-        temp.push({userId: message.UserId, text: message.message, updatedAt: message.updatedAt});
+        temp.splice(0,0,{userId: message.UserId, text: message.message, updatedAt: message.updatedAt});
       });
       self.messages = temp.concat(self.messages);
 
