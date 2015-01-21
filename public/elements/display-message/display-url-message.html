@@ -1,8 +1,9 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="display-default-message.html">
 <link rel="import" href="event-image.html">
 <link rel="import" href="event-video.html">
-<polymer-element name="display-url-message" attributes="text url disableLoadedEvent">
+<polymer-element name="display-url-message" extends="display-default-message" attributes="url disableLoadedEvent">
 
 <template>
 	<style>
@@ -23,10 +24,10 @@
     handleAs="json"
     response="{{ogp}}"
     ></core-ajax>
-	<template repeat="{{t in processedText}}">
-		<p>{{t}}</p>
 
-	</template>
+    <shadow></shadow>
+	
+	
 	<div vertical layout>
 		<div>
 			<template if="{{urlSiteName}}">
@@ -56,7 +57,6 @@
 
 <script>
 	Polymer({
-		processedText : [],
 		urlTitle: '',
 		urlDescription: '', 
 		urlImage: '',
@@ -65,7 +65,6 @@
 		videoHeight: 0,
 		disableLoadedEvent: false, 
 		domReady: function(){
-			this.processedText = this.text.split("\n");
 			this.queryURL = JSON.stringify({"url":this.url});
 			this.$.getOGP.go();
 		}, 
