@@ -62,18 +62,14 @@ app.get('/api/users/:userId/channels', function (req, res) {
 });
 
 app.get('/api/channels/:channelId/messages', function (req, res) {
-  var offset = 0;
-  var limit = 10;
-  if (req.query.offset) {
-    offset = req.query.offset;
-  }
-  if (req.query.limit) {
-    limit = req.query.limit;
-  }
+  var sinceId = req.query.sinceId || 0;
+  var beforeId = req.query.beforeId || 1 << 30;
+  var limit = req.query.limit || beforeId - sinceId;
+
   Message.findAndCountAll({
-    where: {channelId: req.params.channelId}, order: 'createdAt DESC, id DESC', offset: offset, limit: limit
+    where: {channelId: req.params.channelId, id : { gt : sinceId, lt : beforeId }}, order: 'id DESC', limit: limit
   }).then(function (messages) {
-    res.json(_(messages.rows).reverse().value());
+    res.json(messages.rows);
   });
 });
 
