@@ -2,6 +2,7 @@
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="../../bower_components/core-style/core-style.html">
 <link rel="import" href="../../bower_components/core-icon/core-icon.html">
+<link rel="import" href="../../bower_components/event-infinite-scroll/event-infinite-scroll.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
 <link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
 
@@ -20,9 +21,14 @@
                 <div id="historyAndInput" four flex vertical layout class="mainBgColor">
 
                     <div id="history" flex>
+                        <event-infinite-scroll id="infiniteScroll" readyOnStart="false" scrollDenominator="2"loadingDelay="50" on-reach-top="{{reachedTop}}"></event-infinite-scroll>
                         <template repeat="{{m in messages}}">
-                            <display-message user="{{m.userId}}" text="{{m.text}}" on-loaded="{{messageLoaded}}"
-                                             messageStatus="{{m.messageStatus}}" updatedAt="{{m.updatedAt}}"
+                            <display-message user="{{m.userId}}" text="{{m.text}}" 
+                                             on-loaded="{{messageLoaded}}"
+                                             messageStatus="{{m.messageStatus}}" 
+                                             updatedAt="{{m.updatedAt}}"
+                                             disableLoadedEvent="{{m.disableLoadedEvent}}"
+                                             disableReadyEvent="{{m.disableReadyEvent}}"
                                              on-ready="{{messageReady}}"></display-message>
                         </template>
                     </div>

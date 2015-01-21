@@ -4,7 +4,7 @@
 <link rel="import" href="display-url-message.html">
 <link rel="import" href="../member-select/member-element.html">
 <link rel="import" href="../../bower_components/polymer-filters/polymer-filters.html">
-<polymer-element name="display-message" attributes="user text messageStatus updatedAt">
+<polymer-element name="display-message" attributes="user text messageStatus updatedAt disableLoadedEvent disableReadyEvent">
 
 <template>
 <style>
@@ -42,7 +42,7 @@
 				<display-code-snippet-message text="{{t.text}}"></display-code-snippet-message>
 			</template>
 			<template if="{{t.process === 'url'}}">
-				<display-url-message text="{{t.text}}" on-loaded="{{messageLoaded}}" url="{{t.url}}"></display-url-message>
+				<display-url-message text="{{t.text}}" disableLoadedEvent="{{disableLoadedEvent}}" on-loaded="{{messageLoaded}}" url="{{t.url}}"></display-url-message>
 			</template>
 		</template>
 	</div>
@@ -52,6 +52,8 @@
 <script>
 	Polymer({
 		processedText : [],
+		disableLoadedEvent: false, 
+		disableReadyEvent: false,
 		domReady: function(){
 			var afterprocessing = this.processCodeSnippet(this.text);
 			
@@ -66,7 +68,9 @@
 			}
 
 			this.processedText = afterprocessing;
-			this.fire('ready', '');
+			if (!this.disableReadyEvent){
+				this.fire('ready', '');
+			}
 		}, 
 		processCodeSnippet: function(processingText){
 			var pattern = /(^|\n)```(.|\n)*?```($|\n)/;
@@ -110,7 +114,9 @@
 			return r;
 		}, 
 		messageLoaded: function(event){
-			this.fire('loaded', '');
+			if (!this.disableLoadedEvent){
+				this.fire('loaded', '');
+			}
 		}
 	});
 </script>

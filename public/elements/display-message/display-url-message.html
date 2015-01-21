@@ -2,7 +2,7 @@
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="event-image.html">
 <link rel="import" href="event-video.html">
-<polymer-element name="display-url-message" attributes="text url">
+<polymer-element name="display-url-message" attributes="text url disableLoadedEvent">
 
 <template>
 	<style>
@@ -18,7 +18,7 @@
 <core-ajax id='getOGP'
     auto='false'
     method="GET"
-    url="/api/urlMetadata"
+    url="http://localhost:3000/api/urlMetadata"
     params="{{queryURL}}" 
     handleAs="json"
     response="{{ogp}}"
@@ -45,10 +45,10 @@
 		</div>
 		<div>
 			<template if="{{!videoURL && urlImage}}">
-				<event-image src="{{urlImage}}" width="400px" on-loaded="{{imageLoaded}}"></event-image>
+				<event-image src="{{urlImage}}" width="400px" disableLoadedEvent="{{disableLoadedEvent}}" on-loaded="{{imageLoaded}}"></event-image>
 			</template>
 			<template if="{{videoURL}}">
-				<event-video src="{{videoURL}}" width="{{videoWidth}}" height="{{videoHeight}}" on-loaded="{{imageLoaded}}"></event-video>
+				<event-video src="{{videoURL}}" width="{{videoWidth}}" height="{{videoHeight}}" on-loaded="{{imageLoaded}}" disableLoadedEvent="{{disableLoadedEvent}}"></event-video>
 			</template>
 		</div>
 	</div>
@@ -63,6 +63,7 @@
 		urlSiteName: '',
 		videoWidth: 0,
 		videoHeight: 0,
+		disableLoadedEvent: false, 
 		domReady: function(){
 			this.processedText = this.text.split("\n");
 			this.queryURL = JSON.stringify({"url":this.url});
@@ -98,7 +99,9 @@
 			}
 		}, 
 		imageLoaded: function(event){
-			this.fire('loaded', '');
+			if (!this.disableLoadedEvent){
+				this.fire('loaded', '');
+			}
 		}
 	});
 </script>

@@ -261,10 +261,38 @@ Polymer({
       });
     });
   },
+  historyOffset: 20, 
+  historyLimit: 10,
+  noMoreHistory: false,
+
+  reachedTop: function (event){
+    if (this.noMoreHistory){
+      return;
+    }
+    var self = this;
+    return $.get(serverUrl + '/api/channels/' + self.channel.id + 
+      '/messages?offset='+this.historyOffset+
+      '&limit=' + this.historyLimit).done(function (messages) {
+        self.historyOffset += self.historyLimit;
+        if (messages.length < self.historyLimit){
+          self.noMoreHistory = true;
+        }
+        var temp = [];
+        messages.forEach(function (message) {
+          temp.push({userId: message.UserId, 
+                     text: message.message, 
+                     updatedAt: message.updatedAt, 
+                     disableLoadedEvent: true, 
+                     disableReadyEvent: true});
+        });
+        self.messages = temp.concat(self.messages);
+
+    });
+  },
 
   loadHistory: function (roomId) {
     var self = this;
-    return $.get(serverUrl + '/api/channels/' + self.channel.id + '/messages').done(function (messages) {
+    return $.get(serverUrl + '/api/channels/' + self.channel.id + '/messages?offset=0&limit=' + this.historyOffset).done(function (messages) {
       var temp = [];
       messages.forEach(function (message) {
         temp.push({userId: message.UserId, text: message.message, updatedAt: message.updatedAt});
@@ -272,6 +300,10 @@ Polymer({
       self.messages = temp.concat(self.messages);
 
       self.scrollToBottom(100);
+    }).done(function(){
+      setTimeout(function(){
+        self.$.infiniteScroll.startObserve();
+      }, 1000);
     });
   },
 

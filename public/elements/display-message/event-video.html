@@ -1,4 +1,4 @@
-<polymer-element name="event-video" attributes="src width height">
+<polymer-element name="event-video" attributes="src width height disableLoadedEvent">
 <script src="../../bower_components/imagesloaded/imagesloaded.pkgd.js"></script>
 <template>
 	<style>
@@ -11,10 +11,13 @@
 	Polymer({
 		ajustWidth: 400,
 		ajustHeight: 0,
+		disableLoadedEvent: false,
 		domReady: function(){
 			var self = this;
 			imagesLoaded (this.$.coreVideo, function (){ 
-				self.fire('loaded','')
+				if (!self.disableLoadedEvent){
+					self.fire('loaded','');
+				}
 			});
 			if (!this.width || this.width === 0 ){
 				this.ajustWidth = 400;
