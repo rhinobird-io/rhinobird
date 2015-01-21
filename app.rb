@@ -275,7 +275,7 @@ class App < Sinatra::Base
       if session[:user].nil?
         404
       else
-        User.find(session[:user][:id]).to_json
+        User.find(session[:user][:id]).to_json(:except => [:encrypted_password])
       end
     end
 
@@ -327,9 +327,21 @@ class App < Sinatra::Base
       User.create!(@body)
     end
 
-    post '/user/:userId' do
-      User.update(params[:userId], @body)
+    #change password
+    post '/user/password' do
+      user = User.find(session[:user][:id])
+      if user.password == @body["password"]
+        new_password = Password.create(@body["newPassword"])
+        User.update(session[:user][:id], :encrypted_password => new_password)
+        200
+      else
+        401
+      end
     end
+
+    # post '/user/:userId' do
+    #   User.update(params[:userId], @body)
+    # end
 
     get '/teams_users' do
       Team.all.to_json(include: [:users]);
