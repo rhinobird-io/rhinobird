@@ -14,7 +14,7 @@ class User < ActiveRecord::Base
   include BCrypt
 
   validates :realname, presence: true, uniqueness: true
-  validates :email, presence: true, email: true
+  validates :email, presence: true, email: true, uniqueness: true
 
   has_many :users_teams, dependent: :destroy
   has_many :teams, :through => :users_teams

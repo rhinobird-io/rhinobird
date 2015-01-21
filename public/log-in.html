@@ -35,6 +35,11 @@
             }
         </style>
         <div vertical layout center fit class="bg">
+            <core-ajax
+                    id="getInvitationAjax"
+                    method="get"
+                    url="/platform/user/invitation/{{invitationId}}"
+                    on-core-response="{{getInvitationResponse}}"></core-ajax>
             <div vertical layout center>
                 <core-animated-pages selected="0" id="pages" transitions="hero-transition">
                     <section>
@@ -106,56 +111,75 @@
     </template>
     <script>
         Polymer({
-                    ready: function () {
-                        this.userInfo = {};
-                    },
-                    keyPressInPassword: function (e) {
-                        if (e.keyCode == 13) {
-                            if (e.target.id == "signInPassword") {
-                                this.$.signInBtn.fire("tap");
-                            } else {
-                                this.$.signUpBtn.fire("tap");
-                            }
-                        }
-                    },
-                    signIn: function () {
-                        this.userJson = JSON.stringify(this.userInfo);
-                        this.$.signInAjax.go();
-                    }
-                    ,
+            ready: function () {
+                paramStr = window.location.search.substring(1);
+                index = paramStr.indexOf("invitation=");
 
-                    signInResponse: function (event, response) {
-                        user = JSON.parse(response.response);
-                        this.$.globals.values.currentUser = user;
-                        window.location.href = "/";
-                    }
-                    ,
+                this.userInfo = {};
+                if (index == -1) {
 
-                    showError: function () {
-                        this.$.toastLoginFail.show();
+                } else {
+                    this.$.pages.selected = 1;
+                    separatorIndex = paramStr.indexOf("&");
+                    if (separatorIndex == -1) {
+                        separatorIndex = paramStr.length - 1;
                     }
-                    ,
-                    signUp: function () {
-                        if (this.confirmPassword != this.userInfo.password) {
-                            this.errMsg = "Password does not match";
-                            this.$.toastSignUpFail.show();
-                        } else {
-                            this.userJson = JSON.stringify(this.userInfo);
-                            this.$.signUpAjax.go();
-                        }
-                    }
-                    ,
+                    this.invitationId = paramStr.substr(index + 11, separatorIndex - index - 10);
+                    this.$.getInvitationAjax.go();
+                }
 
-                    signUpResponse: function () {
-                        this.$.toastSignUpSuccess.show();
-                        this.$.pages.selected = 0;
-                    }
-                    ,
-                    switch: function () {
-                        this.$.pages.selected = this.$.pages.selected == "0" ? 1 : 0;
+            },
+            getInvitationResponse: function(event, response) {
+                invitationData = JSON.parse(response.response);
+                this.userInfo.email = invitationData.email;
+            },
+            keyPressInPassword: function (e) {
+                if (e.keyCode == 13) {
+                    if (e.target.id == "signInPassword") {
+                        this.$.signInBtn.fire("tap");
+                    } else {
+                        this.$.signUpBtn.fire("tap");
                     }
                 }
-        )
+            },
+            signIn: function () {
+                this.userJson = JSON.stringify(this.userInfo);
+                this.$.signInAjax.go();
+            }
+            ,
+
+            signInResponse: function (event, response) {
+                user = JSON.parse(response.response);
+                this.$.globals.values.currentUser = user;
+                window.location.href = "/";
+            }
+            ,
+
+            showError: function () {
+                this.$.toastLoginFail.show();
+            }
+            ,
+            signUp: function () {
+                if (this.confirmPassword != this.userInfo.password) {
+                    this.errMsg = "Password does not match";
+                    this.$.toastSignUpFail.show();
+                } else {
+                    this.userJson = JSON.stringify(this.userInfo);
+                    this.$.signUpAjax.go();
+                }
+            }
+            ,
+
+            signUpResponse: function () {
+                this.$.toastSignUpSuccess.show();
+                this.$.pages.selected = 0;
+            }
+            ,
+            switch: function () {
+                this.$.pages.selected = this.$.pages.selected == "0" ? 1 : 0;
+            }
+
+        })
         ;
     </script>
 </polymer-element>

@@ -10,6 +10,7 @@ require './models/notification'
 require './models/local_avatar'
 require './models/event'
 require './models/appointment'
+require './models/invitation'
 require 'gravatar-ultimate'
 require 'sinatra-websocket'
 require "bcrypt"
@@ -303,14 +304,25 @@ class App < Sinatra::Base
       User.all.to_json
     end
 
+    get '/user/invitation/:inviteId' do
+       Invitation.find(params[:inviteId]).to_json
+    end
+
     post '/user/invite' do
       email = @body["email"]
       user = User.find(session[:user][:id])
+      if @body["team_id"].nil?
+        invitation = Invitation.create({:email => email, :from_user_id => session[:user][:id], :initial_team_id => -1})
+      else
+        invitation = Invitation.create({:email => email, :from_user_id => session[:user][:id], :initial_team_id => @body["team_id"]})
+      end
+
       Pony.mail({
                     :to => email,
                     :subject => user.realname + ' invited you to join teamwork',
                     :headers => { 'Content-Type' => 'text/html' },
-                    :body => 'Hi there, ' + user.realname + ' invited you to join teamwork' + '<br></br><a href="http://localhost:9292/login">Join now</a>',
+                    :body => 'Hi there, ' + user.realname + ' invited you to join teamwork' +
+                        '<br></br><a href="http://localhost:9292/login?invitation=' + invitation.id.to_s + '">Join now</a>',
                     :via => :smtp,
                     :via_options => {
                         :address        => 'smtp.gmail.com',
