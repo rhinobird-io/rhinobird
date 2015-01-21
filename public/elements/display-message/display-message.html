@@ -52,8 +52,7 @@
 <script>
 	Polymer({
 		processedText : [],
-		text: "",
-		textChanged: function(oldvalue, newValue){
+		domReady: function(){
 			var afterprocessing = this.processCodeSnippet(this.text);
 			
 			var processingText = afterprocessing;
@@ -68,9 +67,7 @@
 
 			this.processedText = afterprocessing;
 			this.fire('ready', '');
-		},
-		
-
+		}, 
 		processCodeSnippet: function(processingText){
 			var pattern = /(^|\n)```(.|\n)*?```($|\n)/;
 			var matched = processingText.match(pattern);
