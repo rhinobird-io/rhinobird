@@ -311,6 +311,10 @@ class App < Sinatra::Base
       200
     end
 
+    delete '/events/:eventId' do
+      200
+    end
+
     get '/users' do
       User.all.to_json
     end
