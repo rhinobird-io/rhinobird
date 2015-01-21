@@ -48,9 +48,14 @@
                            url="/platform/user/invite"
                            method="post"
                            contentType="application/json"
-                           body="{{newUserJson}}"></core-ajax>
+                           body="{{newUserJson}}"
+                           on-core-response="{{inviteSuccess}}"></core-ajax>
                 <paper-input label="Email" floatinglabel value="{{userEmail}}"></paper-input>
                 <paper-button raised on-tap="{{inviteNewMember}}">Invite New Member</paper-button>
+                <paper-toast id="toastInviteSuccess" text="Invitation has been sent to {{userEmail}}" role="status" touch-action="none"
+                             tabindex="-1"
+                             class="core-transition core-transition-bottom"
+                             style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
             </div>
             </div>
 
@@ -84,6 +89,10 @@
                 this.newUserJson = JSON.stringify(this.newUser);
                 console.log(this.newUserJson);
                 this.$.inviteUserAjax.go();
+            },
+
+            inviteSuccess: function() {
+                this.$.toastInviteSuccess.toggle();
             }
         });
     </script>

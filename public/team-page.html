@@ -39,6 +39,11 @@
                    response="{{users}}"></core-ajax>
         <div horizontal layout center justified class="heading">
             <span on-tap="{{showTeamContent}}" flex>{{team.name}}</span>
+
+            <core-ajax id="deleteTeam"
+                       url="/platform/teams/{{team.id}}/delete"
+                       method="post"
+                       on-core-response="{{deleteTeamResponse}}"></core-ajax>
             <paper-button on-tap="{{deleteTeam}}"><core-icon icon="delete"></core-icon>Delete Team</paper-button>
         </div>
         <div>
@@ -76,6 +81,7 @@
     </template>
     <script>
         Polymer("team-element", {
+
             inviteNewMember: function() {
                 var dialog = this.$.inviteDialog;
                 if (!dialog) {
@@ -96,6 +102,14 @@
                 for (index in this.selectedUser) {
                     this.users.push({"id" : this.selectedUser[index]});
                 }
+            },
+
+            deleteTeam: function() {
+                this.$.deleteTeam.go();
+            },
+
+            deleteTeamResponse: function() {
+                this.fire('team-delete', {team: this.team});
             },
 
             showTeamContent: function() {
@@ -135,7 +149,7 @@
 
                 <div vertical layout>
                     <template repeat="{{team in teams}}">
-                        <team-element team="{{team}}" class="teamBlock"></team-element>
+                        <team-element team="{{team}}" class="teamBlock" on-team-delete="{{teamDeleted}}"></team-element>
                     </template>
                 </div>
             </div>
@@ -182,6 +196,11 @@
             newTeamResponse: function(event, response) {
                 var team = JSON.parse(response.response);
                 this.teams.push(team);
+            },
+
+            teamDeleted: function(event, detail) {
+                index = this.teams.indexOf(detail.team);
+                this.teams.splice(index, 1);
             }
         });
     </script>
