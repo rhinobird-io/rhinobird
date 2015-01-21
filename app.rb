@@ -198,6 +198,11 @@ class App < Sinatra::Base
       Team.create!(@body)
     end
 
+    post '/teams/:teamId/delete' do
+      Team.delete(params[:teamId])
+      200
+    end
+
     #create team with initial users
     post '/teams/users' do
       team = Team.create(@body["team"])
