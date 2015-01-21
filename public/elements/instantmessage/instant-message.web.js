@@ -198,9 +198,7 @@ Polymer({
     });
 
     self.socket.on('user:join', function (data) {
-      self.messages.push({
-        text: 'User ' + data.userId + ' has joined.'
-      });
+      // do some other things
     });
 
     self.socket.on('user:left', function (data) {
