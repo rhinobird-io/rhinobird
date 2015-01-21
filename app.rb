@@ -49,6 +49,14 @@ class App < Sinatra::Base
     send_file File.join(settings.public_folder, 'login.html')
   end
 
+  #set notifications to the checked status
+  def mark_notification_as_read!
+      notification = User.find(session[:user][:id]).notifications
+      @received_msg.each do |notify|
+        notification.update(notify["id"], :checked => true);
+      end
+  end
+
   get '/' do
     if request.websocket?
       request.websocket do |ws|
@@ -57,7 +65,9 @@ class App < Sinatra::Base
           settings.sockets[session[:user][:id]] = ws
         end
         ws.onmessage do |msg|
-          EM.next_tick { ws.send(msg) }
+          @received_msg = JSON.parse(msg)
+          mark_notification_as_read!
+          # EM.next_tick { ws.send(msg) }
         end
         ws.onclose do
           warn("websocket closed")
@@ -349,13 +359,13 @@ class App < Sinatra::Base
     end
 
     get '/users/:userId/notifications' do
-      User.find(params[:userId]).notifications.to_json
+      User.find(params[:userId]).notifications.where({checked: false}).to_json
     end
 
     # add a notification to one user
     post '/users/:userId/notifications' do
       notification = User.find(params[:userId]).notifications.create!(@body)
-      notify = notification.to_json(:except => [:id, :user_id])
+      notify = notification.to_json(:except => [:user_id])
       socket_id = params[:userId].to_i
       unless settings.sockets[socket_id].nil?
         EM.next_tick { settings.sockets[socket_id].send(notify) }
@@ -370,7 +380,7 @@ class App < Sinatra::Base
       content["from_user_id"] = session[:user][:id]
       users.each do |user|
         notification = User.find(user).notifications.create!(content)
-        notify = notification.to_json(:except => [:id, :user_id])
+        notify = notification.to_json(:except => [:user_id])
         unless settings.sockets[user].nil?
           EM.next_tick { settings.sockets[user].send(notify) }
         end

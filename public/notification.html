@@ -26,24 +26,31 @@
                 handleAs="json"
                 response="{{notifications}}"></core-ajax>
 
-        <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
+        <template if="{{notifications.length == 0}}">
             <paper-icon-button icon="social:notifications"></paper-icon-button>
-            <paper-dropdown class="dropdown" halign="right" style="color:#000;">
-                <core-menu class="menu">
-                    <template repeat="{{notification in notifications}}">
-                        <paper-item>
-                            <div>
-                                <div horizontal layout center>
-                                    <member-element userid="{{notification.from_user_id}}"></member-element>
-                                    {{notification.created_at | date('yyyy-MM-dd HH:mm')}}
+        </template>
+
+        <template if="{{notifications.length != 0}}">
+            <paper-menu-button>
+                <paper-icon-button icon="social:notifications"></paper-icon-button>
+                <paper-dropdown class="dropdown" halign="right" style="color:#000;width: 400px" on-core-overlay-close-completed="{{clearNotifications}}">
+                    <core-menu class="menu">
+                        <template repeat="{{notification in notifications}}">
+                            <paper-item>
+                                <div>
+                                    <div horizontal layout center>
+                                        <member-element userid="{{notification.from_user_id}}"></member-element>
+                                        {{notification.created_at | date('yyyy-MM-dd HH:mm')}}
+                                    </div>
+                                    <label>{{notification.content}}</label>
                                 </div>
-                                <label>{{notification.content}}</label>
-                            </div>
-                        </paper-item>
-                    </template>
-                </core-menu>
-            </paper-dropdown>
-        </paper-menu-button>
+                            </paper-item>
+                        </template>
+                    </core-menu>
+                </paper-dropdown>
+            </paper-menu-button>
+        </template>
+
         <template if="{{notifications.length != 0}}">
             <div class="count accentColor"></div>
         </template>
@@ -119,6 +126,16 @@
                 };
                 xhr.open("GET", "/platform/gravatar?0=" + encodeURIComponent(this.notificationData.from_user_id), true);
                 xhr.send();
+            },
+
+            clearNotifications: function() {
+                var notificationIds = [];
+                for (index in  this.notifications) {
+                    notificationIds.push({"id": this.notifications[index].id});
+                }
+                this.notificationsJson = JSON.stringify(notificationIds);
+                this.$.globals.values.websocket.send(this.notificationsJson);
+                this.notifications = [];
             }
         });
     </script>
