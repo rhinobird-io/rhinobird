@@ -10,14 +10,21 @@ var express = require('express'),
   , ogp = require("open-graph")
   , _ = require('lodash');
 
-var async = require('async');
+var async = require('async'),
+  http = require('http'),
+  bodyParser = require('body-parser'),
+  methodOverride = require('method-override'),
+  errorhandler = require('errorhandler');
 
-
-var app = module.exports = express.createServer();
+var app = module.exports = express();
+var server = http.Server(app);
 
 // Hook Socket.io into Express
-var io = require('socket.io').listen(app);
+var io = require('socket.io')(server);
 
+server.listen(3000, function () {
+  console.log("Express server listening on port %d in %s mode", server.address().port, app.settings.env);
+});
 
 var allowCrossDomain = function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
@@ -26,30 +33,22 @@ var allowCrossDomain = function (req, res, next) {
 
   // intercept OPTIONS method
   if ('OPTIONS' == req.method) {
-    res.send(200);
+    res.sendStatus(200);
   }
   else {
     next();
   }
 };
 
-// Configuration
+app.use(allowCrossDomain);
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
+app.use(bodyParser.json());
+app.use(methodOverride());
+app.use(express.static(__dirname + '/public'));
+app.use(errorhandler({dumpExceptions: true, showStack: true}));
 
-app.configure(function () {
-  app.use(allowCrossDomain);
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
-  app.use(express.static(__dirname + '/public'));
-  app.use(app.router);
-});
-
-app.configure('development', function () {
-  app.use(express.errorHandler({dumpExceptions: true, showStack: true}));
-});
-
-app.configure('production', function () {
-  app.use(express.errorHandler());
-});
 
 // Routes
 app.get('/api/users/:userId/channels', function (req, res) {
@@ -99,6 +98,27 @@ app.post('/api/channels/:channelId/users', function (req, res) {
   });
 });
 
+app.put('/api/channels/:channelId/users', function (req, res) {
+  var users = req.body.users;
+  Channel.find(req.params.channelId).then(function (channel) {
+    async.eachSeries(users, function (user, cb) {
+      User.findOrCreate({ where : {id : user.id, name: user.name}}).then(function (users) {
+        channel.addUser(users[0]).then(function () {
+          cb(null);
+        });
+      });
+    }, function (err) {
+      if (!err) {
+        channel.getUsers().then(function (users) {
+          res.json(users);
+        });
+      } else {
+        res.sendStatus(500);
+      }
+    });
+  });
+});
+
 
 app.get('/api/channels', function (req, res) {
   var isPrivate = req.query.isPrivate === 'true';
@@ -141,6 +161,28 @@ app.get('/api/channels', function (req, res) {
   }
 });
 
+app.put('/api/channels', function (req, res) {
+  async.each(req.body.teams, function (team, cb) {
+    Channel.count({where: {teamId: team.id}}).then(function (count) {
+      if (count === 0) {
+        Channel.create({teamId: team.id, name: team.name, isPrivate: 0}).then(function (channel) {
+          cb(null);
+        });
+      } else {
+        cb(null);
+      }
+    })
+  }, function (err) {
+    if (!err) {
+      Channel.findAll().then(function (channels) {
+        res.json(channels);
+      });
+    } else {
+      console.log(err);
+    }
+  });
+});
+
 app.post('/api/channels', function (req, res) {
   var isPrivate = (req.body.isPrivate === 'true');
   var userId = req.body.from;
@@ -179,7 +221,7 @@ app.post('/api/channels', function (req, res) {
           res.json(channel);
         });
       } else {
-        Channel.find({ where : {teamId: teamId, 'isPrivate': false} }).then(function (channel) {
+        Channel.find({where: {teamId: teamId, 'isPrivate': false}}).then(function (channel) {
           console.log('found channel : ' + channel);
           res.json(channel);
         });
@@ -222,10 +264,8 @@ app.get('*', function (req, res) {
 
 // Socket.io Communication
 
-io.sockets.on('connection', socket);
+io.on('connection', socket);
 
 // Start server
 
-app.listen(3000, function () {
-  console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
-});
+
