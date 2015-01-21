@@ -17,8 +17,6 @@ Polymer({
     // the users in this room
     this.users = [];
 
-    this.teamMembers=[];
-
     this.scrollToBottom(100);
 
     var self = this;
@@ -59,120 +57,136 @@ Polymer({
         id: self.currentUser.id,
         name: self.currentUser.name
       }).done(function (user) {
-        async.waterfall([
-          /**
-           * load socket.io.js
-           * @param callback
-           */
-            function (callback) {
-            $.getScript(serverUrl + '/socket.io/socket.io.js').done(function () {
-              callback();
-            }).fail(function () {
-              self.connectinStatus = "Cannot connect to server. Please refresh.";
-              callback(self.connectinStatus);
-            });
-          },
-
-          /**
-           * load the channels current user has
-           * @param callback
-           */
-            function (callback) {
-            self.loadChannels().done(function () {
-              if (self.group.length === 0) {
-                // maybe not initialize
-                document.querySelector('app-router').go('/' + self.pluginName + '/config');
-
-              } else if (self.channelName === defaultChannel) {
-                // by default using the default setting, later use localstorage
-                self.channelName = self.group[0].name;
-                document.querySelector('app-router').go('/' + self.pluginName + '/channels/' + self.channelName);
-              } else {
+        $.get('/platform/users/' + user.id + '/teams').done(function (teams) {
+          async.each(teams, function (team, callback) {
+            $.post(serverUrl + '/api/channels', {
+              isPrivate: 'false',
+              name: team.name,
+              teamId: team.id
+            }).done(function (channel) {
+              // after channel is added, add user to this channel
+              $.post(serverUrl + '/api/channels/' + channel.id + '/users', {userId: self.currentUser.id}).done(function (users) {
+                // users in this channel
                 callback();
-              }
+              });
             });
-          },
-
-          /**
-           * try to initialize current channel (if it is private, it might not be created in db)
-           * @param callback
-           */
-            function (callback) {
-            callback();
-          },
-
-          /**
-           * get current channel
-           * @param callback
-           */
-            function (callback) {
-            self.getChannel(self.channelName, self.currentUser.id, self.channelName.indexOf('@') === 0).done(function (channel) {
-              if (!channel) {
-                // the channel not exists
-                callback('the channel not exists');
-                return;
-              }
-              self.channel = channel;
-
-              callback(null, channel);
-
-            });
-          },
-
-          /**
-           * extra operation if the channel is private
-           * @param channel
-           * @param callback
-           */
-            function (channel, callback) {
-            if (!channel.isPrivate) {
-              console.log('current channel is not private');
-              callback();
+          }, function (err) {
+            if (err) {
+              console.log(err);
             } else {
-              console.log('current channel is private');
-              // if this channel is not in the direct message group, just add it
-              if (!_.find(self.private, {id: channel.id})) {
-                self.private.splice(0, 0, channel);
+              async.waterfall([
+                /**
+                 * load socket.io.js
+                 * @param callback
+                 */
+                  function (callback) {
+                  $.getScript(serverUrl + '/socket.io/socket.io.js').done(function () {
+                    callback();
+                  }).fail(function () {
+                    self.connectinStatus = "Cannot connect to server. Please refresh.";
+                    callback(self.connectinStatus);
+                  });
+                },
 
-                // and get its displayname
-                self.loadChannelUsers(channel.id).done(function (users) {
-                  users.forEach(function (user) {
-                    if (user.id !== self.currentUser.id) {
-                      channel.displayName = user.name;
+                /**
+                 * load the channels current user has
+                 * @param callback
+                 */
+                  function (callback) {
+                  self.loadChannels().done(function () {
+                    if (self.channelName === defaultChannel) {
+                      // by default using the default setting, later use localstorage
+                      self.channelName = self.group[0].name;
+                      document.querySelector('app-router').go('/' + self.pluginName + '/channels/' + self.channelName);
+                    } else {
+                      callback();
                     }
                   });
+                },
+
+                /**
+                 * try to initialize current channel (if it is private, it might not be created in db)
+                 * @param callback
+                 */
+                  function (callback) {
                   callback();
-                });
+                },
 
-              } else {
-                callback();
-              }
+                /**
+                 * get current channel
+                 * @param callback
+                 */
+                  function (callback) {
+                  self.getChannel(self.channelName, self.currentUser.id, self.channelName.indexOf('@') === 0).done(function (channel) {
+                    if (!channel) {
+                      // the channel not exists
+                      callback('the channel not exists');
+                      return;
+                    }
+                    self.channel = channel;
+
+                    callback(null, channel);
+
+                  });
+                },
+
+                /**
+                 * extra operation if the channel is private
+                 * @param channel
+                 * @param callback
+                 */
+                  function (channel, callback) {
+                  if (!channel.isPrivate) {
+                    console.log('current channel is not private');
+                    callback();
+                  } else {
+                    console.log('current channel is private');
+                    // if this channel is not in the direct message group, just add it
+                    if (!_.find(self.private, {id: channel.id})) {
+                      self.private.splice(0, 0, channel);
+
+                      // and get its displayname
+                      self.loadChannelUsers(channel.id).done(function (users) {
+                        users.forEach(function (user) {
+                          if (user.id !== self.currentUser.id) {
+                            channel.displayName = user.name;
+                          }
+                        });
+                        callback();
+                      });
+
+                    } else {
+                      callback();
+                    }
+                  }
+                },
+
+                /**
+                 * load history
+                 * @param callback
+                 */
+                  function (callback) {
+                  self.loadHistory(self.channel.id).done(function () {
+                    callback();
+                  });
+                },
+
+                /**
+                 * init socket
+                 * @param callback
+                 */
+                  function (callback) {
+                  self.initSocket();
+                  callback();
+                }
+
+              ], function (err, result) {
+                if (err) {
+                  console.log('Error : ' + err);
+                }
+              });
             }
-          },
-
-          /**
-           * load history
-           * @param callback
-           */
-            function (callback) {
-            self.loadHistory(self.channel.id).done(function () {
-              callback();
-            });
-          },
-
-          /**
-           * init socket
-           * @param callback
-           */
-            function (callback) {
-            self.initSocket();
-            callback();
-          }
-
-        ], function (err, result) {
-          if (err) {
-            console.log('Error : ' + err);
-          }
+          });
         });
       });
     });
@@ -201,7 +215,9 @@ Polymer({
     });
 
     self.socket.on('user:join', function (data) {
-      // do some other things
+      self.messages.push({
+        text: 'User ' + data.userId + ' has joined.'
+      });
     });
 
     self.socket.on('user:left', function (data) {
@@ -250,11 +266,22 @@ Polymer({
     });
   },
   isHideMemberElement: function(lastMessage, newMessage){
-    if (!lastMessage || !lastMessage.UserId || !newMessage.UserId || 
+    if (!lastMessage || ! newMessage){
+      return false;
+    }
+    var lastUserId = lastMessage.UserId;
+    if (!lastUserId){
+      lastUserId = lastMessage.userId;
+    }
+    var newUserId = newMessage.UserId;
+    if (!newUserId){
+      newUserId = newMessage.userId;
+    }
+    if (!lastMessage || !lastUserId || !newUserId || 
       !newMessage.updatedAt || !lastMessage.updatedAt){
       return false;
     }
-    if (lastMessage.UserId == newMessage.UserId && 
+    if (lastUserId === newUserId && 
       new Date(newMessage.updatedAt).getTime() - new Date(lastMessage.updatedAt).getTime() < 60*1000){
       return true;
     } 
@@ -294,6 +321,7 @@ Polymer({
 
   loadHistory: function (roomId) {
     var self = this;
+
     return $.get(serverUrl + '/api/channels/' + self.channel.id + '/messages?offset=0&limit=' + this.historyOffset).done(function (messages) {
       var temp = [];
       var lastMessage = null;
@@ -317,30 +345,6 @@ Polymer({
   loadChannelUsers: function (channelId) {
     var self = this;
     return $.get(serverUrl + '/api/channels/' + channelId + '/users');
-  },
-
-  showTeamMemberDialog: function (event, detail, target) {
-    var self = this;
-    var channel = target.templateInstance.model.g;
-    $.get('/platform/teams/' + channel.teamId + '/users').done(function(users) {
-      self.teamMembers = users;
-    }).done(function() {
-      target.querySelector('paper-dialog')&&target.querySelector('paper-dialog').open();
-    });
-
-  },
-
-  positionTeamMemberDialog : function(event, detail, target) {
-    target.dimensions.position = { v : 'top', h : 'left'};
-
-    var rect = target.parentElement.getBoundingClientRect();
-    target.style.top = '' + rect.top + 'px';
-    target.style.left = '' + (rect.left - 200) + 'px';
-  },
-
-  talkDirect : function(event, detail, target) {
-    target.parentElement&&target.parentElement.close();
-    document.querySelector('app-router').go('/' + this.pluginName + '/channels/@' + target.templateInstance.model.u.name);
   },
 
   getChannel: function (channelName, fromUserId, isPrivate, teamId) {
