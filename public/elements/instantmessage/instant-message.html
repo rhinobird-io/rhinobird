@@ -1,14 +1,12 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="../../bower_components/core-style/core-style.html">
-<<<<<<< HEAD
 <link rel="import" href="../../bower_components/core-icon-button/core-icon-button.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
 <link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
 
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-dropdown/paper-dropdown.html">
-<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../bower_components/core-icon/core-icon.html">
@@ -65,7 +63,7 @@
                                     <paper-icon-button icon="account-child" on-click="{{showTeamMemberDialog}}">
                                         <paper-dialog id="teamMemberDialog" heading="Dialog Title" on-core-overlay-position="{{positionTeamMemberDialog}}">
                                             <template repeat="{{u in teamMembers}}">
-                                                <paper-item on-click="{{talkDirect}}">{{u.realname}}</paper-item>
+                                                <paper-item hidden?="{{u.id === currentUser.id}}" on-click="{{talkDirect}}">{{u.realname}}</paper-item>
                                             </template>
                                         </paper-dialog>
                                     </paper-icon-button>

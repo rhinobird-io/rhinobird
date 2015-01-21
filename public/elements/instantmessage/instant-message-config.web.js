@@ -45,7 +45,7 @@ Polymer({
          * @param callback
          */
           function (channels, callback) {
-          async.each(channels, function (channel, cb) {
+          async.eachSeries(channels, function (channel, cb) {
             $.get('/platform/teams/' + channel.teamId + '/users').done(function (users) {
               $.ajax({
                 url: serverUrl + '/api/channels/' + channel.id + '/users',
@@ -55,7 +55,8 @@ Polymer({
                 },
                 dataType: 'json',
                 success: function (channels) {
-                  callback(null, channels);
+                  debugger;
+                  cb(null);
                 },
                 error: function () {
                   callback('error happen in appending users to channels');
