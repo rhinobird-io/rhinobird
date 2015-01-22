@@ -15,121 +15,286 @@
 <link rel="import" href="../../bower_components/core-list/core-list.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 
+<link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
 <core-style id="calendar">
     paper-tabs::shadow #selectionBar{
-    background-color: {{g.theme.accentBgColor}};
+        background-color: {{g.theme.accentBgColor}};
     }
+
     paper-tabs paper-tab::shadow #ink {
-    color: {{g.theme.accentBgColor}};
+        color: {{g.theme.accentBgColor}};
     }
+
     paper-toggle-button::shadow #toggleBar[checked], paper-toggle-button::shadow paper-radio-button::shadow #onRadio {
-    background-color: {{g.theme.accentBgColor}};
+        background-color: {{g.theme.accentBgColor}};
     }
+
     :host {
-    background-color: white;
+        background-color: white;
     }
+
+
     div.container {
-    padding: 1em;
-    overflow-y: auto;
-    overflow-x: hidden;
+        padding: 40px 16px;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     div.timeline {
-    position: relative;
-    padding: 2em 0;
-    margin-top: 2em;
-    margin-bottom: 2em;
-    height:100%;
+        position: relative;
+        padding: 0;
+        *margin-top: 2em;
+        *margin-bottom: 2em;
+        height:100%;
     }
-    .listitem::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 18px;
-    height: 100%;
-    width: 4px;
-    background-color: {{g.theme.thirdBgColor}};
+   
+    core-list {
+        overflow-y: visible;
+    }
+    
+    .content {
+        margin-left: 40px;
     }
 
-    .content {
-    margin-left: 40px;
-    }
     .block {
-    position: relative;
-    cursor: pointer;
+        position: relative;
+        cursor: pointer;
     }
-    .listitem{
+
+    .listitem {
+        *position: relative !important;
         padding: 2em 0;
+
     }
+    
 
     .time {
-    margin-top: 4px;
+        margin-top: 4px;
     }
 
     p.description {
-    margin-bottom: 0;
+        margin-bottom: 0;
     }
 
     div.detail {
-    padding: 60px;
-    overflow-y: auto;
+        padding: 60px;
+        overflow-y: auto;
     }
 
     .main-button {
-    position: absolute;
-    top: 8px;
-    left: 8px;
+        position: absolute;
+        top: 20px;
+        left: 16px;
     }
 
     .tabs, .pages, .fullday {
-    max-width: 320px;
+        max-width: 320px;
     }
 
     .fullday {
-    margin: 1em 0;
+        margin: 1em 0;
     }
 
-    .event {
-    border-radius: 50%;
-    padding:8px;
+    .block {
+        z-index: 4;
+    }
+    .event {    
+        border-radius: 50%;
+        padding:8px;
     }
     time-input.upper {
-    margin-top: -35px;
+        margin-top: -35px;
     }
     date-input {
-    z-index: 1;
+        z-index: 1;
     }
     #title {
-    font-size: 25px;
+        font-size: 25px;
     }
     .page.core-selected {
-    position: relative;
-    display: block;
+        position: relative;
+        display: block;
     }
     paper-fab {
-    position: absolute;
-    left: 16px;
-    top: -20px;
-    z-index: 1000000000;
+        position: absolute;
+        left: 16px;
+        top: -20px;
+        z-index: 1000000000;
     }
 
     .list {
-    margin-top: 50px;
+        *margin-top: 20px;
     }
 
     .subTitle {
-    font-size: 21px;
-    margin-left: 90px;
-    padding-bottom: 10px;
+        font-size: 21px;
+        margin-left: 90px;
+        padding-bottom: 10px;
     }
 
     paper-fab {
-    position: absolute;
-    top: 24px;
+        position: absolute;
+        top: 24px;
     }
 
     .wrapper {
-    padding-bottom: 20px;
+        padding-bottom: 20px;
+    }
+
+    * {
+        -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+    }
+
+    .listitem::before,
+    .dayDivider::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 18px;
+        height: 100%;
+        width: 4px;
+        z-index: 3;
+        background-color: {{g.theme.thirdBgColor}};
+    }
+
+    .dayDivider::first-child {
+        background: black;
+    }
+
+    .dayDivider {
+        position: relative;
+        clear: both;
+        width: 100%;
+        margin: 0em auto;
+        margin-bottom: 2em;
+        line-height: 1.2em;
+    }
+
+    .dayDivider .dayDividerLabel {
+        position: relative;
+        margin-left: 78px;
+        display: inline-block;
+    }
+
+    .dayDivider .dayDividerLabel hr {
+        position: absolute;
+        *top: 2px;   
+        top: 50%;
+        left: -60px;
+        right: 0px;
+        border: 0;
+        margin: 0;
+        margin-top: -2px;
+        border-top: 2px solid #bbb;
+
+        z-index: 1;
+    }
+
+    .dayDivider .dayDividerLabel .dayDividerLabelContent {
+        position: relative;
+        *display: inline-block;
+        color: #555459;
+        font-family: 'Lato', san-serif;
+        font-weight: 900;
+        font-size: 1.0em;
+        margin: 0 auto;
+        padding: 0 2px;
+        background: white;
+        z-index: 2;
+    }
+
+    .time {
+        font-size: 90%;
+    }
+
+    .time,
+    .event-title {
+        margin: 0;
+        border: 0;
+        padding-left: 6px;
+        border-left: 4px solid transparent;
+    }
+    .event-title {
+        font-size: 1.0em;
+        font-family: Lato, san-serif;
+        padding-bottom: 6px;
+    }
+
+
+    .block:hover .time,
+    .block:hover .event-title {
+        padding-left: 6px;
+        border-left: 4px solid {{g.theme.mainBgColor}};
+        *background-color: {{g.theme.thirdBgColor}};
+        *transition: opacity ease-in 0.2s
+    }
+
+    @media screen and (min-width: 1170px) {
+        .event {
+            position: absolute;
+            left: 50%;
+            margin-left: -20px;
+        }
+
+        .listitem::before,
+        .dayDivider::before {
+            left: 50%;
+            margin-left: -2px;
+        }
+
+          
+        .dayDivider .dayDividerLabel.left {
+            width: 50%;
+            text-align: right;
+            margin-left: 0;
+            padding-right: 78px;
+        }
+
+        .dayDivider .dayDividerLabel.right {
+            width: 50%;
+            text-align: left;
+            margin-left: 50%;
+            padding-left: 78px;
+        }
+
+        .dayDivider .dayDividerLabel hr {
+            left: 0;
+        }
+
+        .block .content {
+            display: inline-block;
+            width: 50%;
+        }
+
+        .block .content.left {
+            margin-left: 0px;
+            padding-right: 78px;
+            text-align: right;
+        }
+
+        .block .content.right {
+            margin-left: 50%;
+            padding-left: 78px;
+            text-align: left;
+        }
+
+        .block .content.left > .time,
+        .block .content.left > .event-title {
+            margin:0;
+            border: 0;
+            padding-right: 6px;
+            border-right: 4px solid transparent;
+        }
+
+        .block:hover .content.left > .time,
+        .block:hover .content.left > .event-title {
+            padding-right: 6px;
+            border-right: 4px solid {{g.theme.mainBgColor}};
+            *background-color: {{g.theme.thirdBgColor}};
+        }
+
+
     }
 </core-style>
 
@@ -145,6 +310,9 @@
                 <template if="{{mode=='edit'}}">
                     <paper-fab mini icon="done" class="accentColor" on-tap="{{saveEvent}}"></paper-fab>
                 </template>
+                <template if="{{mode=='view'}}">
+                    <paper-fab mini icon="remove" class="accentColor" on-tap="{{deleteEvent}}"></paper-fab>
+                </template>
                 <span class="subTitle">Schedule</span>
             </div>
             <div flex vertical layout class="list">
@@ -152,29 +320,76 @@
                     <section>
                         <div class="container" fit>
                             <div class="timeline" vertical layout>
-                                <core-list data="{{events | orderBy('from')}}" flex>
+                                <!--
+                                <core-list data="{{eventsByDays}}" flex>
                                     <template>
                                         <div class="listitem">
-                                        <div layout horizontal class="block" center on-tap="{{select}}">
-                                            <div class="event mainColor">
-                                                <core-icon icon="event"></core-icon>
-                                            </div>
-                                            <div hero hero-id="{{event.id}}" vertical layout flex class="content">
-                                                <div>{{model.title}}</div>
-                                                <div class="time iconColor">
-                                                    <smart-time-display from="{{model.from}}" to="{{model.to}}"
-                                                                        period="{{model.period}}"
-                                                                        full_day="{{model.full_day}}"></smart-time-display>
-                                                </div>
-                                            </div>
-                                            <!--<div class="info">-->
-                                            <!--<core-icon icon="info" class="iconColor"></core-icon>-->
-                                            <!--</div>-->
-                                            <paper-ripple fit></paper-ripple>
+                                        <div class="dayDivider">
+                                            <hr />
+                                            <div class="dayDividerLabel">{{model.date}}</div>
                                         </div>
+                                        <core-list data="{{model.events}}">
+                                            <template>
+                                                <div class="listitem">
+                                                    <div layout horizontal class="block" center on-tap="{{select}}">
+                                                        <div class="event mainColor">
+                                                            <core-icon icon="event"></core-icon>
+                                                        </div>
+                                                        <div hero hero-id="{{event.id}}" vertical layout flex class="content">
+                                                            <div>{{model.title}}</div>
+                                                            <div class="time iconColor">
+                                                                <smart-time-display from="{{model.from}}" to="{{model.to}}"
+                                                                                    period="{{model.period}}"
+                                                                                    full_day="{{model.full_day}}"></smart-time-display>
+                                                            </div>
+                                                        </div>
+                                                        <div class="info">
+                                                        <core-icon icon="info" class="iconColor"></core-icon>
+                                                        </div>
+                                                        <paper-ripple fit></paper-ripple>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </core-list>
                                         </div>
                                     </template>
                                 </core-list>
+                                -->
+
+                                
+                                <core-list data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;">
+                                    <template>
+                                        <div divider class="dayDivider">
+                                            <div class="dayDividerLabel {{model.position}}">
+                                                <hr/>
+                                                <div class="dayDividerLabelContent">{{groupModel.date}}</div>
+                                            </div>
+                                        </div>
+                                        <div class="listitem">
+                                            <div layout horizontal class="block" center on-tap="{{select}}">
+                                                <div class="event mainColor">
+                                                    <core-icon icon="event"></core-icon>
+                                                </div>
+                                                <div hero hero-id="{{event.id}}" vertical layout class="content {{model.position}}">
+                                                    <div class="event-title">{{model.title}}</div>
+                                                    <div class="time iconColor">
+                                                        <smart-time-display from="{{model.from}}" to="{{model.to}}"
+                                                                            period="{{model.period}}"
+                                                                            full_day="{{model.full_day}}"></smart-time-display>
+                                                    </div>
+                                                </div>
+                                                <!--
+                                                <div class="info">
+                                                    <core-icon icon="info" class="iconColor"></core-icon>
+                                                </div>
+                                                <paper-ripple fit></paper-ripple>
+                                                -->
+                                            </div>
+                                        </div>
+                                    </template>
+                                </core-list>
+                                
+
                             </div>
                         </div>
                     </section>
@@ -185,7 +400,7 @@
                             <div class="detail-content" vertical layout center>
                                 <div>
                                     <paper-input-decorator label="Title" floatingLabel id="title"
-                                                           disabled="{{modeDisabled}}">
+                                                           disabled="{{modeDisabled}}" placeholder="">
                                         <template if="{{!modeDisabled}}">
                                             <input is="core-input" value="{{selected.title}}">
                                         </template>
@@ -195,7 +410,7 @@
                                     </paper-input-decorator>
 
                                     <paper-input-decorator label="Description" floatingLabel id="decorator"
-                                                           disabled="{{modeDisabled}}">
+                                                           disabled="{{modeDisabled}}" placeholder="">
                                         <paper-autogrow-textarea id="autogrowArea">
                                         <textarea id="textArea" wrap="virtual" value="{{selected.description}}"
                                                   disabled?="{{modeDisabled}}"></textarea>
@@ -271,7 +486,15 @@
                    on-core-response="{{eventSaved}}"
                 >
         </core-ajax>
+        <core-ajax id="deleteEvent"
+                   url="/platform/events/{{selected.id}}"
+                   method="DELETE"
+                   on-core-response="{{eventDeleted}}"
+                >
+        </core-ajax>
+
         <paper-toast id="eventSavedToast" text="Event has been saved!"></paper-toast>
+        <paper-toast id="eventDeletedToast" text="Event has been deleted!"></paper-toast>
     </template>
     <script src="../../bower_components/moment/moment.js"></script>
     <script>
@@ -287,6 +510,37 @@
             observe: {
                 'selected.period': 'changeTab'
             },
+            refresh: function() {
+                this.events.sort(function(o1, o2) {
+                    if (o1.from < o2.from) return -1;
+                    else if (o1.from > o2.from) return 1;
+                    else return 0;
+                });
+
+                this.eventGroups = [];
+                
+
+                var position = "right";
+
+                for (var i = 0; i < this.events.length; i++) {
+                    var event = this.events[i];
+                    var len = this.eventGroups.length;
+                    var fromDate = new Date(event.from);
+                    if (len == 0 || this.eventGroups[len - 1].data.date != fromDate.toDateString()) {
+                        var newDayGroup = {};
+                        newDayGroup.data = {date: fromDate.toDateString()};
+                        newDayGroup.length = 1;
+                        this.eventGroups.push(newDayGroup);
+                        if (position == "left") position = "right";
+                        else position = "left";
+                    } else {
+                        var oldDayGroup = this.eventGroups[len - 1];
+                        oldDayGroup.length++;
+                    }
+
+                    event.position = position;
+                }
+            },
             handleEvents: function (event, detail) {
                 this.events = detail.response;
                 this.events.forEach(function (event) {
@@ -294,6 +548,7 @@
                         return p.id;
                     });
                 });
+                this.refresh();
             },
             changeTab: function (oldV, newV) {
                 this.tabSelected = newV ? 0 : 1;
@@ -301,11 +556,29 @@
                     this.selected.to = new Date();
                 }
             },
+            parseEvent: function(event) {
+                event.participants = event.participants.map(function (p) {
+                    return p.id;
+                });
+            },
+            copyEvent: function(event) {
+                var newEvent = {};
+                newEvent.from = event.from.toISOString();
+                newEvent.to = event.to.toISOString();
+                newEvent.participants = [];
+                for (participant in event.participants)
+                    newEvent.participants.push(participant);
+                newEvent.full_day = event.full_day;
+                newEvent.period = event.period;
+                newEvent.title = event.title;
+                return newEvent;
+            },
             toTime: function (date) {
                 return moment(date).format('HH:mm');
             },
             select: function (event, detail, target) {
                 this.selected = target.templateInstance.model.model;
+                console.log(this.selected);
                 var self = this;
                 setTimeout(function () {
                     self.$.autogrowArea.update(self.$.textArea);
@@ -332,10 +605,34 @@
                 this.eventBody = JSON.stringify(this.selected);
                 this.$.postEvent.go();
             },
-            eventSaved: function(){
-                this.events.push(this.selected);
+            eventSaved: function(event, detail) {
                 this.mode = 'view';
+
+                var newEvent = JSON.parse(detail.response);
+
+                this.parseEvent(newEvent);
+                this.events.push(newEvent);
+                this.main();
                 this.$.eventSavedToast.show();
+                this.refresh();
+
+            },
+            deleteEvent: function() {
+                this.$.deleteEvent.go();
+            },
+            eventDeleted: function(event, detail) {
+                console.log(this.selected);
+                for (var i = 0; i < this.events.length; i++) {
+                    var e = this.events[i];
+                    console.log(e);
+                    if (e.id == this.selected.id) {
+                        this.events.splice(i, 1);
+                        break;
+                    }
+                }
+                this.main();
+                this.$.eventDeletedToast.show();
+                this.refresh();
             }
         });
     </script>

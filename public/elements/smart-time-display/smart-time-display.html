@@ -23,8 +23,10 @@
                         return moment(from).format(format);
                     } else {
                         var from = moment(from), to = moment(to);
-                        if(from.isSame(to, 'day')) {
+                        if (from.isSame(to, 'day')) {
                             return moment(from).format('HH:mm') + "~" + moment(to).format("HH:mm") + " " + moment(from).format("YYYY-MM-DD");
+                        } else {
+                            return moment(from).format('HH:mm') + " " + moment(from).format("YYYY-MM-DD") + "~" + moment(to).format("HH:mm") + " " + moment(to).format("YYYY-MM-DD");
                         }
                     }
                 }

@@ -16,19 +16,25 @@
         <core-ajax url="{{teamsUrl}}" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>
 
         <style>
+            div.wrapper {
+                position: relative;
+            }
             #menu {
-                -moz-border-radius: 5px;
-                -webkit-border-radius: 5px;
+                *-moz-border-radius: 5px;
+                *-webkit-border-radius: 5px;
                 position: absolute;
+                padding: 0;
                 width: 300px;
-                min-height: 100px;
-                padding: 10px 10px 10px 10px;
-                background-color: #C5CAE9;
+                z-index: 10;
+                box-shadow: 0 0 6px #555;
+                box-sizing: border-box;
             }
 
             #menu > div {
+                height: 200px;
+                padding: 10px 14px;
+                background-color: #C5CAE9;
                 overflow-y: auto;
-                max-height: 200px;
             }
 
             core-icon.small {
@@ -69,7 +75,7 @@
             }
         </style>
 
-        <div vertical layout>
+        <div vertical layout class="wrapper" id="wrapper">
             <div>
                 <paper-input-decorator label="{{label}}" floatingLabel labelVisible="{{_labelVisible}}" disabled="{{disabled}}">
                     <div horizontal layout center wrap>
@@ -112,7 +118,27 @@
     </template>
     <script>
 
+        function getElementLeft(element){
+        　　　　var actualLeft = element.offsetLeft;
+        　　　　var current = element.offsetParent;
+        　　　　while (current !== null){
+        　　　　　　actualLeft += current.offsetLeft;
+        　　　　　　current = current.offsetParent;
+        　　　　}
+        　　　　return actualLeft;
+    　　  }
 
+
+        function getElementTop(element){
+　　　　        var actualTop = element.offsetTop;
+        　　　　var current = element.offsetParent;
+        　　　　while (current !== null){
+        　　　　　　actualTop += current.offsetTop;
+
+        　　　　　　current = current.offsetParent;
+        　　　　}
+        　　　　return actualTop;
+　　      }
         Polymer({
             label: "Members",
             computed: {
@@ -223,7 +249,23 @@
             },
 
             showMenu: function () {
+                var clientHeight = document.documentElement.clientHeight;
+                var scrollTop = this.$.wrapper.offsetParent.scrollTop;
+                var parentHeight = this.$.wrapper.offsetParent.offsetHeight;
+                var offsetTop = this.$.wrapper.offsetTop;
+                var wrapperHeight = this.$.wrapper.offsetHeight;
+                var menuHeight = 200;
+
+                console.log(this.$.menu.offsetWidth);
+                if (offsetTop - scrollTop + wrapperHeight + menuHeight <= parentHeight) {
+                    // show menu at bottom
+                    this.$.menu.style.bottom = '-' + menuHeight + 'px';
+                } else {
+                    this.$.menu.style.bottom = wrapperHeight + 'px';
+                }
+                    
                 this.isShowMenu = true;
+
             },
 
             hideMenu: function (event, detail, sender) {
