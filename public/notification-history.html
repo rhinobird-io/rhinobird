@@ -20,11 +20,13 @@
             }
         </style>
         <app-globals id="globals"></app-globals>
-        <core-ajax id="getNotificationRecord"
-                   auto
-                   url="/platform/users/{{$.globals.values.currentUser.id}}/notifications/history"
-                   handleAs="json"
-                   response="{{notifications}}"></core-ajax>
+        <template if="{{$.globals.values.currentUser}}">
+            <core-ajax id="getNotificationRecord"
+                       auto
+                       url="/platform/users/{{$.globals.values.currentUser.id}}/notifications/history"
+                       handleAs="json"
+                       response="{{notifications}}"></core-ajax>
+        </template>
         <home-container>
             <div class="title">Notifications</div>
             <app-globals id="globals"></app-globals>

@@ -62,7 +62,6 @@ class App < Sinatra::Base
     if request.websocket?
       request.websocket do |ws|
         ws.onopen do
-          ws.send("Hello World!")
           settings.sockets[session[:user][:id]] = ws
         end
         ws.onmessage do |msg|
@@ -71,7 +70,6 @@ class App < Sinatra::Base
           # EM.next_tick { ws.send(msg) }
         end
         ws.onclose do
-          warn("websocket closed")
           settings.sockets.delete(ws)
         end
       end
@@ -178,14 +176,14 @@ class App < Sinatra::Base
       if user.local_avatar.nil?
         url = Gravatar.new(user.email).image_url
       else
-        url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}" + "/platform/avatar/" + user_id.to_s
+        url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}" + "/platform/avatar/" + User.find(user_id).local_avatar.id.to_s
       end
 
       return url
     end
 
-    get '/avatar/:userId' do
-      avatar = User.find(params[:userId]).local_avatar
+    get '/avatar/:avatarId' do
+      avatar = LocalAvatar.find(params[:avatarId])
       if avatar.nil?
         404
       else

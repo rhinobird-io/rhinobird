@@ -216,7 +216,7 @@
                     if (this.$.selector.selectedModel.t) {
                         this.addOneTeam(this.$.selector.selectedModel.t);
                     } else if (this.$.selector.selectedModel.u) {
-                        this.addOneUser(this.$.selector.selectedModel.u);
+                        this.addOneUser(this.$.selector.selectedModel.u.id);
                     }
                 } else if (event.keyCode === 8) { // backspace
                     if (this.searchText.length === 0 && this.selected.length > 0) {

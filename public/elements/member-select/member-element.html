@@ -18,7 +18,7 @@
                    url="/platform/gravatar/{{userid}}"
                    handleAs="json"
                    on-core-response="{{handleResponse}}"></core-ajax>
-        <template if="{{menu}}">
+        <template if="{{menu && $.globals.values.memberCache[userid]}}">
             <div>
                 <paper-menu-button>
                     <div class="element" horizontal layout center>
@@ -34,7 +34,7 @@
             </div>
         </template>
 
-        <template if="{{!menu}}">
+        <template if="{{!menu && $.globals.values.memberCache[userid]}}">
             <div class="element" horizontal layout center>
                 <img src="{{$.globals.values.memberCache[userid].url}}?d=identicon&s=20"/> <span style="margin: 2px">{{gravatar.username}}</span>
             </div>

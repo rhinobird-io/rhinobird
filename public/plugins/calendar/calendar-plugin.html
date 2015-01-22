@@ -473,11 +473,13 @@
             </div>
         </div>
         <app-globals id="globals"></app-globals>
-        <core-ajax
-                auto
-                url="/platform/users/{{$.globals.values.currentUser.id}}/events"
-                handleAs="json"
-                on-core-response="{{handleEvents}}"></core-ajax>
+        <template if="{{$.globals.values.currentUser}}">
+            <core-ajax
+                    auto
+                    url="/platform/users/{{$.globals.values.currentUser.id}}/events"
+                    handleAs="json"
+                    on-core-response="{{handleEvents}}"></core-ajax>
+        </template>
         <core-ajax id="postEvent"
                    url="/platform/events"
                    method="POST"
