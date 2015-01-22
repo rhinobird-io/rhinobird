@@ -272,7 +272,7 @@
             },
 
             addUserHandler: function (event, detail, sender) {
-                var userId = event.target.templateInstance.model.uid;
+                var userId = event.target.templateInstance.model.u.id;
                 this.addOneUser(userId);
             },
 
@@ -286,13 +286,14 @@
 
             removeUserHandler: function (event, detail, target) {
                 var userId = target.templateInstance.model.uid;
-                this.removeOneUser(userid);
+                this.removeOneUser(userId);
                 event.stopPropagation();
             },
 
-            removeOneUser: function (userid) {
-                this.userSelectedMap[userid] = false;
-                this.selected.splice(userid, 1);
+            removeOneUser: function (userId) {
+                this.userSelectedMap[userId] = false;
+                index = this.selected.indexOf(userId);
+                this.selected.splice(index, 1);
             },
 
             // public attributes
