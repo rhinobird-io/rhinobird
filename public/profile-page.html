@@ -3,7 +3,7 @@
 <link rel="import" href="bower_components/ajax-file-input/ajax-file-input.html">
 <link rel="import" href="bower_components/core-selector/core-selector.html">
 
-<polymer-element name="team-select">
+<polymer-element name="team-select" attributes="maxLen">
     <template>
         <core-ajax id="getTeamsAjax"
                    auto
@@ -52,6 +52,12 @@
 
             selectTeamHandler: function (event, detail, target) {
                 var team = target.templateInstance.model.t;
+                if (this.maxLen && this.maxLen > 0) {
+                    currentLen = this.selected.length;
+                    if (currentLen == this.maxLen) {
+                        this.selected.shift();
+                    }
+                }
                 this.selected.push(team);
                 this._labelVisible = false;
             },
@@ -94,7 +100,7 @@
                                        body="{{newUserJson}}"
                                        on-core-response="{{inviteSuccess}}"></core-ajax>
                             <paper-input label="Email" floatinglabel value="{{userEmail}}"></paper-input>
-                            <team-select id="initialTeam"></team-select>
+                            <team-select id="initialTeam" maxLen="1"></team-select>
                             <paper-button raised on-tap="{{inviteNewMember}}">Invite New Member</paper-button>
                             <paper-toast id="toastInviteSuccess" text="Invitation has been sent to {{userEmail}}" role="status" touch-action="none"
                                          tabindex="-1"
