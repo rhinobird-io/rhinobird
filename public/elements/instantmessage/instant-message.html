@@ -2,10 +2,12 @@
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="../../bower_components/core-style/core-style.html">
 <link rel="import" href="../../bower_components/core-icon-button/core-icon-button.html">
+<link rel="import" href="../../bower_components/core-menu/core-menu.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
 <link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
 
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../../bower_components/paper-dropdown/paper-dropdown.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
@@ -23,8 +25,15 @@
         <link rel="stylesheet" type="text/css" href="instant-message.css">
         <core-style ref="theme"></core-style>
         <home-container>
-            <div class="title">
+            <div class="title" horizontal layout center>
                 {{ channel.isPrivate?channel.displayName:channel.name }}
+                <paper-icon-button icon="account-child" on-click="{{showSingleTeamMemberDialog}}" hidden?="{{channel.isPrivate}}">
+                    <paper-dialog id="teamMemberDialog" heading="Members" on-core-overlay-position="{{positionTeamMemberDialog}}">
+                        <template repeat="{{u in teamMembers}}">
+                            <paper-item hidden?="{{u.id === currentUser.id}}" on-click="{{talkDirect}}">{{u.realname}}</paper-item>
+                        </template>
+                    </paper-dialog>
+                </paper-icon-button>
             </div>
             <div class="mainBackground" horizontal layout fit>
                 <paper-action-dialog id="connectingDialog" backdrop autoCloseDisabled>
@@ -46,7 +55,7 @@
                         </template>
                     </div>
 
-                    <div class="inputbox" on-tap="{{boxTapped}}">
+                    <div id="inputbox" on-tap="{{boxTapped}}">
                         <div layout horizontal>
                             <paper-autogrow-textarea id="messageInput" maxRows="6" on-keydown="{{keyDown}}"
                                                      on-input="{{inputChanging}}" flex>
@@ -64,7 +73,7 @@
                             <template repeat="{{ g in group }}">
                                 <div horizontal layout center>
                                     <paper-icon-button icon="account-child" on-click="{{showTeamMemberDialog}}">
-                                        <paper-dialog id="teamMemberDialog" heading="Dialog Title" on-core-overlay-position="{{positionTeamMemberDialog}}">
+                                        <paper-dialog id="teamMemberDialog" heading="Members" on-core-overlay-position="{{positionTeamMemberDialog}}">
                                             <template repeat="{{u in teamMembers}}">
                                                 <paper-item hidden?="{{u.id === currentUser.id}}" on-click="{{talkDirect}}">{{u.realname}}</paper-item>
                                             </template>

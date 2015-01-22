@@ -233,6 +233,15 @@ Polymer({
 
   },
 
+  showSingleTeamMemberDialog: function (event, detail, target) {
+    var self = this;
+    $.get('/platform/teams/' + self.channel.teamId + '/users').done(function(users) {
+      self.teamMembers = users;
+    }).done(function() {
+      target.querySelector('paper-dialog')&&target.querySelector('paper-dialog').open();
+    });
+  },
+
   positionTeamMemberDialog : function(event, detail, target) {
     target.dimensions.position = { v : 'top', h : 'left'};
 
@@ -431,7 +440,7 @@ Polymer({
       for (var i = self.messages.length - 1; i >= 0; i--) {
         if (self.messages[i].guid === message.guid) {
           self.messages[i] = message;
-          if (i -1 >=0){
+          if (i -1 >= 0){
             self.messages[i].hideMemberElement  = 
               self.isHideMemberElement(self.messages[i-1], message);
           }
