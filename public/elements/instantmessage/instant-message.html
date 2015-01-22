@@ -24,7 +24,7 @@
         <core-style ref="theme"></core-style>
         <home-container>
             <div class="mainBackground" horizontal layout fit>
-                <paper-action-dialog id="connectingDialog" backdrop autoCloseDisabled layered="false">
+                <paper-action-dialog id="connectingDialog" backdrop autoCloseDisabled>
                     <p>{{connectinStatus}}</p>
                 </paper-action-dialog>
                 <div id="historyAndInput" four flex vertical layout class="mainBgColor">
@@ -68,7 +68,7 @@
                                         </paper-dialog>
                                     </paper-icon-button>
                                     <div flex>
-                                        <paper-item on-click="{{ handleChannelSelect }}" hash="{{g.name}}">{{ g.name }}
+                                        <paper-item on-click="{{ handleChannelSelect }}" hash="{{g.name}}" class="{{ {highlight : g.id === channel.id} | tokenList }}">{{ g.name }}
                                         </paper-item>
                                     </div>
                                 </div>
@@ -78,7 +78,7 @@
                     <div id="directMessage">
                         <h3 class="secondColor">Direct Message</h3>
                         <template repeat="{{ g in private }}">
-                            <paper-item on-click="{{ handleChannelSelect }}" hash="{{'@'+g.displayName}}">{{
+                            <paper-item on-click="{{ handleChannelSelect }}" hash="{{'@'+g.displayName}}" class="{{ {highlight : g.id === channel.id} | tokenList }}">{{
                                 g.displayName }}
                             </paper-item>
                         </template>

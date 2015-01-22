@@ -46,11 +46,11 @@ Polymer({
     var self = this;
 
     $.get('/platform/loggedOnUser').fail(function () {
-
       document.querySelector('app-router').go('/');
+      callback('not login');
+      return;
     }).done(function (user) {
 
-      self.$.connectingDialog.toggle();
       self.currentUser = user;
 
       $.post(serverUrl + '/api/users', {
@@ -164,6 +164,7 @@ Polymer({
            * @param callback
            */
             function (callback) {
+            self.$.connectingDialog.open();
             self.initSocket();
             callback();
           }
@@ -181,7 +182,7 @@ Polymer({
     var self = this;
     self.socket = io(serverUrl).connect();
     self.socket.on('connect', function () {
-      self.$.connectingDialog.toggle();
+      self.$.connectingDialog.close();
       self.socket.emit('init', {
         userId: self.currentUser.id,
         channelName: self.channel.name
@@ -209,20 +210,20 @@ Polymer({
       });
     });
     self.socket.on('disconnect', function () {
-      self.$.connectingDialog.opened = true;
+      self.$.connectingDialog.open();
       self.connectinStatus = "disconnected.";
     });
 
     self.socket.on('reconnecting', function (number) {
-      self.$.connectingDialog.opened = true;
+      self.$.connectingDialog.open();
       self.connectinStatus = "reconnecting... (" + number + ")";
     });
     self.socket.on('reconnecting_failed', function () {
-      self.$.connectingDialog.opened = true;
+      self.$.connectingDialog.open();
       self.connectinStatus = "reconnecting failed.";
     });
     self.socket.on('reconnect', function () {
-      self.$.connectingDialog.opened = false;
+      self.$.connectingDialog.open();
       self.connectinStatus = "connected";
     });
   },
@@ -272,6 +273,7 @@ Polymer({
       });
     });
   },
+
   isHideMemberElement: function(lastMessage, newMessage){
     if (!lastMessage || ! newMessage){
       return false;

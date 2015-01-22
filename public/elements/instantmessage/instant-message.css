@@ -33,3 +33,7 @@ h3 {
     border-radius: 0.25em;
     cursor: text;
 }
+
+.highlight {
+    font-weight: bold;
+}
