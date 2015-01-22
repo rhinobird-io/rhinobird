@@ -136,19 +136,18 @@ class App < Sinatra::Base
       User.all.map { |u|
         {
             id: u.id,
-            url: Gravatar.new(u.email).image_url,
+            url: get_image_url(u.id, u),
             username: u.realname
         }
       }.to_json
     end
 
     get '/gravatar/:userId' do
-      @user_id = params[:userId]
-      @user = User.find(params[:userId])
+      user = User.find(params[:userId])
       gravatar = {}
-      gravatar["username"] = @user.realname
-      gravatar["url"] = get_image_url
-      if @local_avatar.nil?
+      gravatar["username"] = user.realname
+      gravatar["url"] = get_image_url(params[:userId], user)
+      if user.local_avatar.nil?
         gravatar["local"] = false
       else
         gravatar["local"] = true
@@ -159,39 +158,39 @@ class App < Sinatra::Base
     get '/gravatar' do
       gravatars = []
       @params.each do |param|
-        @user = User.find(param[1])
-        @user_id = param[1]
+        user = User.find(param[1])
         gravatar = {}
-        gravatar["url"] = get_image_url
-        gravatar["username"] = @user.realname
+        gravatar["url"] = get_image_url(param[1], user)
+        gravatar["username"] = user.realname
         gravatars << gravatar
       end
       gravatars.to_json
     end
 
-    def get_image_url
-      if @local_avatar.nil?
-        @local_avatar = @user.local_avatar
+    def get_image_url(user_id, user=nil)
+      # if @local_avatar.nil?
+      #   @local_avatar = @user.local_avatar
+      # end
+      if user.nil?
+        user = User.find(user_id)
       end
 
-      if @local_avatar.nil?
-        url = Gravatar.new(@user.email).image_url
+      if user.local_avatar.nil?
+        url = Gravatar.new(user.email).image_url
       else
-        url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}" + "/platform/avatar/" + @user_id
+        url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}" + "/platform/avatar/" + user_id.to_s
       end
 
       return url
     end
 
     get '/avatar/:userId' do
-      if @local_avatar.nil?
-        @local_avatar = User.find(params[:userId]).local_avatar
-      end
-      if @local_avatar.nil?
+      avatar = User.find(params[:userId]).local_avatar
+      if avatar.nil?
         404
       else
         content_type 'image/png'
-        @local_avatar["image_data"]
+        avatar["image_data"]
       end
     end
 
@@ -209,7 +208,7 @@ class App < Sinatra::Base
 
     #remove local avatar
     post '/avatar/remove' do
-      @local_avatar = nil
+      # @local_avatar = nil
       User.find(session[:user][:id]).local_avatar.delete
     end
 
