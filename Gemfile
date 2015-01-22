@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 
-gem 'sinatra'
+gem 'sinatra', github: 'sinatra/sinatra'
 gem 'sinatra-contrib'
 gem 'thin'
 gem 'activerecord'

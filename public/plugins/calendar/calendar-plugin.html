@@ -66,16 +66,7 @@
         padding: 2em 0;
 
     }
-    .listitem::before,
-    .dayDivider::before {
-        content: '';
-        position: absolute;
-        top: 0.5em;
-        left: 18px;
-        height: 100%;
-        width: 4px;
-        background-color: {{g.theme.thirdBgColor}};
-    }
+    
 
     .time {
         margin-top: 4px;
@@ -104,7 +95,10 @@
         margin: 1em 0;
     }
 
-    .event {
+    .block {
+        z-index: 4;
+    }
+    .event {    
         border-radius: 50%;
         padding:8px;
     }
@@ -152,6 +146,22 @@
                 box-sizing: border-box;
     }
 
+    .listitem::before,
+    .dayDivider::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 18px;
+        height: 100%;
+        width: 4px;
+        z-index: 3;
+        background-color: {{g.theme.thirdBgColor}};
+    }
+
+    .dayDivider::first-child {
+        background: black;
+    }
+
     .dayDivider {
         position: relative;
         clear: both;
@@ -169,13 +179,16 @@
 
     .dayDivider .dayDividerLabel hr {
         position: absolute;
+        *top: 2px;   
         top: 50%;
         left: -60px;
         right: 0px;
         border: 0;
         margin: 0;
         margin-top: -2px;
-        border-top: 2px dashed #bbb;
+        border-top: 2px solid #bbb;
+
+        z-index: 1;
     }
 
     .dayDivider .dayDividerLabel .dayDividerLabelContent {
@@ -184,21 +197,38 @@
         color: #555459;
         font-family: 'Lato', san-serif;
         font-weight: 900;
-        font-size: 1.2em;
+        font-size: 1.0em;
         margin: 0 auto;
         padding: 0 2px;
         background: white;
-    }
-
-    .event-title {
-        font-size: 120%;
-        font-family: Lato, san-serif;
+        z-index: 2;
     }
 
     .time {
         font-size: 90%;
     }
 
+    .time,
+    .event-title {
+        margin: 0;
+        border: 0;
+        padding-left: 6px;
+        border-left: 4px solid transparent;
+    }
+    .event-title {
+        font-size: 1.0em;
+        font-family: Lato, san-serif;
+        padding-bottom: 6px;
+    }
+
+
+    .block:hover .time,
+    .block:hover .event-title {
+        padding-left: 6px;
+        border-left: 4px solid {{g.theme.mainBgColor}};
+        *background-color: {{g.theme.thirdBgColor}};
+        *transition: opacity ease-in 0.2s
+    }
 
     @media screen and (min-width: 1170px) {
         .event {
@@ -227,6 +257,7 @@
             margin-left: 50%;
             padding-left: 78px;
         }
+
         .dayDivider .dayDividerLabel hr {
             left: 0;
         }
@@ -247,6 +278,23 @@
             padding-left: 78px;
             text-align: left;
         }
+
+        .block .content.left > .time,
+        .block .content.left > .event-title {
+            margin:0;
+            border: 0;
+            padding-right: 6px;
+            border-right: 4px solid transparent;
+        }
+
+        .block:hover .content.left > .time,
+        .block:hover .content.left > .event-title {
+            padding-right: 6px;
+            border-right: 4px solid {{g.theme.mainBgColor}};
+            *background-color: {{g.theme.thirdBgColor}};
+        }
+
+
     }
 </core-style>
 
@@ -438,7 +486,15 @@
                    on-core-response="{{eventSaved}}"
                 >
         </core-ajax>
+        <core-ajax id="deleteEvent"
+                   url="/platform/events/{{selected.id}}"
+                   method="DELETE"
+                   on-core-response="{{eventDeleted}}"
+                >
+        </core-ajax>
+
         <paper-toast id="eventSavedToast" text="Event has been saved!"></paper-toast>
+        <paper-toast id="eventDeletedToast" text="Event has been deleted!"></paper-toast>
     </template>
     <script src="../../bower_components/moment/moment.js"></script>
     <script>
@@ -462,12 +518,7 @@
                 });
 
                 this.eventGroups = [];
-                this.events.forEach(function (event) {
-                    event.participants = event.participants.map(function (p) {
-                        return p.id;
-                    });
-
-                });
+                
 
                 var position = "right";
 
@@ -492,6 +543,11 @@
             },
             handleEvents: function (event, detail) {
                 this.events = detail.response;
+                this.events.forEach(function (event) {
+                    event.participants = event.participants.map(function (p) {
+                        return p.id;
+                    });
+                });
                 this.refresh();
             },
             changeTab: function (oldV, newV) {
@@ -500,11 +556,29 @@
                     this.selected.to = new Date();
                 }
             },
+            parseEvent: function(event) {
+                event.participants = event.participants.map(function (p) {
+                    return p.id;
+                });
+            },
+            copyEvent: function(event) {
+                var newEvent = {};
+                newEvent.from = event.from.toISOString();
+                newEvent.to = event.to.toISOString();
+                newEvent.participants = [];
+                for (participant in event.participants)
+                    newEvent.participants.push(participant);
+                newEvent.full_day = event.full_day;
+                newEvent.period = event.period;
+                newEvent.title = event.title;
+                return newEvent;
+            },
             toTime: function (date) {
                 return moment(date).format('HH:mm');
             },
             select: function (event, detail, target) {
                 this.selected = target.templateInstance.model.model;
+                console.log(this.selected);
                 var self = this;
                 setTimeout(function () {
                     self.$.autogrowArea.update(self.$.textArea);
@@ -516,7 +590,6 @@
             main: function () {
                 this.$.pages.selected = 0;
                 this.mode = 'list';
-                console.log(this.selected);
             },
             jumpToAdd: function () {
                 this.selected = {from: new Date(), to: new Date(), participants: [], full_day: false, period: true};
@@ -535,17 +608,31 @@
             eventSaved: function(event, detail) {
                 this.mode = 'view';
 
-                this.selected.from = this.selected.from.toISOString();
-                this.events.push(this.selected);
-                this.$.eventSavedToast.show();
+                var newEvent = JSON.parse(detail.response);
 
+                this.parseEvent(newEvent);
+                this.events.push(newEvent);
+                this.main();
+                this.$.eventSavedToast.show();
                 this.refresh();
+
             },
             deleteEvent: function() {
-
+                this.$.deleteEvent.go();
             },
             eventDeleted: function(event, detail) {
-                
+                console.log(this.selected);
+                for (var i = 0; i < this.events.length; i++) {
+                    var e = this.events[i];
+                    console.log(e);
+                    if (e.id == this.selected.id) {
+                        this.events.splice(i, 1);
+                        break;
+                    }
+                }
+                this.main();
+                this.$.eventDeletedToast.show();
+                this.refresh();
             }
         });
     </script>
