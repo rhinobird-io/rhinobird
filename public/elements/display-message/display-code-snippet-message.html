@@ -1,0 +1,33 @@
+<link rel="import" href="../../bower_components/core-style/core-style.html">
+<link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
+<script src="../../bower_components/highlightjs/highlight.pack.js"></script>
+<polymer-element name="display-code-snippet-message" attributes="text">
+
+<template>
+	<link rel="stylesheet" href="../../bower_components/highlightjs/styles/default.css">
+<core-style ref="theme"></core-style>
+	<core-style>
+		code {
+			border-radius: 4px;
+		}
+	</core-style>
+	<paper-shadow>
+		<pre><code id="codeBlock" class="{{language}}">{{code(text)}}</code></pre>
+	</paper-shadow>
+</template>
+<script>
+	Polymer({
+		code: function(text){
+			var code = text.replace(/^```/, "");
+			this.language = code.match(/.*/);
+			code = code.replace(/^.*\n/, "");
+			code = code.replace(/```$/, "");
+			var self=this;
+			setTimeout(function(){
+				hljs.highlightBlock(self.$.codeBlock);
+			}, 0);
+			return code;
+		}
+	});
+</script>
+</polymer-element>

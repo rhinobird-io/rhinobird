@@ -1,0 +1,25 @@
+<polymer-element name="event-image" attributes="src width disableLoadedEvent">
+<script src="../../bower_components/imagesloaded/imagesloaded.pkgd.js"></script>
+<template>
+	<style>
+		.msg_inline_img {
+			max-width: {{width}};
+		}
+	</style>
+	<img id="coreImage" class="msg_inline_img msg_inline_child" src="{{src}}">
+</template>
+
+<script>
+	Polymer({
+		disableLoadedEvent: false,
+		domReady: function(){
+			var self = this;
+			imagesLoaded (this.$.coreImage, function (){ 
+				if (!self.disableLoadedEvent){
+					self.fire('loaded','');
+				}
+			});
+		}, 
+	});
+</script>
+</polymer-element>

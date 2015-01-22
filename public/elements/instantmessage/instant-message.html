@@ -1,0 +1,136 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="../../bower_components/core-style/core-style.html">
+<link rel="import" href="../../bower_components/core-icon-button/core-icon-button.html">
+<link rel="import" href="../../bower_components/core-menu/core-menu.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
+<link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-dropdown/paper-dropdown.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/core-icon/core-icon.html">
+<link rel="import" href="../../bower_components/event-infinite-scroll/event-infinite-scroll.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
+<link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
+
+
+<link rel="import" href="../../../home-container.html">
+<link rel="import" href="../display-message/display-message.html">
+<link rel="import" href="../member-select/member-element.html">
+
+<polymer-element name="instant-message" attributes="channelName">
+    <template>
+        <link rel="stylesheet" type="text/css" href="instant-message.css">
+        <core-style ref="theme"></core-style>
+        <home-container>
+            <div class="title" horizontal layout center>
+                {{ channel.isPrivate?channel.displayName:channel.name }}
+            </div>
+            <div class="mainBackground" horizontal layout fit>
+                <paper-action-dialog id="connectingDialog" backdrop autoCloseDisabled>
+                    <p>{{connectinStatus}}</p>
+                </paper-action-dialog>
+                <div id="historyAndInput" four flex vertical layout class="mainBgColor">
+
+                    <div id="history" flex>
+                        <event-infinite-scroll id="infiniteScroll" readyOnStart="false" scrollDenominator="2"loadingDelay="50" on-reach-top="{{reachedTop}}"></event-infinite-scroll>
+                        <template repeat="{{m in messages}}">
+                            <display-message user="{{m.userId}}" text="{{m.text}}" 
+                                             on-loaded="{{messageLoaded}}"
+                                             messageStatus="{{m.messageStatus}}" 
+                                             updatedAt="{{m.updatedAt}}"
+                                             disableLoadedEvent="{{m.disableLoadedEvent}}"
+                                             disableReadyEvent="{{m.disableReadyEvent}}"
+                                             hideMemberElement="{{m.hideMemberElement}}"
+                                             on-ready="{{messageReady}}"></display-message>
+                        </template>
+                    </div>
+                    <div layout horizontal center>
+                        <div id="inputbox" on-tap="{{boxTapped}}" flex>
+                            <div layout horizontal>
+                                <paper-autogrow-textarea id="messageInput" maxRows="6" on-keydown="{{keyDown}}"
+                                                         on-input="{{inputChanging}}" flex>
+                                    <textarea row="1" id="textInput" value="{{message}}"></textarea>
+                                </paper-autogrow-textarea>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div vertical layout flex>
+                    <div id="groupChannel">
+                        <h3 class="secondColor">Group Channel</h3>
+
+                        <div vertical layout>
+                            <template repeat="{{ g in group }}">
+                                <div horizontal layout center>
+                                    <paper-icon-button icon="account-child" on-click="{{showTeamMemberDialog}}">
+                                        <paper-dialog id="teamMemberDialog" heading="Members" on-core-overlay-position="{{positionTeamMemberDialog}}">
+                                            <template repeat="{{u in teamMembers}}">
+                                                <paper-item hidden?="{{u.id === currentUser.id}}"  on-click="{{talkDirect}}">
+                                                    <member-element userid="{{u.id}}" ></member-element>
+                                                </paper-item>
+                                            </template>
+                                        </paper-dialog>
+                                    </paper-icon-button>
+                                    <div flex>
+                                        <paper-item on-click="{{ handleChannelSelect }}" hash="{{g.name}}" class="{{ {highlight : g.id === channel.id} | tokenList }}">{{ g.name }}
+                                        </paper-item>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <div id="directMessage" flex>
+                        <h3 class="secondColor">Direct Message</h3>
+                        <template repeat="{{ g in private }}">
+                            <div horizontal layout center>
+                                <paper-item on-click="{{ handleChannelSelect }}" hash="{{'@'+g.displayName}}" class="{{ {highlight : g.id === channel.id} | tokenList }}">{{
+                                    g.displayName }}
+                                </paper-item>
+                                <core-icon icon="markunread" style="color :red;" hidden?="{{ !(unread[g.id] && unread[g.id].length > 0)}}"></core-icon>
+                            </div>
+                        </template>
+                    </div>
+                    <div id='infoButtonArea'  horizontal layout end-justified>
+                        <paper-fab mini icon="info-outline"  class="iconColor" on-click="{{onClickInfomation}}"></paper-fab>
+                    </div>
+                </div>
+            </div>
+
+            <paper-action-dialog  id="noGroupDlg"  heading="Instant Message not Init" backdrop autoCloseDisabled>
+                <p>Instant Message is not initialized, please ask administrator</p>
+                <paper-button dismissive on-click="{{goToIndex}}">Close</paper-button>
+                <paper-button affirmative on-click="{{goToConfig}}">Config</paper-button>
+            </paper-action-dialog>
+            <paper-dialog id="informationDialog" transition="core-transition-center" heading="Manual">
+                <p>1. ENTER to send</p>
+                <p>2. SHIFT + ENTER to have newline</p>
+                <p>3. Code Snippet
+                        <div layout horizontal center>
+                            <div>
+                                Input:
+                                <pre>{{codeSnippetExample}}</pre>
+                            </div>
+                            <div>
+                                Display:
+                                <display-code-snippet-message text="{{codeSnippetExample}}"></display-code-snippet-message>
+                            </div>
+                        </div>
+                </p>
+            </paper-dialog>
+
+
+        </home-container>
+    </template>
+
+    <script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="../../bower_components/async/lib/async.js"></script>
+    <script src="../../bower_components/lodash/dist/lodash.min.js"></script>
+    <script src="instant-message.web.js"></script>
+</polymer-element>

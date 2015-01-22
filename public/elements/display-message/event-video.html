@@ -1,0 +1,34 @@
+<polymer-element name="event-video" attributes="src width height disableLoadedEvent">
+<script src="../../bower_components/imagesloaded/imagesloaded.pkgd.js"></script>
+<template>
+	<style>
+		
+	</style>
+	<iframe id="coreVideo" width="{{ajustWidth}}" height="{{ajustHeight}}" src="{{src}}"></iframe>
+</template>
+
+<script>
+	Polymer({
+		ajustWidth: 400,
+		ajustHeight: 0,
+		disableLoadedEvent: false,
+		domReady: function(){
+			var self = this;
+			imagesLoaded (this.$.coreVideo, function (){ 
+				if (!self.disableLoadedEvent){
+					self.fire('loaded','');
+				}
+			});
+			if (!this.width || this.width === 0 ){
+				this.ajustWidth = 400;
+				this.ajustHeight = 300;
+			}
+			if (this.width > this.ajustWidth){
+				this.ajustHeight = this.height * this.ajustWidth / this.width;
+			}else{
+				this.ajustHeight = this.height;
+			}
+		}, 
+	});
+</script>
+</polymer-element>

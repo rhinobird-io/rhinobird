@@ -1,0 +1,126 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="display-default-message.html">
+<link rel="import" href="display-code-snippet-message.html">
+<link rel="import" href="display-url-message.html">
+<link rel="import" href="../member-select/member-element.html">
+<link rel="import" href="../../bower_components/polymer-filters/polymer-filters.html">
+<polymer-element name="display-message" attributes="hideMemberElement user text messageStatus updatedAt disableLoadedEvent disableReadyEvent">
+
+<template>
+<style>
+	.unsend {
+			color: gray;
+		}
+	.msg {
+		margin-left: 18px;
+	}
+	.box {
+		margin-top: 1em;
+	}
+	.time {
+		font-size: smaller;
+		color: grey;
+		margin-left: 5px;
+	}
+	</style>
+
+<div vertical layout class="box">
+	<div horizontal layout center>
+		<template if="{{!hideMemberElement}}">
+			<template if="{{user}}">
+				<member-element userid="{{user}}"></member-element>
+			</template>
+			<template if="{{updatedAt}}">
+				<span class="time">{{updatedAt | date('hh:mm')}}</span>
+			</template>
+		</template>
+	</div>
+	<div class="{{messageStatus}} msg">
+		<template repeat="{{t in processedText}}">
+			<template if="{{!t.process}}">
+				<display-default-message text="{{t.text}}"></display-default-message>
+			</template>
+			<template if="{{t.process === 'code'}}">
+				<display-code-snippet-message text="{{t.text}}"></display-code-snippet-message>
+			</template>
+			<template if="{{t.process === 'url'}}">
+				<display-url-message text="{{t.text}}" disableLoadedEvent="{{disableLoadedEvent}}" on-loaded="{{messageLoaded}}" url="{{t.url}}"></display-url-message>
+			</template>
+		</template>
+	</div>
+</div>
+</template>
+
+<script>
+	Polymer({
+		processedText : [],
+		disableLoadedEvent: false, 
+		disableReadyEvent: false,
+		hideMemberElement: false,
+		domReady: function(){
+			var afterprocessing = this.processCodeSnippet(this.text);
+			
+			var processingText = afterprocessing;
+			afterprocessing = [];
+			for(t in processingText){
+				if (!processingText[t].process){
+					afterprocessing.push(this.processHttp(processingText[t].text));
+				}else{
+					afterprocessing.push(processingText[t]);
+				}
+			}
+
+			this.processedText = afterprocessing;
+			if (!this.disableReadyEvent){
+				this.fire('ready', '');
+			}
+		}, 
+		processCodeSnippet: function(processingText){
+			var pattern = /(^|\n)```(.|\n)*?```($|\n)/;
+			var matched = processingText.match(pattern);
+			var result = [];
+			while (matched){
+				var index = processingText.indexOf(matched[0]);
+				if (index !== 0){
+					var r = {};
+					r.text =  processingText.substring(0,index);
+					r.process = false;
+					result.push(r);
+				}
+				var tProcessed = {};
+					tProcessed.text =  matched[0];
+					tProcessed.process = "code";
+					result.push(tProcessed);
+				processingText = processingText.substr(index + matched[0].length);
+				matched = processingText.match(pattern);
+			}
+			if (processingText.length> 0){
+				var r = {};
+					r.text =  processingText;
+					r.process = false;
+					result.push(r);
+			}
+			return result;
+		},
+		processHttp: function(processingText){
+			var r = {};
+			// this uri pattern is extract from URI.js 
+			var uri_pattern = /\b((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/ig;
+			r.text =  processingText;
+			var matched = processingText.match(uri_pattern);
+			if(matched){
+				r.process = 'url';
+				r.url = matched[0];
+			}else{
+				r.process = false;
+			}
+			return r;
+		}, 
+		messageLoaded: function(event){
+			if (!this.disableLoadedEvent){
+				this.fire('loaded', '');
+			}
+		}
+	});
+</script>
+</polymer-element>

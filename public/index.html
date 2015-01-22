@@ -17,7 +17,7 @@
             thirdBgColor: '#C5CAE9',
             accentBgColor: '#FF4081',
             mainColor: 'white',
-            secondColor: '#000',
+            secondColor: 'white',
             thirdColor: '#000',
             accentColor: 'white',
             iconColor: 'rgba(0,0,0,0.54)'
@@ -99,6 +99,8 @@
     <app-route path="/calendar" import="/plugins/calendar/calendar-plugin.html"></app-route>
     <app-route path="/profile" import="profile-page.html"></app-route>
     <app-route path="/team" import="team-page.html"></app-route>
+    <app-route path="/instantmessage/config" import="/elements/instantmessage/instant-message-config.html"></app-route>
+    <app-route path="/instantmessage/channels/:channelName" import="/elements/instantmessage/instant-message.html"></app-route>
     <app-route path="/notification" import="notification-history.html"></app-route>
     <app-route path="/" redirect="/dashboard"></app-route>
 </app-router>
