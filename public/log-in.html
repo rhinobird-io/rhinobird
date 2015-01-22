@@ -133,8 +133,6 @@
                 invitationData = JSON.parse(response.response);
                 this.userInfo.email = invitationData.email;
                 this.userInfo.initial_team_id = invitationData.initial_team_id;
-                console.log(invitationData);
-                console.log(this.userInfo);
             },
             keyPressInPassword: function (e) {
                 if (e.keyCode == 13) {
@@ -167,7 +165,6 @@
                     this.errMsg = "Password does not match";
                     this.$.toastSignUpFail.show();
                 } else {
-                    console.log(this.userInfo);
                     this.userJson = JSON.stringify(this.userInfo);
                     this.$.signUpAjax.go();
                 }

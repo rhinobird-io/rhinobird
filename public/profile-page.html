@@ -140,7 +140,8 @@
                                        url="/platform/gravatar/{{$.globals.values.currentUser.id}}"
                                        handleAs="json"
                                        method="get"
-                                       response="{{gravatar}}"></core-ajax>
+                                       response="{{gravatar}}"
+                                       on-core-response="{{gravatarResponse}}"></core-ajax>
                             <div horizontal layout center>
                                 <template if="{{gravatar.local}}">
                                     <p>You can change your avatar here or remove the current avatar to revert to <a href="http://gravatar.com" rel="nofollow">gravatar.com</a></p>
@@ -192,6 +193,10 @@
                 this.$.getGravatar.go();
             },
 
+            gravatarResponse: function() {
+                this.$.globals.values.memberCache[this.$.globals.values.currentUser.id] = this.gravatar;
+            },
+
             changePassword: function() {
                 if (!this.originalPassword || !this.newPassword || !this.confirmedPassword ||
                         this.originalPassword == "" || this.newPassword == "" || this.confirmedPassword == "") {
@@ -226,7 +231,6 @@
                 }
 
                 this.newUserJson = JSON.stringify(this.newUser);
-                console.log(this.newUserJson);
                 this.$.inviteUserAjax.go();
             },
 
