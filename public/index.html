@@ -69,20 +69,20 @@
 
                 this.$.globals.values.plugins = [];
 
-                for (index in plugins) {
-
-                    var newPlugin = {};
-                    newPlugin.icon = "event";
-                    newPlugin.label = plugins[index].name;
-                    newPlugin.active = plugins[index].name;
-                    newPlugin.href = "/#/" + plugins[index].name;
-                    this.$.globals.values.plugins.push(newPlugin);
-
-                    element = document.createElement("app-route");
-                    element.setAttribute("path", "/" + plugins[index].name);
-                    element.setAttribute("import", "/plugins/" + plugins[index].name + "/" + plugins[index].name + "-plugin.html");
-                    router.insertBefore(element, router.lastElementChild);
-                }
+//                for (index in plugins) {
+//
+//                    var newPlugin = {};
+//                    newPlugin.icon = "event";
+//                    newPlugin.label = plugins[index].name;
+//                    newPlugin.active = plugins[index].name;
+//                    newPlugin.href = "/#/" + plugins[index].name;
+//                    this.$.globals.values.plugins.push(newPlugin);
+//
+//                    element = document.createElement("app-route");
+//                    element.setAttribute("path", "/" + plugins[index].name);
+//                    element.setAttribute("import", "/plugins/" + plugins[index].name + "/" + plugins[index].name + "-plugin.html");
+//                    router.insertBefore(element, router.lastElementChild);
+//                }
 
                 element = document.createElement("app-route");
                 element.setAttribute("path", "*");
