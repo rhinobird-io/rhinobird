@@ -23,6 +23,9 @@
         <link rel="stylesheet" type="text/css" href="instant-message.css">
         <core-style ref="theme"></core-style>
         <home-container>
+            <div class="title">
+                {{ channel.isPrivate?channel.displayName:channel.name }}
+            </div>
             <div class="mainBackground" horizontal layout fit>
                 <paper-action-dialog id="connectingDialog" backdrop autoCloseDisabled>
                     <p>{{connectinStatus}}</p>

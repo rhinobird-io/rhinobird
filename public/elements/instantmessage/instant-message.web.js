@@ -112,9 +112,7 @@ Polymer({
                 return;
               }
               self.channel = channel;
-
               callback(null, channel);
-
             });
           },
 
@@ -132,20 +130,16 @@ Polymer({
               // if this channel is not in the direct message group, just add it
               if (!_.find(self.private, {id: channel.id})) {
                 self.private.splice(0, 0, channel);
-
-                // and get its displayname
-                self.loadChannelUsers(channel.id).done(function (users) {
-                  users.forEach(function (user) {
-                    if (user.id !== self.currentUser.id) {
-                      channel.displayName = user.name;
-                    }
-                  });
-                  callback();
-                });
-
-              } else {
-                callback();
               }
+              // and get its displayname
+              self.loadChannelUsers(channel.id).done(function (users) {
+                users.forEach(function (user) {
+                  if (user.id !== self.currentUser.id) {
+                    channel.displayName = user.name;
+                  }
+                });
+                callback();
+              });
             }
           },
 
