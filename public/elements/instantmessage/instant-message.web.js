@@ -493,6 +493,6 @@ Polymer({
   },
 
   roomId: '', 
-  codeSnippetExample: "```\nint main(){\n    printf(\"helloworld\");\n    return 0;\n}\n```",
+  codeSnippetExample: "```c++\nint main(){\n    printf(\"helloworld\");\n    return 0;\n}\n```",
 });
 
