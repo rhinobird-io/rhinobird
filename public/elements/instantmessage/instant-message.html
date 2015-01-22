@@ -50,9 +50,6 @@
                         </template>
                     </div>
                     <div layout horizontal center>
-                        <div id='infoButtonArea'>
-                            <paper-fab mini noink  icon="info-outline" on-click="{{onClickInfomation}}"></paper-fab>
-                        </div>
                         <div id="inputbox" on-tap="{{boxTapped}}" flex>
                             <div layout horizontal>
                                 <paper-autogrow-textarea id="messageInput" maxRows="6" on-keydown="{{keyDown}}"
@@ -65,7 +62,7 @@
                     </div>
                 </div>
 
-                <div flex>
+                <div vertical layout flex>
                     <div id="groupChannel">
                         <h3 class="secondColor">Group Channel</h3>
 
@@ -89,7 +86,7 @@
                             </template>
                         </div>
                     </div>
-                    <div id="directMessage">
+                    <div id="directMessage" flex>
                         <h3 class="secondColor">Direct Message</h3>
                         <template repeat="{{ g in private }}">
                             <div horizontal layout center>
@@ -99,6 +96,9 @@
                                 <core-icon icon="markunread" style="color :red;" hidden?="{{ !(unread[g.id] && unread[g.id].length > 0)}}"></core-icon>
                             </div>
                         </template>
+                    </div>
+                    <div id='infoButtonArea' horizontal layout end-justified>
+                        <paper-fab mini icon="info-outline" on-click="{{onClickInfomation}}"></paper-fab>
                     </div>
                 </div>
             </div>

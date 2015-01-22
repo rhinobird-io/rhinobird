@@ -33,7 +33,12 @@ h3 {
     cursor: text;
 }
 #infoButtonArea{
-    margin-top: 1em;
+    margin: 1em;
+}
+
+#infoButtonArea paper-fab {
+    background-color: white;
+    color: black;
 }
 
 .highlight {
