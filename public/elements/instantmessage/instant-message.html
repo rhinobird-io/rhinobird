@@ -20,6 +20,7 @@
 
 <link rel="import" href="../../../home-container.html">
 <link rel="import" href="../display-message/display-message.html">
+<link rel="import" href="../member-select/member-element.html">
 
 <polymer-element name="instant-message" attributes="channelName">
     <template>
@@ -28,13 +29,6 @@
         <home-container>
             <div class="title" horizontal layout center>
                 {{ channel.isPrivate?channel.displayName:channel.name }}
-                <paper-icon-button icon="account-child" on-click="{{showSingleTeamMemberDialog}}" hidden?="{{channel.isPrivate}}">
-                    <paper-dialog id="teamMemberDialog" heading="Members" on-core-overlay-position="{{positionTeamMemberDialog}}">
-                        <template repeat="{{u in teamMembers}}">
-                            <paper-item hidden?="{{u.id === currentUser.id}}" on-click="{{talkDirect}}">{{u.realname}}</paper-item>
-                        </template>
-                    </paper-dialog>
-                </paper-icon-button>
             </div>
             <div class="mainBackground" horizontal layout fit>
                 <paper-action-dialog id="connectingDialog" backdrop autoCloseDisabled>
@@ -81,7 +75,9 @@
                                     <paper-icon-button icon="account-child" on-click="{{showTeamMemberDialog}}">
                                         <paper-dialog id="teamMemberDialog" heading="Members" on-core-overlay-position="{{positionTeamMemberDialog}}">
                                             <template repeat="{{u in teamMembers}}">
-                                                <paper-item hidden?="{{u.id === currentUser.id}}" on-click="{{talkDirect}}">{{u.realname}}</paper-item>
+                                                <paper-item hidden?="{{u.id === currentUser.id}}"  on-click="{{talkDirect}}">
+                                                    <member-element userid="{{u.id}}" ></member-element>
+                                                </paper-item>
                                             </template>
                                         </paper-dialog>
                                     </paper-icon-button>

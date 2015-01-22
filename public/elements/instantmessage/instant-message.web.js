@@ -268,7 +268,7 @@ Polymer({
 
     var rect = target.parentElement.getBoundingClientRect();
     target.style.top = '' + rect.top + 'px';
-    target.style.left = '' + (rect.left - 200) + 'px';
+    target.style.left = '' + (rect.left -250 ) + 'px';
   },
 
   talkDirect : function(event, detail, target) {
