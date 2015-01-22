@@ -390,8 +390,14 @@ class App < Sinatra::Base
       200
     end
 
+    #get unchecked notifications for one user
     get '/users/:userId/notifications' do
       User.find(params[:userId]).notifications.where({checked: false}).to_json
+    end
+
+    #get all notification history for one user
+    get '/users/:userId/notifications/history' do
+      User.find(params[:userId]).notifications.to_json
     end
 
     # add a notification to one user
