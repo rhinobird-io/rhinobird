@@ -132,6 +132,7 @@
             getInvitationResponse: function(event, response) {
                 invitationData = JSON.parse(response.response);
                 this.userInfo.email = invitationData.email;
+                this.userInfo.initial_team_id = invitationData.initial_team_id;
             },
             keyPressInPassword: function (e) {
                 if (e.keyCode == 13) {

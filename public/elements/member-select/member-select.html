@@ -272,28 +272,27 @@
             },
 
             addUserHandler: function (event, detail, sender) {
-                var user = event.target.templateInstance.model.u;
-                this.addOneUser(user.id);
+                var userId = event.target.templateInstance.model.uid;
+                this.addOneUser(userId);
             },
 
-            addOneUser: function (userid) {
-                if (!this.userSelectedMap[userid]) {
-                    this.selected.push(userid);
+            addOneUser: function (userId) {
+                if (!this.userSelectedMap[userId]) {
+                    this.selected.push(userId);
                     this.searchText = '';
                 }
-                this.userSelectedMap[userid] = true;
+                this.userSelectedMap[userId] = true;
             },
 
             removeUserHandler: function (event, detail, target) {
-                var userid = target.templateInstance.model.uid;
+                var userId = target.templateInstance.model.uid;
                 this.removeOneUser(userid);
                 event.stopPropagation();
             },
 
             removeOneUser: function (userid) {
                 this.userSelectedMap[userid] = false;
-                index = this.selected.indexOf(userid);
-                this.selected.splice(index, 1);
+                this.selected.splice(userid, 1);
             },
 
             // public attributes
