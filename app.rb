@@ -307,6 +307,8 @@ class App < Sinatra::Base
       @body['participants'].each { |p|
         event.participants << User.find(p)
       }
+      # Whether the event creator is also a participant by default?
+      event.participants << User.find(uid);
       event.save!
       200
     end
