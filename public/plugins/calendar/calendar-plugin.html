@@ -78,16 +78,16 @@
     }
 
     .time {
-    margin-top: 4px;
+        margin-top: 4px;
     }
 
     p.description {
-    margin-bottom: 0;
+        margin-bottom: 0;
     }
 
     div.detail {
-    padding: 60px;
-    overflow-y: auto;
+        padding: 60px;
+        overflow-y: auto;
     }
 
     .main-button {
@@ -97,11 +97,11 @@
     }
 
     .tabs, .pages, .fullday {
-    max-width: 320px;
+        max-width: 320px;
     }
 
     .fullday {
-    margin: 1em 0;
+        margin: 1em 0;
     }
 
     .event {
@@ -109,27 +109,27 @@
         padding:8px;
     }
     time-input.upper {
-    margin-top: -35px;
+        margin-top: -35px;
     }
     date-input {
-    z-index: 1;
+        z-index: 1;
     }
     #title {
-    font-size: 25px;
+        font-size: 25px;
     }
     .page.core-selected {
-    position: relative;
-    display: block;
+        position: relative;
+        display: block;
     }
     paper-fab {
-    position: absolute;
-    left: 16px;
-    top: -20px;
-    z-index: 1000000000;
+        position: absolute;
+        left: 16px;
+        top: -20px;
+        z-index: 1000000000;
     }
 
     .list {
-    *margin-top: 20px;
+        *margin-top: 20px;
     }
 
     .subTitle {
@@ -263,7 +263,7 @@
                     <paper-fab mini icon="done" class="accentColor" on-tap="{{saveEvent}}"></paper-fab>
                 </template>
                 <template if="{{mode=='view'}}">
-                    <paper-fab mini icon="remove" class="accentColor" on-tap="{{removeEvent}}"></paper-fab>
+                    <paper-fab mini icon="remove" class="accentColor" on-tap="{{deleteEvent}}"></paper-fab>
                 </template>
                 <span class="subTitle">Schedule</span>
             </div>
@@ -540,6 +540,12 @@
                 this.$.eventSavedToast.show();
 
                 this.refresh();
+            },
+            deleteEvent: function() {
+
+            },
+            eventDeleted: function(event, detail) {
+                
             }
         });
     </script>
