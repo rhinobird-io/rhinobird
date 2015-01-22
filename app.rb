@@ -310,10 +310,12 @@ class App < Sinatra::Base
       # Whether the event creator is also a participant by default?
       event.participants << User.find(uid);
       event.save!
-      200
+      event.to_json(include: { participants: {only: :id}})
     end
 
     delete '/events/:eventId' do
+      event = Event.find(params[:eventId])
+      event.destroy
       200
     end
 
