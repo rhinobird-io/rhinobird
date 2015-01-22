@@ -90,9 +90,12 @@
                     <div id="directMessage">
                         <h3 class="secondColor">Direct Message</h3>
                         <template repeat="{{ g in private }}">
-                            <paper-item on-click="{{ handleChannelSelect }}" hash="{{'@'+g.displayName}}" class="{{ {highlight : g.id === channel.id} | tokenList }}">{{
-                                g.displayName }}
-                            </paper-item>
+                            <div horizontal layout center>
+                                <paper-item on-click="{{ handleChannelSelect }}" hash="{{'@'+g.displayName}}" class="{{ {highlight : g.id === channel.id} | tokenList }}">{{
+                                    g.displayName }}
+                                </paper-item>
+                                <core-icon icon="markunread" style="color :red;" hidden?="{{ !(unread[g.id] && unread[g.id].length > 0)}}"></core-icon>
+                            </div>
                         </template>
                     </div>
                 </div>

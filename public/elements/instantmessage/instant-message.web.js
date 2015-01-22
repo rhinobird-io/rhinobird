@@ -10,6 +10,8 @@ Polymer({
   messages: [],
   connectinStatus: "connecting",
 
+  unread : {},
+
   ready: function () {
     // Init the plugin name
     this.pluginName = 'instantmessage';
@@ -194,6 +196,25 @@ Polymer({
       self.scrollToBottom(100);
     });
 
+    self.socket.on('send:direct-message', function (data) {
+      var channel = data.channel;
+      var msg = data.message;
+      if (channel.isPrivate) {
+        if (!_.find(self.private, {id: channel.id})) {
+          self.loadChannelUsers(channel.id).done(function (users) {
+            users.forEach(function (user) {
+              if (user.id !== self.currentUser.id) {
+                channel.displayName = user.name;
+              }
+            })
+          });
+          self.private.splice(0, 0, channel);
+        }
+        self.unread[channel.id] = self.unread[channel.id] || [];
+        self.unread[channel.id].push(msg);
+      }
+    });
+
     self.socket.on('user:join', function (data) {
       // do some other things
     });
@@ -354,6 +375,7 @@ Polymer({
         lastMessage = message;
       });
       self.messages = temp.concat(self.messages);
+      delete self.unread[self.channel.id];
 
       self.scrollToBottom(100);
     }).done(function(){

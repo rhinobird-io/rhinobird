@@ -3,7 +3,7 @@ var User = require('../db/models.js').User
   , Channel = require('../db/models.js').Channel;
 
 var async = require('async');
-
+var socketsMap = {};
 // export function for listening to the socket
 module.exports = function (socket) {
   var defaultChannel = 'lobby';
@@ -12,6 +12,8 @@ module.exports = function (socket) {
 
   socket.on('init', function (data, callback) {
     userId = data.userId;
+    socketsMap[userId] = socket;
+
     Channel.find({where : { name : data.channelName}}).then(function(channel) {
       socket.join(channel.id);
       // notify other clients that a new user has joined
@@ -23,6 +25,7 @@ module.exports = function (socket) {
 
   // broadcast a user's message to other users
   socket.on('send:message', function (data, callback) {
+
     Channel.find(data.channelId).then(function (channel) {
       Message.create({message: data.message, 
                       UserId: userId, 
@@ -37,6 +40,19 @@ module.exports = function (socket) {
         message.messageStatus = "done";
 
         socket.broadcast.to(data.channelId).emit('send:message', message);
+
+        if (channel.isPrivate) {
+          channel.getUsers().then(function(users) {
+            users.forEach(function(user) {
+              if (user.id !== userId && socketsMap[user.id]) {
+                socket.broadcast.to(socketsMap[user.id].id).emit('send:direct-message', {
+                  channel : channel,
+                  message : message
+                });
+              }
+            })
+          })
+        }
         callback(message); 
       });
     });
@@ -57,6 +73,7 @@ module.exports = function (socket) {
 
   // clean up when a user leaves, and broadcast it to other users
   socket.on('disconnect', function (data) {
+    delete socketsMap[userId];
     User.find(data.userId).then(function (user) {
       if (user) {
         user.getChannels().then(function (channels) {
