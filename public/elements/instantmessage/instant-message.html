@@ -5,6 +5,7 @@
 <link rel="import" href="../../bower_components/core-menu/core-menu.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
 <link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
 
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
@@ -54,13 +55,18 @@
                                              on-ready="{{messageReady}}"></display-message>
                         </template>
                     </div>
+                    <div layout horizontal center>
+                        <div id='infoButtonArea'>
+                            <paper-fab mini noink  icon="info-outline" on-click="{{onClickInfomation}}"></paper-fab>
+                        </div>
+                        <div id="inputbox" on-tap="{{boxTapped}}" flex>
+                            <div layout horizontal>
+                                <paper-autogrow-textarea id="messageInput" maxRows="6" on-keydown="{{keyDown}}"
+                                                         on-input="{{inputChanging}}" flex>
+                                    <textarea row="1" id="textInput" value="{{message}}"></textarea>
+                                </paper-autogrow-textarea>
 
-                    <div id="inputbox" on-tap="{{boxTapped}}">
-                        <div layout horizontal>
-                            <paper-autogrow-textarea id="messageInput" maxRows="6" on-keydown="{{keyDown}}"
-                                                     on-input="{{inputChanging}}" flex>
-                                <textarea row="1" id="textInput" value="{{message}}"></textarea>
-                            </paper-autogrow-textarea>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -106,6 +112,23 @@
                 <paper-button dismissive on-click="{{goToIndex}}">Close</paper-button>
                 <paper-button affirmative on-click="{{goToConfig}}">Config</paper-button>
             </paper-action-dialog>
+            <paper-dialog id="informationDialog" transition="core-transition-center" heading="Manual">
+                <p>1. ENTER to send</p>
+                <p>2. SHIFT + ENTER to have newline</p>
+                <p>3. Code Snippet
+                        <div layout horizontal center>
+                            <div>
+                                Input:
+                                <pre>{{codeSnippetExample}}</pre>
+                            </div>
+                            <div>
+                                Display:
+                                <display-code-snippet-message text="{{codeSnippetExample}}"></display-code-snippet-message>
+                            </div>
+                        </div>
+                </p>
+            </paper-dialog>
+
 
         </home-container>
     </template>

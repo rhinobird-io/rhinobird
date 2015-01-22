@@ -32,6 +32,9 @@ h3 {
     border-radius: 0.25em;
     cursor: text;
 }
+#infoButtonArea{
+    margin-top: 1em;
+}
 
 .highlight {
     font-weight: bold;

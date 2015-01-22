@@ -488,7 +488,11 @@ Polymer({
   messageLoaded: function (event) {
     this.scrollToBottom(100);
   },
+  onClickInfomation: function(){
+    this.$.informationDialog.open();
+  },
 
-  roomId: ''
+  roomId: '', 
+  codeSnippetExample: "```\nint main(){\n    printf(\"helloworld\");\n    return 0;\n}\n```",
 });
 
