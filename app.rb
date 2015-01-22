@@ -62,7 +62,6 @@ class App < Sinatra::Base
     if request.websocket?
       request.websocket do |ws|
         ws.onopen do
-          ws.send("Hello World!")
           settings.sockets[session[:user][:id]] = ws
         end
         ws.onmessage do |msg|
@@ -71,7 +70,6 @@ class App < Sinatra::Base
           # EM.next_tick { ws.send(msg) }
         end
         ws.onclose do
-          warn("websocket closed")
           settings.sockets.delete(ws)
         end
       end
