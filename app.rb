@@ -10,9 +10,11 @@ require './models/notification'
 require './models/local_avatar'
 require './models/event'
 require './models/appointment'
+require './models/invitation'
 require 'gravatar-ultimate'
 require 'sinatra-websocket'
 require "bcrypt"
+require "pony"
 
 class App < Sinatra::Base
 
@@ -37,6 +39,25 @@ class App < Sinatra::Base
     body env['sinatra.error'].message
   end
 
+  def login_required!
+    if session[:user].nil?
+      redirect '/login', 303
+    end
+  end
+
+  get '/login' do
+    content_type 'text/html'
+    send_file File.join(settings.public_folder, 'login.html')
+  end
+
+  #set notifications to the checked status
+  def mark_notification_as_read!
+      notification = User.find(session[:user][:id]).notifications
+      @received_msg.each do |notify|
+        notification.update(notify["id"], :checked => true);
+      end
+  end
+
   get '/' do
     if request.websocket?
       request.websocket do |ws|
@@ -45,7 +66,9 @@ class App < Sinatra::Base
           settings.sockets[session[:user][:id]] = ws
         end
         ws.onmessage do |msg|
-          EM.next_tick { ws.send(msg) }
+          @received_msg = JSON.parse(msg)
+          mark_notification_as_read!
+          # EM.next_tick { ws.send(msg) }
         end
         ws.onclose do
           warn("websocket closed")
@@ -59,12 +82,8 @@ class App < Sinatra::Base
 
   end
 
-  def login_required!
-    halt 401 if session[:user].nil?
-  end
-
   before do
-    login_required! unless ["/platform/login", "/platform/users", "/platform/loggedOnUser", "/"].include?(request.path_info)
+    login_required! unless ["/platform/login", "/platform/users", "/login"].include?(request.path_info)
     content_type 'application/json'
     if request.media_type == 'application/json'
       body = request.body.read
@@ -117,60 +136,65 @@ class App < Sinatra::Base
       User.all.map { |u|
         {
             id: u.id,
-            url: Gravatar.new(u.email).image_url,
+            url: get_image_url(u.id, u),
             username: u.realname
         }
       }.to_json
     end
 
     get '/gravatar/:userId' do
-      @user_id = params[:userId]
-      @user = User.find(params[:userId])
+      user = User.find(params[:userId])
       gravatar = {}
-      gravatar["username"] = @user.realname
-      gravatar["url"] = get_image_url
+      gravatar["username"] = user.realname
+      gravatar["url"] = get_image_url(params[:userId], user)
+      if user.local_avatar.nil?
+        gravatar["local"] = false
+      else
+        gravatar["local"] = true
+      end
       gravatar.to_json
     end
 
     get '/gravatar' do
       gravatars = []
       @params.each do |param|
-        @user = User.find(param[1])
-        @user_id = param[1]
+        user = User.find(param[1])
         gravatar = {}
-        gravatar["url"] = get_image_url
-        gravatar["username"] = @user.realname
+        gravatar["url"] = get_image_url(param[1], user)
+        gravatar["username"] = user.realname
         gravatars << gravatar
       end
       gravatars.to_json
     end
 
-    def get_image_url
-      if @local_avatar.nil?
-        @local_avatar = @user.local_avatar
+    def get_image_url(user_id, user=nil)
+      # if @local_avatar.nil?
+      #   @local_avatar = @user.local_avatar
+      # end
+      if user.nil?
+        user = User.find(user_id)
       end
 
-      if @local_avatar.nil?
-        url = Gravatar.new(@user.email).image_url
+      if user.local_avatar.nil?
+        url = Gravatar.new(user.email).image_url
       else
-        url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}" + "/platform/avatar/" + @user_id
+        url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}" + "/platform/avatar/" + user_id.to_s
       end
 
       return url
     end
 
     get '/avatar/:userId' do
-      if @local_avatar.nil?
-        @local_avatar = User.find(params[:userId]).local_avatar
-      end
-      if @local_avatar.nil?
+      avatar = User.find(params[:userId]).local_avatar
+      if avatar.nil?
         404
       else
         content_type 'image/png'
-        @local_avatar["image_data"]
+        avatar["image_data"]
       end
     end
 
+    #upload local avatar
     post '/avatar' do
       tempfile = params[:file][:tempfile]
       image_data = ""
@@ -182,12 +206,33 @@ class App < Sinatra::Base
       User.find(session[:user][:id]).local_avatar = LocalAvatar.create!(avatar)
     end
 
+    #remove local avatar
+    post '/avatar/remove' do
+      # @local_avatar = nil
+      User.find(session[:user][:id]).local_avatar.delete
+    end
+
     get '/teams' do
       Team.all.to_json
     end
 
     post '/teams' do
       Team.create!(@body)
+    end
+
+    post '/teams/:teamId/delete' do
+      Team.delete(params[:teamId])
+      200
+    end
+
+    #create team with initial users
+    post '/teams/users' do
+      team = Team.create(@body["team"])
+      @body["user"].each do |userId|
+        user = User.find(userId)
+        team.users << user
+      end
+      team.to_json
     end
 
     #get all users in a team
@@ -203,12 +248,20 @@ class App < Sinatra::Base
       200
     end
 
+    #add multiple user to a team
     post '/teams/:teamId/users' do
       team = Team.find(params[:teamId])
       @body.each do |userId|
         user = User.find(userId)
         team.users << user
       end
+      200
+    end
+
+    #remove a user from team
+    post '/teams/:teamId/users/:userId/remove' do
+      team = Team.find(params[:teamId])
+      team.users.delete(params[:userId])
       200
     end
 
@@ -234,7 +287,7 @@ class App < Sinatra::Base
       if session[:user].nil?
         404
       else
-        User.find(session[:user][:id]).to_json
+        User.find(session[:user][:id]).to_json(:except => [:encrypted_password])
       end
     end
 
@@ -254,7 +307,15 @@ class App < Sinatra::Base
       @body['participants'].each { |p|
         event.participants << User.find(p)
       }
+      # Whether the event creator is also a participant by default?
+      event.participants << User.find(uid);
       event.save!
+      event.to_json(include: { participants: {only: :id}})
+    end
+
+    delete '/events/:eventId' do
+      event = Event.find(params[:eventId])
+      event.destroy
       200
     end
 
@@ -262,13 +323,64 @@ class App < Sinatra::Base
       User.all.to_json
     end
 
-    post '/users' do
-      User.create!(@body)
+    get '/user/invitation/:inviteId' do
+       Invitation.find(params[:inviteId]).to_json
     end
 
-    post '/user/:userId' do
-      User.update(params[:userId], @body)
+    post '/user/invite' do
+      email = @body["email"]
+      user = User.find(session[:user][:id])
+      if @body["initial_team_id"].nil?
+        invitation = Invitation.create({:email => email, :from_user_id => session[:user][:id], :initial_team_id => -1})
+      else
+        invitation = Invitation.create({:email => email, :from_user_id => session[:user][:id], :initial_team_id => @body["initial_team_id"]})
+      end
+
+      Pony.mail({
+                    :to => email,
+                    :subject => user.realname + ' invited you to join teamwork',
+                    :headers => { 'Content-Type' => 'text/html' },
+                    :body => 'Hi there, ' + user.realname + ' invited you to join teamwork' +
+                        '<br></br><a href="http://localhost:9292/login?invitation=' + invitation.id.to_s + '">Join now</a>',
+                    :via => :smtp,
+                    :via_options => {
+                        :address        => 'smtp.gmail.com',
+                        :port           => '25',
+                        :user_name      => 'teamwork.ate@gmail.com',
+                        :password       => 'ateshanghai',
+                        :authentication => :plain, # :plain, :login, :cram_md5, no auth by default
+                        :domain         => "localhost.localdomain" # the HELO domain provided by the client to the server
+                    }
+                })
     end
+
+    post '/users' do
+      if @body["initial_team_id"].nil?
+        User.create!(@body)
+      else
+        team = Team.find(@body["initial_team_id"])
+        user_obj = { :realname => @body["realname"], :email => @body["email"], :password =>  @body["password"]}
+        user = User.create!(user_obj)
+        team.users << user
+      end
+      200
+    end
+
+    #change password
+    post '/user/password' do
+      user = User.find(session[:user][:id])
+      if user.password == @body["password"]
+        new_password = Password.create(@body["newPassword"])
+        User.update(session[:user][:id], :encrypted_password => new_password)
+        200
+      else
+        401
+      end
+    end
+
+    # post '/user/:userId' do
+    #   User.update(params[:userId], @body)
+    # end
 
     get '/teams_users' do
       Team.all.to_json(include: [:users]);
@@ -297,18 +409,25 @@ class App < Sinatra::Base
       200
     end
 
+    #get unchecked notifications for one user
     get '/users/:userId/notifications' do
+      User.find(params[:userId]).notifications.where({checked: false}).to_json
+    end
+
+    #get all notification history for one user
+    get '/users/:userId/notifications/history' do
       User.find(params[:userId]).notifications.to_json
     end
 
     # add a notification to one user
     post '/users/:userId/notifications' do
-      User.find(params[:userId]).notifications.create!(@body)
-      content = [@body].to_json
+      notification = User.find(params[:userId]).notifications.create!(@body)
+      notify = notification.to_json(:except => [:user_id])
       socket_id = params[:userId].to_i
       unless settings.sockets[socket_id].nil?
-        EM.next_tick { settings.sockets[socket_id].send(content) }
+        EM.next_tick { settings.sockets[socket_id].send(notify) }
       end
+      200
     end
 
     # add a notification to many users
@@ -317,7 +436,11 @@ class App < Sinatra::Base
       content =@body["content"]
       content["from_user_id"] = session[:user][:id]
       users.each do |user|
-        record = User.find(user).notifications.create!(content)
+        notification = User.find(user).notifications.create!(content)
+        notify = notification.to_json(:except => [:user_id])
+        unless settings.sockets[user].nil?
+          EM.next_tick { settings.sockets[user].send(notify) }
+        end
       end
       200
     end

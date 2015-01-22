@@ -3,105 +3,184 @@
 <link rel="import" href="bower_components/paper-input/paper-input.html">
 <link rel="import" href="bower_components/paper-button/paper-button.html">
 <link rel="import" href="bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="bower_components/core-icons/core-icons.html">
+<link rel="import" href="bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="bower_components/paper-shadow/paper-shadow.html">
+<link rel="import" href="bower_components/core-animated-pages/core-animated-pages.html">
+<link rel="import" href="bower_components/core-pages/core-pages.html">
+<core-style id="login">
+    .container {
+    padding: 1.5em;
+        background-color: white;
+    }
+    .switch {
+    color: {{g.theme.mainBgColor}};
+    min-width: 0;
+    margin: 0;
+    }
+    .bg {
+        background-color: {{g.theme.thirdBgColor}};
+    }
+</core-style>
 
-<polymer-element name="sign-in">
+<polymer-element name="log-in">
     <template>
+        <core-style ref="theme"></core-style>
+        <core-style ref="login"></core-style>
         <style>
-            .signIn {
+            #pages {
+                margin-top: 150px;
                 width: 400px;
-                height: 200px;
-                background: transparent;
+                top: 0;
             }
         </style>
-        <core-ajax
-                id="signInAjax"
-                method="post"
-                contentType="application/json"
-                url="/platform/login"
-                body="{{userJson}}"
-                on-core-response="{{signInResponse}}"
-                on-core-error="{{showError}}"></core-ajax>
-        <div class="signIn" layout vertical>
-            <paper-input id="email" label="Email" value="{{userInfo.email}}"></paper-input>
-            <paper-input id="password" label="Password" value="{{userInfo.password}}"></paper-input>
-            <paper-button id="signInBtn" raised on-tap="{{signIn}}">Sign In</paper-button>
+        <div vertical layout center fit class="bg">
+            <core-ajax
+                    id="getInvitationAjax"
+                    method="get"
+                    url="/platform/user/invitation/{{invitationId}}"
+                    on-core-response="{{getInvitationResponse}}"></core-ajax>
+            <div vertical layout center>
+                <core-animated-pages selected="0" id="pages" transitions="hero-transition">
+                    <section>
+                        <core-ajax
+                                id="signInAjax"
+                                method="post"
+                                contentType="application/json"
+                                url="/platform/login"
+                                body="{{userJson}}"
+                                on-core-response="{{signInResponse}}"
+                                on-core-error="{{showError}}"></core-ajax>
+                        <paper-shadow class="container" layout vertical hero hero-id="1">
+                            <h1 hero hero-id="2">Sign in</h1>
+                            <paper-input label="Email" value="{{userInfo.email}}" hero hero-id="email"></paper-input>
+                            <paper-input-decorator id="passwordIn" label="Password" value="{{userInfo.password}}" hero hero-id="password">
+                                <input is="core-input" id="signInPassword" on-keypress="{{keyPressInPassword}}" value="{{userInfo.password}}" type="password">
+                            </paper-input-decorator>
+                            <div horizontal layout justified center>
+                                <paper-button class="switch" on-tap="{{switch}}" hero hero-id="3">Sign Up</paper-button>
+                                <div></div>
+                                <paper-fab icon="done" id="signInBtn" on-tap="{{signIn}}" class="mainColor" hero
+                                           hero-id="4"></paper-fab>
+                            </div>
+                        </paper-shadow>
+                        <app-globals id="globals"></app-globals>
+                        <paper-toast id="toastLoginFail" text="Login failed, please check your credential."
+                                     role="status"
+                                     touch-action="none" tabindex="-1" class="core-transition core-transition-bottom"
+                                     style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
+                    </section>
+                    <section>
+                        <core-ajax
+                                id="signUpAjax"
+                                method="post"
+                                contentType="application/json"
+                                body="{{userJson}}"
+                                url="/platform/users"
+                                on-core-response="{{signUpResponse}}"></core-ajax>
+                        <paper-shadow class="container" layout vertical hero hero-id="1">
+                            <h1 hero hero-id="2">Sign up</h1>
+                            <paper-input label="Email" value="{{userInfo.email}}" hero hero-id="email"></paper-input>
+                            <paper-input id="realname" label="Name" value="{{userInfo.realname}}" hero
+                                         hero-id="realname"></paper-input>
+                            <paper-input-decorator label="Password" value="{{userInfo.password}}" hero hero-id="password">
+                                <input is="core-input" value="{{userInfo.password}}" type="password">
+                            </paper-input-decorator>
+                            <paper-input-decorator label="Confirm password" value="{{confirmPassword}}" hero hero-id="confirmPassword">
+                                <input is="core-input" id="signUpPassword" on-keypress="{{keyPressInPassword}}" value="{{confirmPassword}}" type="password">
+                            </paper-input-decorator>
+                            <div horizontal layout justified center>
+                                <paper-button class="switch" on-tap="{{switch}}" hero hero-id="3">Sign In</paper-button>
+                                <div></div>
+                                <paper-fab icon="done" id="signUpBtn" on-tap="{{signUp}}" class="mainColor" hero
+                                           hero-id="4"></paper-fab>
+                            </div>
+                        </paper-shadow>
+                        <paper-toast id="toastSignUpSuccess" text="Account created." role="status" touch-action="none"
+                                     tabindex="-1"
+                                     class="core-transition core-transition-bottom"
+                                     style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
+                        <paper-toast id="toastSignUpFail" text="{{errMsg}}" role="status" touch-action="none"
+                                     tabindex="-1"
+                                     class="core-transition core-transition-bottom"
+                                     style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
+                    </section>
+                </core-animated-pages>
+            </div>
         </div>
-        <app-globals id="globals"></app-globals>
-        <paper-toast id="toastLoginFail" text="Login failed, please check your credential." role="status" touch-action="none" tabindex="-1" class="core-transition core-transition-bottom" style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
     </template>
     <script>
-        Polymer("sign-in", {
+        Polymer({
+            ready: function () {
+                paramStr = window.location.search.substring(1);
+                index = paramStr.indexOf("invitation=");
 
-            ready: function() {
                 this.userInfo = {};
-            },
+                if (index == -1) {
 
-            signIn: function() {
+                } else {
+                    this.$.pages.selected = 1;
+                    separatorIndex = paramStr.indexOf("&");
+                    if (separatorIndex == -1) {
+                        separatorIndex = paramStr.length - 1;
+                    }
+                    this.invitationId = paramStr.substr(index + 11, separatorIndex - index - 10);
+                    this.$.getInvitationAjax.go();
+                }
+
+            },
+            getInvitationResponse: function(event, response) {
+                invitationData = JSON.parse(response.response);
+                this.userInfo.email = invitationData.email;
+                this.userInfo.initial_team_id = invitationData.initial_team_id;
+            },
+            keyPressInPassword: function (e) {
+                if (e.keyCode == 13) {
+                    if (e.target.id == "signInPassword") {
+                        this.$.signInBtn.fire("tap");
+                    } else {
+                        this.$.signUpBtn.fire("tap");
+                    }
+                }
+            },
+            signIn: function () {
                 this.userJson = JSON.stringify(this.userInfo);
                 this.$.signInAjax.go();
-            },
+            }
+            ,
 
-            signInResponse: function(event, response) {
+            signInResponse: function (event, response) {
                 user = JSON.parse(response.response);
                 this.$.globals.values.currentUser = user;
-                document.querySelector('app-router').go('/dashboard');
-            },
+                window.location.href = "/";
+            }
+            ,
 
-            showError: function() {
+            showError: function () {
                 this.$.toastLoginFail.show();
             }
-        })
-    </script>
-</polymer-element>
-
-<polymer-element name="sign-up">
-    <template>
-        <style>
-            .signUp {
-                width: 400px;
-                height: 400px;
-                background: transparent;
+            ,
+            signUp: function () {
+                if (this.confirmPassword != this.userInfo.password) {
+                    this.errMsg = "Password does not match";
+                    this.$.toastSignUpFail.show();
+                } else {
+                    this.userJson = JSON.stringify(this.userInfo);
+                    this.$.signUpAjax.go();
+                }
             }
-        </style>
-        <core-ajax
-                id="signUpAjax"
-                method="post"
-                contentType="application/json"
-                body="{{userJson}}"
-                url="/platform/users"
-                on-core-response="{{signUpResponse}}"></core-ajax>
-        <div class="signUp" layout vertical>
-            <paper-input id="name" label="Name" value="{{userInfo.name}}"></paper-input>
-            <paper-input id="realname" label="RealName" value="{{userInfo.realname}}"></paper-input>
-            <paper-input id="email" label="Email" value="{{userInfo.email}}"></paper-input>
-            <paper-input id="password" label="Password" value="{{userInfo.password}}"></paper-input>
-            <paper-button id="signUpBtn" raised on-tap="{{signUp}}">Sign Up</paper-button>
-        </div>
-        <paper-toast id="toastSignUpSuccess" text="Account created." role="status" touch-action="none" tabindex="-1" class="core-transition core-transition-bottom" style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
-        <app-globals id="globals"></app-globals>
-    </template>
-    <script>
-        Polymer("sign-up", {
+            ,
 
-            ready: function() {
-                this.userInfo = {};
-            },
-
-            signUp: function() {
-                this.userJson = JSON.stringify(this.userInfo);
-                this.$.signUpAjax.go();
-            },
-
-            signUpResponse: function() {
+            signUpResponse: function () {
                 this.$.toastSignUpSuccess.show();
+                this.$.pages.selected = 0;
             }
-        })
-    </script>
-</polymer-element>
+            ,
+            switch: function () {
+                this.$.pages.selected = this.$.pages.selected == "0" ? 1 : 0;
+            }
 
-<polymer-element name="log-in" noscript>
-    <template>
-        <sign-in></sign-in>
-        <sign-up></sign-up>
-    </template>
+        })
+        ;
+    </script>
 </polymer-element>

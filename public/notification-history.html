@@ -1,0 +1,61 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/core-icons/core-icons.html">
+<link rel="import" href="bower_components/core-item/core-item.html">
+<link rel="import" href="bower_components/polymer-filters/polymer-filters.html">
+<link rel="import" href="elements/app-globals/app-globals.html">
+<link rel="import" href="bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="bower_components/core-list/core-list.html">
+<link rel="import" href="elements/member-select/member-element.html">
+<link rel="import" href="home-container.html">
+
+<polymer-element name="notification-history">
+    <template>
+        <style>
+            core-list {
+                height: 300px;
+            }
+            notification-record {
+
+                padding: 10px;
+            }
+        </style>
+        <app-globals id="globals"></app-globals>
+        <core-ajax id="getNotificationRecord"
+                   auto
+                   url="/platform/users/{{$.globals.values.currentUser.id}}/notifications/history"
+                   handleAs="json"
+                   response="{{notifications}}"></core-ajax>
+        <home-container>
+            <div class="title">Notifications</div>
+            <app-globals id="globals"></app-globals>
+            <core-list data="{{notifications}}">
+                <template>
+                    <notification-record record="{{model}}"></notification-record>
+                </template>
+            </core-list>
+        </home-container>
+    </template>
+    <script>
+        Polymer();
+    </script>
+</polymer-element>
+
+<polymer-element name="notification-record" attributes="record">
+    <template>
+        <style>
+            .time {
+                font-size: small;
+                color:dimgrey;
+            }
+        </style>
+        <core-item>
+            <div flex>
+                <div class="time" horizontal layout center><member-element userid="{{record.from_user_id}}" menu="true"></member-element> {{record.created_at | date('yyyy-MM-dd HH:mm')}}</div>
+                <div class="content">{{record.content}}</div>
+            </div>
+        </core-item>
+    </template>
+    <script>
+        Polymer();
+    </script>
+</polymer-element>

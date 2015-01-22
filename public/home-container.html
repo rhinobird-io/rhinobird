@@ -14,7 +14,10 @@
 <link rel="import" href="bower_components/paper-item/paper-item.html">
 <link rel="import" href="elements/app-globals/app-globals.html">
 <link rel="import" href="notification.html">
+<link rel="import" href="elements/member-select/member-element.html">
 <link rel="import" href="bower_components/core-style/core-style.html">
+<link rel="import" href="bower_components/polymer-filters/polymer-filters.html">
+<link rel="import" href="bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 
 <core-style id="toolbar">
     .toolbar {
@@ -56,44 +59,53 @@
             paper-dropdown-menu {
                 border-bottom: none;
             }
-            .userSignIn /deep/ .core-opened{
-                left:auto !important;
-                right: 0;
-            }
             .user-item /deep/ #scroller {
                 max-width: none !important;
+            }
+            a.nostyle {
+                color:inherit;
+                text-decoration: none;
             }
 
 
         </style>
         <core-scaffold>
             <core-header-panel navigation flex mode="seamed">
-                <core-toolbar class="toolbar"><paper-button on-tap="{{jumpToDashboard}}">Team Work</paper-button></core-toolbar>
-                <core-menu theme="core-light-theme" hidden?="{{$.globals.values.showSetting}}">
-                    <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="/#/dashboard"></a></core-item>
-                    <core-item icon="dashboard" label="InstantMessage" active?="{{selected == 'instantmessage'}}"><a is="pushstate-anchor" href="/#/instantmessage/channels/default"></a></core-item>
-                    <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="/#/calendar"></a></core-item>
-                    <template repeat="{{plugin in $.globals.values.plugins}}">
-                        <core-item icon="{{plugin.icon}}" label="{{plugin.label}}" active?="{{selected == plugin.active}}"><a is="pushstate-anchor" href="{{plugin.href}}"></a></core-item>
-                    </template>
-                </core-menu>
-                <core-menu theme="core-light-theme" hidden?="{{!$.globals.values.showSetting}}">
-                    <template repeat="{{menu in $.globals.values.menus}}">
-                        <core-item icon="{{menu.icon}}" label="{{menu.label}}" active?="{{selected == menu.active}}"><a is="pushstate-anchor" href="{{menu.href}}"></a></core-item>
-                    </template>
-                </core-menu>
+                <div vertical layout fit justified>
+                    <div flex>
+                        <core-toolbar class="toolbar"><paper-button on-tap="{{jumpToDashboard}}">Team Work</paper-button></core-toolbar>
+                        <core-menu theme="core-light-theme" hidden?="{{$.globals.values.showSetting}}">
+                            <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="/#/dashboard"></a></core-item>
+                            <core-item icon="dashboard" label="InstantMessage" active?="{{selected == 'instantmessage'}}"><a is="pushstate-anchor" href="/#/instantmessage/channels/default"></a></core-item>
+                            <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="/#/calendar"></a></core-item>
+                            <template repeat="{{plugin in $.globals.values.plugins}}">
+                                <core-item icon="{{plugin.icon}}" label="{{plugin.label}}" active?="{{selected == plugin.active}}"><a is="pushstate-anchor" href="{{plugin.href}}"></a></core-item>
+                            </template>
+                        </core-menu>
+                    </div>
+
+                    <div>
+                        <core-toolbar class="toolbar">
+                            <member-element userid="{{$.globals.values.currentUser.id}}"></member-element>
+                            <paper-menu-button>
+                                <paper-icon-button icon="expand-less" noink></paper-icon-button>
+                                <paper-dropdown class="dropdown" halign="right" valign="bottom">
+                                    <core-menu class="menu">
+                                        <paper-item noink><a class="nostyle" href="/#/profile">Profile</a></paper-item>
+                                        <paper-item noink><a class="nostyle" href="/#/team">Team</a></paper-item>
+                                        <paper-item noink><a class="nostyle" href="/#/notification">Notification</a></paper-item>
+                                        <paper-item noink on-tap="{{logoutFunc}}">Logout</paper-item>
+                                    </core-menu>
+                                </paper-dropdown>
+                            </paper-menu-button>
+                        </core-toolbar>
+                    </div>
+                </div>
             </core-header-panel>
             <div tool>
                 <content select=".title"></content>
             </div>
             <div tool horizontal layout center flex end-justified class="bottom">
-                <core-ajax
-                        auto='true'
-                        method="GET"
-                        url="/platform/users"
-                        handleAs="json"
-                        response="{{users}}"></core-ajax>
-
                 <core-ajax
                         id="logoutAjax"
                         method="post"
@@ -109,35 +121,9 @@
                         on-core-response="{{currentUserCallback}}"
                         on-core-error="{{noUserCallback}}"></core-ajax>
 
-                <div class="userSignIn">
-                    <a href="/#/login" hidden?="{{$.globals.values.currentUser}}" style='padding-top: 20px'>Sign In</a>
-                    <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
-                        <label>{{$.globals.values.currentUser.name}}</label>
-                        <paper-dropdown class="dropdown" halign="right" style="color:#000;" on-core-select="{{onUserInfoSelect}}">
-                            <core-menu class="menu">
-                                <paper-item>Profile</paper-item>
-                                <paper-item>Team</paper-item>
-                                <paper-item>Logout</paper-item>
-                            </core-menu>
-                        </paper-dropdown>
-                    </paper-menu-button>
-                </div>
-
                 <notification-element></notification-element>
-
-                <paper-menu-button>
-                    <paper-icon-button icon="apps" noink></paper-icon-button>
-                    <paper-dropdown class="dropdown" halign="right" style="color:#000;">
-                        <core-menu class="menu">
-                            <paper-input label="Search plugin"></paper-input>
-                            <paper-item>Questionnaire</paper-item>
-                            <paper-item>Brain Writing</paper-item>
-                        </core-menu>
-                    </paper-dropdown>
-                </paper-menu-button>
             </div>
-                <content></content>
-            </div>
+            <content></content>
             <app-globals id="globals"></app-globals>
         </core-scaffold>
     </template>
@@ -146,7 +132,7 @@
             ready : function() {
 
                 if (this.$.globals.values.currentUser) {
-                    this.userName = this.$.globals.values.currentUser.name;
+                    this.userName = this.$.globals.values.currentUser.realname;
                 } else {
                     this.$.currentUserAjax.go();
                 }
@@ -154,7 +140,7 @@
 
             currentUserCallback: function(event, response) {
                 this.$.globals.values.currentUser = JSON.parse(response.response);
-                this.userName = this.$.globals.values.currentUser.name;
+                this.userName = this.$.globals.values.currentUser.realname;
             },
 
             noUserCallback: function() {
@@ -162,40 +148,44 @@
                 this.userName = "Sign In";
             },
 
-            onUserSelect : function (event, detail, target){
-                if (detail.isSelected){
-                    this.$.globals.values.currentUser = detail.item.templateInstance.model;
-                }
+            logoutFunc: function() {
+                this.$.logoutAjax.go();
             },
 
-            onUserInfoSelect: function(event, detail, target) {
-                option = detail.item.textContent;
+//            onUserSelect : function (event, detail, target){
+//                if (detail.isSelected){
+//                    this.$.globals.values.currentUser = detail.item.templateInstance.model;
+//                }
+//            },
+//
+//            onUserInfoSelect: function(event, detail, target) {
+//                option = detail.item.textContent;
+//
+//                switch(option){
+//                    case "Logout":
+//                        this.$.logoutAjax.go();
+//                        break;
+//                    case "Profile":
+//                    case "Team":
+//                    case "Notification":
+//                        if (!this.$.globals.values.menus) {
+//                            this.buildNewSideMenu();
+//                        }
+//
+//                        this.$.globals.values.showSetting = true;
+//                        document.querySelector('app-router').go('/' + option.toLowerCase());
+//                        break;
+//                }
+//            },
 
-                switch(option){
-                    case "Logout":
-                        this.$.logoutAjax.go();
-                        break;
-                    case "Profile":
-                    case "Team":
-                    case "Notification":
-                        if (!this.$.globals.values.menus) {
-                            this.buildNewSideMenu();
-                        }
-
-                        this.$.globals.values.showSetting = true;
-                        document.querySelector('app-router').go('/' + option.toLowerCase());
-                        break;
-                }
-            },
-
-            buildNewSideMenu: function() {
-                this.$.globals.values.menus = [];
-                this.$.globals.values.menus.push({"icon": "event", "label": "Profile", "active": "profile", "href":"/#/profile"});
-                this.$.globals.values.menus.push({"icon": "event", "label": "Team", "active": "team", "href":"/#/team"});
-            },
+//            buildNewSideMenu: function() {
+//                this.$.globals.values.menus = [];
+//                this.$.globals.values.menus.push({"icon": "event", "label": "Profile", "active": "profile", "href":"/#/profile"});
+//                this.$.globals.values.menus.push({"icon": "event", "label": "Team", "active": "team", "href":"/#/team"});
+//            },
 
             logoutCallback: function() {
-                document.querySelector('app-router').go('/login');
+                window.location.href = "/login";
             },
 
             jumpToDashboard: function() {

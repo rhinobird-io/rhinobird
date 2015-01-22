@@ -13,13 +13,13 @@ class User < ActiveRecord::Base
 
   include BCrypt
 
-  validates :name, presence: true, uniqueness: true
-  validates :email, presence: true, email: true
+  validates :realname, presence: true, uniqueness: true
+  validates :email, presence: true, email: true, uniqueness: true
 
   has_many :users_teams, dependent: :destroy
   has_many :teams, :through => :users_teams
   has_many :dashboard_records, -> {order 'created_at DESC'}
-  has_many :notifications, -> {order 'created_at ASC'}
+  has_many :notifications, -> {order 'created_at DESC'}
   has_one :local_avatar, dependent: :destroy
   has_many :appointments, foreign_key: :participant_id
   has_many :events, through: :appointments

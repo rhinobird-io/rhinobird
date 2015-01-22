@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
     <title>Team Work</title>
-    <script src="bower_components/webcomponentsjs/webcomponents.min.js"></script>
+    <script src="bower_components/webcomponentsjs/webcomponents.js"></script>
     <link rel="import" href="bower_components/app-router/app-router.html">
     <link rel="import" href="bower_components/core-ajax/core-ajax.html">
     <link rel="import" href="elements/app-globals/app-globals.html">
@@ -95,13 +95,13 @@
 </polymer-element>
 <page-ajax></page-ajax>
 <app-router>
-    <app-route path="/login" import="log-in.html"></app-route>
     <app-route path="/dashboard" import="/plugins/dashboard/dashboard-plugin.html"></app-route>
     <app-route path="/calendar" import="/plugins/calendar/calendar-plugin.html"></app-route>
     <app-route path="/profile" import="profile-page.html"></app-route>
     <app-route path="/team" import="team-page.html"></app-route>
     <app-route path="/instantmessage/config" import="/elements/instantmessage/instant-message-config.html"></app-route>
     <app-route path="/instantmessage/channels/:channelName" import="/elements/instantmessage/instant-message.html"></app-route>
+    <app-route path="/notification" import="notification-history.html"></app-route>
     <app-route path="/" redirect="/dashboard"></app-route>
 </app-router>
 

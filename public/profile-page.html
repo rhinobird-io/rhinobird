@@ -1,43 +1,174 @@
 <link rel="import" href="home-container.html">
 <link rel="import" href="elements/app-globals/app-globals.html">
 <link rel="import" href="bower_components/ajax-file-input/ajax-file-input.html">
+<link rel="import" href="bower_components/core-selector/core-selector.html">
+
+<polymer-element name="team-select" attributes="maxLen">
+    <template>
+        <core-ajax id="getTeamsAjax"
+                   auto
+                   url="/platform/teams"
+                   handleAs="json"
+                   response="{{teams}}"></core-ajax>
+        <paper-input-decorator label="Invite to team(optional)" labelVisible="{{_labelVisible}}" floatinglabel value="{{initialTeam}}">
+            <div horizontal layout center wrap>
+                <template repeat="{{team in selected}}">
+                    <label>{{team.name}}</label>
+                    <core-icon class="small" icon="clear" on-click="{{ removeUserHandler }}"
+                               on-mousedown="{{preventFocus}}"></core-icon>
+                </template>
+                <input is="core-input" value="{{initialTeam}}"
+                       on-focus="{{ showMenu }}" on-blur="{{ hideMenu }}">
+            </div>
+
+        </paper-input-decorator>
+        <template if="{{isShowMenu}}">
+            <core-selector id="selector" selected="0" excludedLocalNames="label">
+                <template repeat="{{ t in teams}}">
+                    <div on-tap="{{selectTeamHandler}}">
+                        {{t.name}}
+                    </div>
+                </template>
+            </core-selector>
+        </template>
+    </template>
+    <script>
+        Polymer("team-select", {
+
+            _labelVisible: true,
+            selected: [],
+
+            showMenu: function () {
+                this.isShowMenu = true;
+            },
+
+            hideMenu: function (event, detail, sender) {
+                var self = this;
+                setTimeout(function () {
+                    self.isShowMenu = false;
+                    self.$.selector.selected = 0;
+                }, 100);
+            },
+
+            selectTeamHandler: function (event, detail, target) {
+                var team = target.templateInstance.model.t;
+                if (this.maxLen && this.maxLen > 0) {
+                    currentLen = this.selected.length;
+                    if (currentLen == this.maxLen) {
+                        this.selected.shift();
+                    }
+                }
+                this.selected.push(team);
+                this._labelVisible = false;
+            },
+
+            removeUserHandler: function (event, detail, target) {
+                var team = target.templateInstance.model.t;
+                index = this.selected.indexOf(team);
+                this.selected.splice(index, 1);
+                if (this.selected.length === 0) {
+                    this._labelVisible = true;
+                }
+                event.stopPropagation();
+            }
+        });
+    </script>
+
+</polymer-element>
 
 <polymer-element name="profile-page">
     <template>
+        <style>
+            .container {
+                padding: 1em;
+            }
+        </style>
         <home-container selected="profile">
             <div class="title">Profile</div>
-            <div vertical layout>
-                <div horizontal layout center>
-                    <div style="width:400px" vertical layout>
-                        <paper-input label="name" floatinglabel value="{{user.name}}"></paper-input>
-                        <paper-input label="realname" floatinglabel value="{{user.realname}}"></paper-input>
-                        <paper-input label="email" floatinglabel value="{{user.email}}"></paper-input>
-                    </div>
-                    <div style="margin-left: 100px">
-                        <core-ajax id="getGravatar"
-                                   auto
-                                   url="/platform/gravatar/{{$.globals.values.currentUser.id}}"
-                                   handleAs="json"
-                                   method="get"
-                                   response="{{gravatar}}"></core-ajax>
-                        <div horizontal layout center>
-                            <p>You can upload an avatar here or change it at <a href="http://gravatar.com" rel="nofollow">gravatar.com</a></p>
-                            <ajax-file-input url="/platform/avatar" on-success="{{avatarUpload}}" style="margin-left: 10px"></ajax-file-input>
+            <div class="container">
+                <div vertical layout>
+                    <div horizontal layout>
+                        <div style="width:400px" vertical layout>
+                            <paper-input label="name" floatinglabel disabled value="{{user.realname}}"></paper-input>
+                            <paper-input label="email" floatinglabel disabled value="{{user.email}}"></paper-input>
                         </div>
-                        <img src="{{gravatar.url}}?d=identicon" style="margin: 20px"/>
+                        <div vertical layout style="width: 400px;margin-left: 100px">
+                            <core-ajax id="inviteUserAjax"
+                                       url="/platform/user/invite"
+                                       method="post"
+                                       contentType="application/json"
+                                       body="{{newUserJson}}"
+                                       on-core-response="{{inviteSuccess}}"></core-ajax>
+                            <paper-input label="Email" floatinglabel value="{{userEmail}}"></paper-input>
+                            <team-select id="initialTeam" maxLen="1"></team-select>
+                            <paper-button raised on-tap="{{inviteNewMember}}">Invite New Member</paper-button>
+                            <paper-toast id="toastInviteSuccess" text="Invitation has been sent to {{userEmail}}" role="status" touch-action="none"
+                                         tabindex="-1"
+                                         class="core-transition core-transition-bottom"
+                                         style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
+                        </div>
                     </div>
-                </div>
-                <div style="margin-top: 20px">
-                    <core-ajax id="updateUserAjax"
-                               url="/platform/user/{{$.globals.values.currentUser.id}}"
-                               method="post"
-                               contentType="application/json"
-                               body="{{newUserData}}"
-                               on-core-response="{{updateSuccess}}"></core-ajax>
-                    <paper-button raised on-tap="{{saveProfile}}">Save</paper-button>
-                </div>
-            </div>
 
+                    <div horizontal layout center style="margin-top: 100px">
+                        <div>
+                            <label>Change Password</label>
+                            <paper-input-decorator label="Password" floatinglabel value="{{originalPassword}}">
+                                <input is="core-input" value="{{originalPassword}}" type="password">
+                            </paper-input-decorator>
+                            <paper-input-decorator label="New Password" floatinglabel value="{{newPassword}}">
+                                <input is="core-input" value="{{newPassword}}" type="password">
+                            </paper-input-decorator>
+                            <paper-input-decorator label="Confirm New Password" floatinglabel value="{{confirmedPassword}}">
+                                <input is="core-input" value="{{confirmedPassword}}" type="password">
+                            </paper-input-decorator>
+                            <core-ajax id="changePasswordAjax"
+                                       url="/platform/user/password"
+                                       method="post"
+                                       contentType="application/json"
+                                       body="{{newPasswordData}}"
+                                       on-core-response="{{changePasswordSuccess}}"
+                                       on-core-error="{{passwordErrorResponse}}"></core-ajax>
+                            <paper-button raised on-tap="{{changePassword}}">Save</paper-button>
+                            <paper-toast id="toastChangePassword" text="{{passwordMsg}}" role="status" touch-action="none"
+                                         tabindex="-1"
+                                         class="core-transition core-transition-bottom"
+                                         style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
+                        </div>
+                        <div style="margin-left: 100px">
+                            <core-ajax id="getGravatar"
+                                       auto
+                                       url="/platform/gravatar/{{$.globals.values.currentUser.id}}"
+                                       handleAs="json"
+                                       method="get"
+                                       response="{{gravatar}}"
+                                       on-core-response="{{gravatarResponse}}"></core-ajax>
+                            <div horizontal layout center>
+                                <template if="{{gravatar.local}}">
+                                    <p>You can change your avatar here or remove the current avatar to revert to <a href="http://gravatar.com" rel="nofollow">gravatar.com</a></p>
+                                </template>
+                                <template if="{{!gravatar.local}}">
+                                    <p>You can upload an avatar here or change it at <a href="http://gravatar.com" rel="nofollow">gravatar.com</a></p>
+                                </template>
+                                <ajax-file-input id="uploader" url="/platform/avatar" on-success="{{avatarUpload}}" style="margin-left: 10px"></ajax-file-input>
+
+                            </div>
+                            <div horizontal layout center>
+                                <img src="{{gravatar.url}}?d=identicon" style="margin: 20px"/>
+                                <core-ajax id="removeLocalAvatarAjax"
+                                           url="/platform/avatar/remove"
+                                           method="post"
+                                           on-core-response="{{avatarRemoved}}"></core-ajax>
+                                <template if="{{gravatar.local}}">
+                                    <paper-button raised on-tap="{{removeLocalAvatar}}">Remove</paper-button>
+                                </template>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
 
         </home-container>
         <app-globals id="globals"></app-globals>
@@ -50,17 +181,61 @@
             },
 
             avatarUpload: function() {
+                this.$.uploader.progressInvisible = true;
                 this.$.getGravatar.go();
             },
 
-            saveProfile: function() {
-                if (this.user.name && this.user.realname && this.user.email) {
-                    this.newUserData = JSON.stringify(this.user);
-                    this.$.updateUserAjax.go();
-                    this.$.globals.values.currentUser = this.user;
+            removeLocalAvatar: function() {
+                this.$.removeLocalAvatarAjax.go();
+            },
+
+            avatarRemoved: function() {
+                this.$.getGravatar.go();
+            },
+
+            gravatarResponse: function() {
+                this.$.globals.values.memberCache[this.$.globals.values.currentUser.id] = this.gravatar;
+            },
+
+            changePassword: function() {
+                if (!this.originalPassword || !this.newPassword || !this.confirmedPassword ||
+                        this.originalPassword == "" || this.newPassword == "" || this.confirmedPassword == "") {
+                    this.passwordMsg = "Input password should not be null";
+                    this.$.toastChangePassword.toggle();
+                } else if (this.newPassword != this.confirmedPassword) {
+                    this.passwordMsg = "New password and confirmed password does not match";
+                    this.$.toastChangePassword.toggle();
                 } else {
-                    alert("invalid input");
+                    var newPasswordObj = {"password": this.originalPassword, "newPassword": this.newPassword};
+                    this.newPasswordData = JSON.stringify(newPasswordObj);
+                    this.$.changePasswordAjax.go();
                 }
+            },
+
+            changePasswordSuccess: function() {
+                this.passwordMsg = "Password successfully changed";
+                this.$.toastChangePassword.toggle();
+            },
+
+            passwordErrorResponse: function() {
+                this.passwordMsg = "Please input correct password for current user";
+                this.$.toastChangePassword.toggle();
+            },
+
+            inviteNewMember: function() {
+                this.newUser = {};
+                this.newUser.email = this.userEmail;
+                var selectedTeams = this.$.initialTeam.selected;
+                if (selectedTeams.length !== 0) {
+                    this.newUser.initial_team_id = selectedTeams[0].id;
+                }
+
+                this.newUserJson = JSON.stringify(this.newUser);
+                this.$.inviteUserAjax.go();
+            },
+
+            inviteSuccess: function() {
+                this.$.toastInviteSuccess.toggle();
             }
         });
     </script>

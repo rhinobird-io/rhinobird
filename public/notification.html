@@ -1,5 +1,24 @@
+<link rel="import" href="bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="bower_components/core-ajax/core-xhr.html">
+<link rel="import" href="bower_components/core-icon/core-icon.html">
+<link rel="import" href="bower_components/core-icons/social-icons.html">
+<link rel="import" href="bower_components/core-style/core-style.html">
+
 <polymer-element name="notification-element">
     <template>
+        <core-style ref="theme"></core-style>
+        <style>
+            .count {
+                position: absolute;
+                border-radius: 50%;
+                width: 8px;
+                height: 8px;
+                font-size: small;
+                text-align: center;
+                bottom: 40px;
+                right: 26px;
+            }
+        </style>
         <core-ajax
                 auto
                 id="notificationAjax"
@@ -7,75 +26,80 @@
                 handleAs="json"
                 response="{{notifications}}"></core-ajax>
 
-        <core-ajax id="getGravatarForNotification"
-                   url="/platform/gravatar"
-                   params="{{notificationFromsJson}}"
-                   on-core-response="{{avatarCallback}}"></core-ajax>
+        <template if="{{notifications.length == 0}}">
+            <paper-icon-button icon="social:notifications"></paper-icon-button>
+        </template>
 
-        <paper-menu-button hidden?="{{!$.globals.values.currentUser}}">
-            <label style="margin-left:10px;color: red">{{notifications.length}}</label>
-            <paper-dropdown class="dropdown" halign="right" style="color:#000;">
-                <core-menu class="menu">
-                    <template repeat="{{notification in notifications}}">
-                        <paper-item>
-                            <div>
-                                <member-element userid="{{notification.from_user_id}}"></member-element>
-                                <p>{{notification.content}}</p>
-                            </div>
-                        </paper-item>
-                    </template>
-                </core-menu>
-            </paper-dropdown>
-        </paper-menu-button>
+        <template if="{{notifications.length != 0}}">
+            <paper-menu-button>
+                <paper-icon-button icon="social:notifications"></paper-icon-button>
+                <paper-dropdown class="dropdown" halign="right" style="color:#000;width: 400px" on-core-overlay-close-completed="{{clearNotifications}}">
+                    <core-menu class="menu">
+                        <template repeat="{{notification in notifications}}">
+                            <paper-item>
+                                <div>
+                                    <div horizontal layout center>
+                                        <member-element userid="{{notification.from_user_id}}"></member-element>
+                                        {{notification.created_at | date('yyyy-MM-dd HH:mm')}}
+                                    </div>
+                                    <label>{{notification.content}}</label>
+                                </div>
+                            </paper-item>
+                        </template>
+                    </core-menu>
+                </paper-dropdown>
+            </paper-menu-button>
+        </template>
+
+        <template if="{{notifications.length != 0}}">
+            <div class="count accentColor"></div>
+        </template>
         <app-globals id="globals"></app-globals>
     </template>
     <script>
         Polymer("notification-element", {
 
-            ready: function() {
+            ready: function () {
                 if (!this.$.globals.values.websocket) {
                     this.$.globals.values.websocket = this.connect(this);
-                    console.log(this.$.globals.values.websocket);
                 }
             },
 
-            connect: function(that) {
+            connect: function (that) {
                 try {
                     var socket, host;
-                    host = "ws://" + window.location.hostname + ":9292";
+                    host = "ws://" + window.location.hostname + ":" + window.location.port;
                     socket = new WebSocket(host);
 
                     console.log("Socket State: " + socket.readyState);
 
-                    socket.onopen = function() {
+                    socket.onopen = function () {
                         console.log("Socket Status: " + socket.readyState + " (open)");
                     };
 
-                    socket.onclose = function() {
+                    socket.onclose = function () {
                         console.log("Socket Status: " + socket.readyState + " (closed)");
                     };
 
-                    socket.onmessage = function(msg) {
+                    socket.onmessage = function (msg) {
                         console.log("Received: " + msg.data);
                         that.notificationData = JSON.parse(msg.data);
                         that.handleNotification();
                     };
 
                     return socket;
-                } catch(exception) {
+                } catch (exception) {
                     console.log("Error: " + exception);
                 }
             },
 
-            handleNotification: function() {
-                for (index in this.notificationData) {
-                    this.notifications.push(this.notificationData[index]);
-                }
+            handleNotification: function () {
+                this.notifications.unshift(this.notificationData);
 
                 this.showNotification();
             },
 
-            showNotification: function() {
+            showNotification: function () {
                 if (!Notification) {
                     alert('Please use a modern version of Chrome');
                     return;
@@ -84,29 +108,33 @@
                 if (Notification.permission !== "granted")
                     Notification.requestPermission();
 
-                this.notificationFroms = [];
-                for (index in this.notificationData) {
-                    this.notificationFroms.push(this.notificationData[index].from_user_id);
-                }
-
-                this.notificationFromsJson = JSON.stringify(this.notificationFroms);
-                this.$.getGravatarForNotification.go();
-            },
-
-            avatarCallback: function(event, detail, target) {
-                this.gravatars = JSON.parse(detail.response);
-                for (index in this.gravatars) {
-                    var notification = new Notification(this.gravatars[index].username, {
-                        icon: this.gravatars[index].url + "?d=identicon",
-                        body: this.notificationData[index].content
+                that = this;
+                xhr = new XMLHttpRequest();
+                xhr.onload = function () {
+                    that.gravatars = JSON.parse(this.responseText);
+                    var notification = new Notification(that.gravatars[0].username, {
+                        icon: that.gravatars[0].url + "?d=identicon",
+                        body: that.notificationData.content
                     });
 
-                    setTimeout((function(notify) {
-                        return function() {
+                    setTimeout((function (notify) {
+                        return function () {
                             notify.close();
                         }
                     })(notification), 5000);
+                };
+                xhr.open("GET", "/platform/gravatar?0=" + encodeURIComponent(this.notificationData.from_user_id), true);
+                xhr.send();
+            },
+
+            clearNotifications: function() {
+                var notificationIds = [];
+                for (index in  this.notifications) {
+                    notificationIds.push({"id": this.notifications[index].id});
                 }
+                this.notificationsJson = JSON.stringify(notificationIds);
+                this.$.globals.values.websocket.send(this.notificationsJson);
+                this.notifications = [];
             }
         });
     </script>
