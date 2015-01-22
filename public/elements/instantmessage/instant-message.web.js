@@ -290,7 +290,6 @@ Polymer({
     } 
     return false;
   },
-  historyOffset: 30, 
   historyLimit: 10,
   noMoreHistory: false,
 
@@ -298,9 +297,15 @@ Polymer({
     if (this.noMoreHistory){
       return;
     }
+    if (this.messages.length < 1){
+      return;
+    }
+    if (this.messages[0].id == null){
+      return;
+    }
     var self = this;
     return $.get(serverUrl + '/api/channels/' + self.channel.id + 
-      '/messages?offset='+this.historyOffset+
+      '/messages?beforeId='+this.messages[0].id+
       '&limit=' + this.historyLimit).done(function (messages) {
         self.historyOffset += self.historyLimit;
         if (messages.length < self.historyLimit){
@@ -309,7 +314,9 @@ Polymer({
         var temp = [];
         var lastMessage = null;
         messages.forEach(function (message) {
-          temp.push({userId: message.UserId, 
+          temp.push({
+                     id: message.id,
+                     userId: message.UserId, 
                      text: message.message, 
                      updatedAt: message.updatedAt, 
                      disableLoadedEvent: true, 
@@ -324,12 +331,14 @@ Polymer({
 
   loadHistory: function (roomId) {
     var self = this;
-    return $.get(serverUrl + '/api/channels/' + self.channel.id + '/messages').done(function (messages) {
+
+    return $.get(serverUrl + '/api/channels/' + self.channel.id + '/messages?limit=30').done(function (messages) {
       var temp = [];
       var lastMessage = null;
       messages.forEach(function (message) {
-
-        temp.push({userId: message.UserId, 
+        temp.push({
+                   id: message.id,
+                   userId: message.UserId, 
                    text: message.message, 
                    updatedAt: message.updatedAt,
                    hideMemberElement: self.isHideMemberElement(lastMessage, message)});
@@ -410,7 +419,8 @@ Polymer({
       userId: self.currentUser.id,
       text: self.message,
       guid: uuid,
-      messageStatus: 'unsend'
+      messageStatus: 'unsend', 
+      hideMemberElement: true
     });
     this.scrollToBottom(100);
     this.socket.emit('send:message', {

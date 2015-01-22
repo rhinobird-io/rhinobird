@@ -69,7 +69,7 @@ app.get('/api/channels/:channelId/messages', function (req, res) {
   Message.findAndCountAll({
     where: {channelId: req.params.channelId, id : { gt : sinceId, lt : beforeId }}, order: 'id DESC', limit: limit
   }).then(function (messages) {
-    res.json(messages.rows);
+    res.json(messages.rows.reverse());
   });
 });
 
