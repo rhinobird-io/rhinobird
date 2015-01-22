@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150116022048) do
+ActiveRecord::Schema.define(version: 20150121085604) do
 
   create_table "appointments", force: :cascade do |t|
     t.integer "event_id"
@@ -45,6 +45,14 @@ ActiveRecord::Schema.define(version: 20150116022048) do
 
   add_index "events", ["creator_id"], name: "index_events_on_creator_id"
 
+  create_table "invitations", force: :cascade do |t|
+    t.string   "email"
+    t.integer  "from_user_id"
+    t.integer  "initial_team_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "local_avatars", force: :cascade do |t|
     t.integer  "user_id"
     t.binary   "image_data", null: false
@@ -56,10 +64,11 @@ ActiveRecord::Schema.define(version: 20150116022048) do
 
   create_table "notifications", force: :cascade do |t|
     t.integer  "user_id"
-    t.text     "content",      null: false
-    t.integer  "from_user_id", null: false
+    t.text     "content",                      null: false
+    t.integer  "from_user_id",                 null: false
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.boolean  "checked",      default: false
   end
 
   add_index "notifications", ["user_id"], name: "index_notifications_on_user_id"
@@ -82,15 +91,12 @@ ActiveRecord::Schema.define(version: 20150116022048) do
   end
 
   create_table "users", force: :cascade do |t|
-    t.string   "name"
     t.string   "realname"
     t.string   "email"
     t.string   "encrypted_password"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
-
-  add_index "users", ["name"], name: "index_users_on_name", unique: true
 
   create_table "users_teams", force: :cascade do |t|
     t.integer  "user_id",    null: false
