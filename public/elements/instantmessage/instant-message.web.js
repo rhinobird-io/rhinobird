@@ -425,7 +425,8 @@ Polymer({
       userId: self.currentUser.id,
       text: self.message,
       guid: uuid,
-      messageStatus: 'unsend'
+      messageStatus: 'unsend', 
+      hideMemberElement: true
     });
     this.scrollToBottom(100);
     this.socket.emit('send:message', {
