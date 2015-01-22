@@ -40,11 +40,13 @@
             }
         </style>
         <app-globals id="globals"></app-globals>
-        <core-ajax id="getDashboardRecord"
-                auto
-                url="/platform/users/{{$.globals.values.currentUser.id}}/dashboard_records"
-                handleAs="json"
-                response="{{records}}"></core-ajax>
+        <template if="{{$.globals.values.currentUser}}">
+            <core-ajax id="getDashboardRecord"
+                    auto
+                    url="/platform/users/{{$.globals.values.currentUser.id}}/dashboard_records"
+                    handleAs="json"
+                    response="{{records}}"></core-ajax>
+        </template>
         <core-list data="{{records}}">
             <template>
                 <dashboard-record record="{{model}}"></dashboard-record>

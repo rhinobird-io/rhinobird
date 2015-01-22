@@ -158,11 +158,13 @@
         </style>
         <home-container selected="team">
             <div class="title">Team</div>
-            <core-ajax id="getTeams"
-                       auto
-                       url="/platform/users/{{$.globals.values.currentUser.id}}/teams"
-                       handleAs="json"
-                       response="{{teams}}"></core-ajax>
+            <template if="{{$.globals.values.currentUser}}">
+                <core-ajax id="getTeams"
+                           auto
+                           url="/platform/users/{{$.globals.values.currentUser.id}}/teams"
+                           handleAs="json"
+                           response="{{teams}}"></core-ajax>
+            </template>
 
             <div vertical layout flex>
                 <div class="teamBlock">

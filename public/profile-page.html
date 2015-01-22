@@ -135,13 +135,16 @@
                                          style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
                         </div>
                         <div style="margin-left: 100px">
-                            <core-ajax id="getGravatar"
-                                       auto
-                                       url="/platform/gravatar/{{$.globals.values.currentUser.id}}"
-                                       handleAs="json"
-                                       method="get"
-                                       response="{{gravatar}}"
-                                       on-core-response="{{gravatarResponse}}"></core-ajax>
+                            <template if="{{$.globals.values.currentUser}}">
+                                <core-ajax id="getGravatar"
+                                           auto
+                                           url="/platform/gravatar/{{$.globals.values.currentUser.id}}"
+                                           handleAs="json"
+                                           method="get"
+                                           response="{{gravatar}}"
+                                           on-core-response="{{gravatarResponse}}"></core-ajax>
+                            </template>
+
                             <div horizontal layout center>
                                 <template if="{{gravatar.local}}">
                                     <p>You can change your avatar here or remove the current avatar to revert to <a href="http://gravatar.com" rel="nofollow">gravatar.com</a></p>
@@ -153,7 +156,9 @@
 
                             </div>
                             <div horizontal layout center>
-                                <img src="{{gravatar.url}}?d=identicon" style="margin: 20px"/>
+                                <template if="{{gravatar.url}}">
+                                    <img src="{{gravatar.url}}?d=identicon" style="margin: 20px"/>
+                                </template>
                                 <core-ajax id="removeLocalAvatarAjax"
                                            url="/platform/avatar/remove"
                                            method="post"

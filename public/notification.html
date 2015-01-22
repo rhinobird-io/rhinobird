@@ -19,12 +19,14 @@
                 right: 26px;
             }
         </style>
-        <core-ajax
-                auto
-                id="notificationAjax"
-                url="/platform/users/{{$.globals.values.currentUser.id}}/notifications"
-                handleAs="json"
-                response="{{notifications}}"></core-ajax>
+        <template if="{{$.globals.values.currentUser}}">
+            <core-ajax
+                    auto
+                    id="notificationAjax"
+                    url="/platform/users/{{$.globals.values.currentUser.id}}/notifications"
+                    handleAs="json"
+                    response="{{notifications}}"></core-ajax>
+        </template>
 
         <template if="{{notifications.length == 0}}">
             <paper-icon-button icon="social:notifications"></paper-icon-button>
