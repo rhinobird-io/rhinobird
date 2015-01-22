@@ -333,7 +333,7 @@ class App < Sinatra::Base
                     :subject => user.realname + ' invited you to join teamwork',
                     :headers => { 'Content-Type' => 'text/html' },
                     :body => 'Hi there, ' + user.realname + ' invited you to join teamwork' +
-                        '<br></br><a href="http://www.team.work/platform/login?invitation=' + invitation.id.to_s + '">Join now</a>',
+                        '<br></br><a href="' + request.base_url + '/platform/login?invitation=' + invitation.id.to_s + '">Join now</a>',
                     :via => :smtp,
                     :via_options => {
                         :address        => 'smtp.gmail.com',
