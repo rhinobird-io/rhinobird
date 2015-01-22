@@ -148,6 +148,11 @@ class App < Sinatra::Base
       gravatar = {}
       gravatar["username"] = @user.realname
       gravatar["url"] = get_image_url
+      if @local_avatar.nil?
+        gravatar["local"] = false
+      else
+        gravatar["local"] = true
+      end
       gravatar.to_json
     end
 
@@ -190,6 +195,7 @@ class App < Sinatra::Base
       end
     end
 
+    #upload local avatar
     post '/avatar' do
       tempfile = params[:file][:tempfile]
       image_data = ""
@@ -199,6 +205,12 @@ class App < Sinatra::Base
 
       avatar = {:image_data => image_data}
       User.find(session[:user][:id]).local_avatar = LocalAvatar.create!(avatar)
+    end
+
+    #remove local avatar
+    post '/avatar/remove' do
+      @local_avatar = nil
+      User.find(session[:user][:id]).local_avatar.delete
     end
 
     get '/teams' do

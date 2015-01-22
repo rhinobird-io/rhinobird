@@ -142,10 +142,26 @@
                                        method="get"
                                        response="{{gravatar}}"></core-ajax>
                             <div horizontal layout center>
-                                <p>You can upload an avatar here or change it at <a href="http://gravatar.com" rel="nofollow">gravatar.com</a></p>
-                                <ajax-file-input url="/platform/avatar" on-success="{{avatarUpload}}" style="margin-left: 10px"></ajax-file-input>
+                                <template if="{{gravatar.local}}">
+                                    <p>You can change your avatar here or remove the current avatar to revert to <a href="http://gravatar.com" rel="nofollow">gravatar.com</a></p>
+                                </template>
+                                <template if="{{!gravatar.local}}">
+                                    <p>You can upload an avatar here or change it at <a href="http://gravatar.com" rel="nofollow">gravatar.com</a></p>
+                                </template>
+                                <ajax-file-input id="uploader" url="/platform/avatar" on-success="{{avatarUpload}}" style="margin-left: 10px"></ajax-file-input>
+
                             </div>
-                            <img src="{{gravatar.url}}?d=identicon" style="margin: 20px"/>
+                            <div horizontal layout center>
+                                <img src="{{gravatar.url}}?d=identicon" style="margin: 20px"/>
+                                <core-ajax id="removeLocalAvatarAjax"
+                                           url="/platform/avatar/remove"
+                                           method="post"
+                                           on-core-response="{{avatarRemoved}}"></core-ajax>
+                                <template if="{{gravatar.local}}">
+                                    <paper-button raised on-tap="{{removeLocalAvatar}}">Remove</paper-button>
+                                </template>
+                            </div>
+
                         </div>
                     </div>
 
@@ -164,6 +180,15 @@
             },
 
             avatarUpload: function() {
+                this.$.uploader.progressInvisible = true;
+                this.$.getGravatar.go();
+            },
+
+            removeLocalAvatar: function() {
+                this.$.removeLocalAvatarAjax.go();
+            },
+
+            avatarRemoved: function() {
                 this.$.getGravatar.go();
             },
 
