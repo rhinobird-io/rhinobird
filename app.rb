@@ -136,60 +136,65 @@ class App < Sinatra::Base
       User.all.map { |u|
         {
             id: u.id,
-            url: Gravatar.new(u.email).image_url,
+            url: get_image_url(u.id, u),
             username: u.realname
         }
       }.to_json
     end
 
     get '/gravatar/:userId' do
-      @user_id = params[:userId]
-      @user = User.find(params[:userId])
+      user = User.find(params[:userId])
       gravatar = {}
-      gravatar["username"] = @user.realname
-      gravatar["url"] = get_image_url
+      gravatar["username"] = user.realname
+      gravatar["url"] = get_image_url(params[:userId], user)
+      if user.local_avatar.nil?
+        gravatar["local"] = false
+      else
+        gravatar["local"] = true
+      end
       gravatar.to_json
     end
 
     get '/gravatar' do
       gravatars = []
       @params.each do |param|
-        @user = User.find(param[1])
-        @user_id = param[1]
+        user = User.find(param[1])
         gravatar = {}
-        gravatar["url"] = get_image_url
-        gravatar["username"] = @user.realname
+        gravatar["url"] = get_image_url(param[1], user)
+        gravatar["username"] = user.realname
         gravatars << gravatar
       end
       gravatars.to_json
     end
 
-    def get_image_url
-      if @local_avatar.nil?
-        @local_avatar = @user.local_avatar
+    def get_image_url(user_id, user=nil)
+      # if @local_avatar.nil?
+      #   @local_avatar = @user.local_avatar
+      # end
+      if user.nil?
+        user = User.find(user_id)
       end
 
-      if @local_avatar.nil?
-        url = Gravatar.new(@user.email).image_url
+      if user.local_avatar.nil?
+        url = Gravatar.new(user.email).image_url
       else
-        url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}" + "/platform/avatar/" + @user_id
+        url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}" + "/platform/avatar/" + user_id.to_s
       end
 
       return url
     end
 
     get '/avatar/:userId' do
-      if @local_avatar.nil?
-        @local_avatar = User.find(params[:userId]).local_avatar
-      end
-      if @local_avatar.nil?
+      avatar = User.find(params[:userId]).local_avatar
+      if avatar.nil?
         404
       else
         content_type 'image/png'
-        @local_avatar["image_data"]
+        avatar["image_data"]
       end
     end
 
+    #upload local avatar
     post '/avatar' do
       tempfile = params[:file][:tempfile]
       image_data = ""
@@ -199,6 +204,12 @@ class App < Sinatra::Base
 
       avatar = {:image_data => image_data}
       User.find(session[:user][:id]).local_avatar = LocalAvatar.create!(avatar)
+    end
+
+    #remove local avatar
+    post '/avatar/remove' do
+      # @local_avatar = nil
+      User.find(session[:user][:id]).local_avatar.delete
     end
 
     get '/teams' do
@@ -311,10 +322,10 @@ class App < Sinatra::Base
     post '/user/invite' do
       email = @body["email"]
       user = User.find(session[:user][:id])
-      if @body["team_id"].nil?
+      if @body["initial_team_id"].nil?
         invitation = Invitation.create({:email => email, :from_user_id => session[:user][:id], :initial_team_id => -1})
       else
-        invitation = Invitation.create({:email => email, :from_user_id => session[:user][:id], :initial_team_id => @body["team_id"]})
+        invitation = Invitation.create({:email => email, :from_user_id => session[:user][:id], :initial_team_id => @body["initial_team_id"]})
       end
 
       Pony.mail({
@@ -336,7 +347,15 @@ class App < Sinatra::Base
     end
 
     post '/users' do
-      User.create!(@body)
+      if @body["initial_team_id"].nil?
+        User.create!(@body)
+      else
+        team = Team.find(@body["initial_team_id"])
+        user_obj = { :realname => @body["realname"], :email => @body["email"], :password =>  @body["password"]}
+        user = User.create!(user_obj)
+        team.users << user
+      end
+      200
     end
 
     #change password
@@ -382,8 +401,14 @@ class App < Sinatra::Base
       200
     end
 
+    #get unchecked notifications for one user
     get '/users/:userId/notifications' do
       User.find(params[:userId]).notifications.where({checked: false}).to_json
+    end
+
+    #get all notification history for one user
+    get '/users/:userId/notifications/history' do
+      User.find(params[:userId]).notifications.to_json
     end
 
     # add a notification to one user
