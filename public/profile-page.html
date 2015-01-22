@@ -187,7 +187,7 @@
 
             avatarUpload: function() {
                 this.$.uploader.progressInvisible = true;
-                this.$.getGravatar.go();
+                this.shadowRoot.querySelector("#getGravatar").go();
             },
 
             removeLocalAvatar: function() {
@@ -195,7 +195,7 @@
             },
 
             avatarRemoved: function() {
-                this.$.getGravatar.go();
+                this.shadowRoot.querySelector("#getGravatar").go();
             },
 
             gravatarResponse: function() {
