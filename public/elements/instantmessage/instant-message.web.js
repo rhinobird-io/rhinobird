@@ -78,7 +78,9 @@ Polymer({
             function (callback) {
             self.loadChannels().done(function () {
               if (self.group.length === 0 ) {
-                document.querySelector('app-router').go('/' + self.pluginName + '/config');
+                // ask administrator
+                self.$.noGroupDlg.open();
+                callback('no groups found for current user');
                 return;
               } else if (self.channelName === defaultChannel) {
                 // by default using the default setting, later use localstorage
@@ -361,6 +363,14 @@ Polymer({
     if (querySelector) {
       querySelector.click()
     }
+  },
+
+  goToConfig : function() {
+    document.querySelector('app-router').go('/' + this.pluginName + '/config');
+  },
+
+  goToIndex : function() {
+    document.querySelector('app-router').go('/dashboard');
   },
 
   handleChannelSelect: function (event, detail, target) {

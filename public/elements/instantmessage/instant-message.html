@@ -86,11 +86,11 @@
                 </div>
             </div>
 
-            <paper-action-dialog id="userIdDialog" heading="Team Members">
-                <paper-input value="{{userId}}"></paper-input>
-                <paper-button affirmative on-click="{{userLogin}}">Accept</paper-button>
+            <paper-action-dialog  id="noGroupDlg"  heading="Instant Message not Init" backdrop autoCloseDisabled>
+                <p>Instant Message is not initialized, please ask administrator</p>
+                <paper-button dismissive on-click="{{goToIndex}}">Close</paper-button>
+                <paper-button affirmative on-click="{{goToConfig}}">Config</paper-button>
             </paper-action-dialog>
-
 
         </home-container>
     </template>
