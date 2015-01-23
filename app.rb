@@ -188,7 +188,8 @@ class App < Sinatra::Base
         404
       else
         content_type 'image/png'
-        avatar["image_data"]
+        image_data = Base64.decode64(avatar["image_data"])
+        image_data
       end
     end
 
@@ -200,7 +201,7 @@ class App < Sinatra::Base
         image_data = image_data + line
       end
 
-      avatar = {:image_data => image_data}
+      avatar = {:image_data => Base64.encode64(image_data)}
       User.find(session[:user][:id]).local_avatar = LocalAvatar.create!(avatar)
     end
 
