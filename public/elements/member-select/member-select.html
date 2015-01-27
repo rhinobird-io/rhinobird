@@ -11,9 +11,10 @@
 <link rel="import" href="../../bower_components/core-selector/core-selector.html">
 <link rel="import" href="member-element.html">
 
-<polymer-element name="member-select" attributes="teamsUrl selected disabled label">
+<polymer-element name="member-select" attributes="selected disabled label">
     <template>
-        <core-ajax url="{{teamsUrl}}" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>
+        <core-ajax url="/platform/teams_users" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>
+        <core-ajax url="/platform/users" auto handleAs="json" on-core-response="{{handleUsersResponse}}"></core-ajax>
 
         <style>
             div.wrapper {
@@ -279,23 +280,14 @@
 
             handleTeamsResponse: function (event) {
                 this.teams = event.detail.response;
+            },
+            handleUsersResponse: function (event) {
+                this.users = event.detail.response;
                 // extract all users
                 this.usersNameMap = {};
-                this.users = [];
-                this.teams.forEach(function (t) {
-                    t.users.forEach(function (u, idx) {
-                        if (!this.usersNameMap[u.realname]) {
-                            this.usersNameMap[u.realname] = u;
-                            this.users.push(u);
-                        } else {
-                            u = this.usersNameMap[u.realname];
-                            t.users[idx] = u;
-                        }
-                        u.teams = u.teams || [];
-                        u.teams.push(t);
-
-                    }, this);
-                }, this);
+                this.users.forEach(function (u) {
+                        this.usersNameMap[u.realname] = u;
+                });
             },
 
             addTeamHandler: function (event, detail, target) {

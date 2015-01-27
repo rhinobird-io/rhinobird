@@ -75,7 +75,7 @@ class App < Sinatra::Base
   end
 
   before do
-    login_required! unless ["/platform/login", "/platform/users", "/login"].include?(request.path_info)
+    login_required! unless ['/users', '/login'].include?(request.path_info)
     content_type 'application/json'
     if request.media_type == 'application/json'
       body = request.body.read
@@ -209,9 +209,6 @@ class App < Sinatra::Base
 
   post '/teams' do
     team = Team.create!(@body)
-    user = User.find(request.env['HTTP_USER'].to_i)
-    team.users.push(user)
-    team.save!
   end
 
   post '/teams/:teamId/delete' do
@@ -221,7 +218,7 @@ class App < Sinatra::Base
 
   #create team with initial users
   post '/teams/users' do
-    team = Team.create(@body["team"])
+    team = Team.create!(@body["team"])
     @body["user"].each do |userId|
       user = User.find(userId)
       team.users << user
