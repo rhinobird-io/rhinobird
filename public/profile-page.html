@@ -135,15 +135,17 @@
                                          style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
                         </div>
                         <div style="margin-left: 100px">
-                            <template if="{{$.globals.values.currentUser}}">
-                                <core-ajax id="getGravatar"
-                                           auto
-                                           url="/platform/gravatar/{{$.globals.values.currentUser.id}}"
-                                           handleAs="json"
-                                           method="get"
-                                           response="{{gravatar}}"
-                                           on-core-response="{{gravatarResponse}}"></core-ajax>
-                            </template>
+                            <div id="avatarAjaxDiv">
+                                <template if="{{$.globals.values.currentUser}}">
+                                    <core-ajax id="getGravatar"
+                                               auto
+                                               url="/platform/gravatar/{{$.globals.values.currentUser.id}}"
+                                               handleAs="json"
+                                               method="get"
+                                               response="{{gravatar}}"
+                                               on-core-response="{{gravatarResponse}}"></core-ajax>
+                                </template>
+                            </div>
 
                             <div horizontal layout center>
                                 <template if="{{gravatar.local}}">
@@ -187,7 +189,7 @@
 
             avatarUpload: function() {
                 this.$.uploader.progressInvisible = true;
-                this.shadowRoot.querySelector("#getGravatar").go();
+                this.$.avatarAjaxDiv.querySelector("#getGravatar").go();
             },
 
             removeLocalAvatar: function() {
@@ -195,7 +197,7 @@
             },
 
             avatarRemoved: function() {
-                this.shadowRoot.querySelector("#getGravatar").go();
+                this.$.avatarAjaxDiv.querySelector("#getGravatar").go();
             },
 
             gravatarResponse: function() {
