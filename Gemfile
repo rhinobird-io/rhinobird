@@ -16,9 +16,9 @@ gem 'pony'
 gem 'rest-client'
 gem 'pg'
 
+gem 'rake'
+gem 'faker'
 group :development do
   gem 'sqlite3'
-  gem 'faker'
-  gem 'rake'
   gem 'shotgun'
 end
