@@ -1,0 +1,21 @@
+{
+  "name": "paper-date-picker",
+  "dependencies": {
+    "polymer": "Polymer/polymer#master",
+    "core-animated-pages": "Polymer/core-animated-pages#master",
+    "paper-dialog": "Polymer/paper-dialog#master",
+    "paper-button": "Polymer/paper-button#master",
+    "paper-ripple": "Polymer/paper-ripple#master"
+  },
+  "version": "0.1.4",
+  "homepage": "https://github.com/David-Mulder/paper-date-picker",
+  "_release": "0.1.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.1.4",
+    "commit": "18c75751bd92c687bed20f563339aae8be0f96b2"
+  },
+  "_source": "git://github.com/David-Mulder/paper-date-picker.git",
+  "_target": "0.1.4",
+  "_originalSource": "paper-date-picker"
+}

@@ -1,0 +1,41 @@
+{
+  "name": "ajax-file-input",
+  "version": "0.0.2",
+  "authors": [
+    "Liu Yang <liuyang1204@hotmail.com>"
+  ],
+  "description": "Ajax file input with material design",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "file input",
+    "ajax"
+  ],
+  "main": "ajax-file-input.html",
+  "license": "MIT",
+  "homepage": "https://github.com/liuyang1204/ajax-file-input",
+  "ignore": [
+    "/.*",
+    "/tests/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^0.5.2",
+    "paper-fab": "Polymer/paper-fab#~0.5.2",
+    "paper-progress": "Polymer/paper-progress#~0.5.2",
+    "core-label": "Polymer/core-label#~0.5.2",
+    "paper-toast": "Polymer/paper-toast#~0.5.2"
+  },
+  "devDependencies": {
+    "web-component-tester": "Polymer/web-component-tester#^2.0.5"
+  },
+  "_release": "0.0.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.0.2",
+    "commit": "51afe10a76e98fce22fe1bd3b1eaff32b67ef292"
+  },
+  "_source": "git://github.com/liuyang1204/ajax-file-input.git",
+  "_target": "0.0.2",
+  "_originalSource": "ajax-file-input"
+}
