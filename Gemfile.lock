@@ -39,6 +39,7 @@ GEM
     minitest (5.5.1)
     multi_json (1.10.1)
     netrc (0.10.2)
+    pg (0.18.1)
     pony (1.11)
       mail (>= 2.0)
     rack (1.6.0)
@@ -93,6 +94,7 @@ DEPENDENCIES
   bcrypt
   faker
   gravatar-ultimate
+  pg
   pony
   rake
   rest-client

@@ -13,6 +13,7 @@ gem 'gravatar-ultimate'
 gem 'sinatra-websocket'
 gem 'pony'
 gem 'rest-client'
+gem 'pg'
 
 group :development do
   gem 'sqlite3'
