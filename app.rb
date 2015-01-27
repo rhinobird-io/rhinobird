@@ -75,7 +75,7 @@ class App < Sinatra::Base
   end
 
   before do
-    login_required! unless ['/users', '/login'].include?(request.path_info)
+    login_required! unless ( ['/users', '/login'].include?(request.path_info) || request.path_info =~ /\/user\/invitation.*/)
     content_type 'application/json'
     if request.media_type == 'application/json'
       body = request.body.read
