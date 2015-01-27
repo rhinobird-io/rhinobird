@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 
-gem 'sinatra', github: 'sinatra/sinatra'
+gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'thin'
 gem 'activerecord'
@@ -12,6 +12,7 @@ gem 'sinatra-cross_origin'
 gem 'gravatar-ultimate'
 gem 'sinatra-websocket'
 gem 'pony'
+gem 'rest-client'
 
 group :development do
   gem 'sqlite3'
