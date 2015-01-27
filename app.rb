@@ -208,7 +208,10 @@ class App < Sinatra::Base
   end
 
   post '/teams' do
-    Team.create!(@body)
+    team = Team.create!(@body)
+    user = User.find(request.env['HTTP_USER'].to_i)
+    team.users.push(user)
+    team.save!
   end
 
   post '/teams/:teamId/delete' do
