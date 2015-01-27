@@ -75,9 +75,9 @@
                     <div flex>
                         <core-toolbar class="toolbar"><paper-button on-tap="{{jumpToDashboard}}">Team Work</paper-button></core-toolbar>
                         <core-menu theme="core-light-theme" hidden?="{{$.globals.values.showSetting}}">
-                            <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="/#/dashboard"></a></core-item>
-                            <core-item icon="dashboard" label="InstantMessage" active?="{{selected == 'instantmessage'}}"><a is="pushstate-anchor" href="/#/instantmessage/channels/default"></a></core-item>
-                            <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="/#/calendar"></a></core-item>
+                            <core-item icon="dashboard" label="Dashboard" active?="{{selected == 'dashboard'}}"><a is="pushstate-anchor" href="./#/dashboard"></a></core-item>
+                            <core-item icon="dashboard" label="InstantMessage" active?="{{selected == 'instantmessage'}}"><a is="pushstate-anchor" href="./#/instantmessage/channels/default"></a></core-item>
+                            <core-item icon="event" label="Calendar" active?="{{selected == 'calendar'}}"><a is="pushstate-anchor" href="./#/calendar"></a></core-item>
                             <template repeat="{{plugin in $.globals.values.plugins}}">
                                 <core-item icon="{{plugin.icon}}" label="{{plugin.label}}" active?="{{selected == plugin.active}}"><a is="pushstate-anchor" href="{{plugin.href}}"></a></core-item>
                             </template>
@@ -91,9 +91,9 @@
                                 <paper-icon-button icon="expand-less" noink></paper-icon-button>
                                 <paper-dropdown class="dropdown" halign="right" valign="bottom">
                                     <core-menu class="menu">
-                                        <paper-item noink><a class="nostyle" href="/#/profile">Profile</a></paper-item>
-                                        <paper-item noink><a class="nostyle" href="/#/team">Team</a></paper-item>
-                                        <paper-item noink><a class="nostyle" href="/#/notification">Notification</a></paper-item>
+                                        <paper-item noink><a class="nostyle" href="./#/profile">Profile</a></paper-item>
+                                        <paper-item noink><a class="nostyle" href="./#/team">Team</a></paper-item>
+                                        <paper-item noink><a class="nostyle" href="./#/notification">Notification</a></paper-item>
                                         <paper-item noink on-tap="{{logoutFunc}}">Logout</paper-item>
                                     </core-menu>
                                 </paper-dropdown>
@@ -185,7 +185,7 @@
 //            },
 
             logoutCallback: function() {
-                window.location.href = "/login";
+                window.location.href = "./login";
             },
 
             jumpToDashboard: function() {

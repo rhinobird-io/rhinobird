@@ -70,7 +70,7 @@
             connect: function (that) {
                 try {
                     var socket, host;
-                    host = "ws://" + window.location.hostname + ":" + window.location.port;
+                    host = "ws://" + window.location.hostname + ":" + window.location.port + "/platform/";
                     socket = new WebSocket(host);
 
                     console.log("Socket State: " + socket.readyState);
