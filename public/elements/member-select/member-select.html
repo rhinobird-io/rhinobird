@@ -198,7 +198,6 @@
                 this.teams = this.teams || [];
                 this.searchText = '';
                 this.isShowMenu = false;
-                this.userSelectedMap = {};
             },
 
             doFilter: function (event, detail, sender) {
@@ -297,11 +296,10 @@
 
             addOneTeam: function (team) {
                 team.users.forEach(function (user) {
-                    if (!this.userSelectedMap[user.id]) {
+                    if (this.selected.indexOf(user.id) == -1) {
                         this.selected.push(user.id);
                         this.searchText = '';
                     }
-                    this.userSelectedMap[user.id] = true;
                 }, this);
             },
 
@@ -311,11 +309,10 @@
             },
 
             addOneUser: function (userId) {
-                if (!this.userSelectedMap[userId]) {
+                if (this.selected.indexOf(userId) == -1) {
                     this.selected.push(userId);
                     this.searchText = '';
                 }
-                this.userSelectedMap[userId] = true;
             },
 
             removeUserHandler: function (event, detail, target) {
@@ -325,7 +322,6 @@
             },
 
             removeOneUser: function (userId) {
-                this.userSelectedMap[userId] = false;
                 index = this.selected.indexOf(userId);
                 this.selected.splice(index, 1);
             },
