@@ -1,6 +1,6 @@
 # Team Work
 
-Advanced, awesome, cutting-age teamwork software.
+Advanced, awesome, cutting-edge teamwork software.
 
 ## Technology
 
