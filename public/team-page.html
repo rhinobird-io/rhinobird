@@ -46,19 +46,16 @@
         <div horizontal layout center justified class="heading">
             <span on-tap="{{showTeamContent}}" flex>{{team.name}}</span>
 
-            <core-ajax id="deleteTeam"
-                       url="/platform/teams/{{team.id}}/delete"
+            <core-ajax id="leaveTeamAjax"
+                       url="/platform/teams/{{team.id}}/users/{{$.globals.values.currentUser.id}}/remove"
                        method="post"
-                       on-core-response="{{deleteTeamResponse}}"></core-ajax>
-            <paper-button on-tap="{{deleteTeam}}"><core-icon icon="delete"></core-icon>Delete Team</paper-button>
+                       on-core-response="{{leaveTeamResponse}}"></core-ajax>
+            <paper-button on-tap="{{leaveTeam}}"><core-icon icon="delete"></core-icon>Leave Team</paper-button>
         </div>
         <div>
             <core-collapse id="teamContent" allowOverflow>
                 <div class="content">
                     <div>
-                        <div horizontal layout center>
-                            <h3>{{team.name}}</h3>
-                        </div>
                         <div>
                             <core-ajax id="removeUserFromTeamAjax"
                                        url="/platform/teams/{{team.id}}/users/{{removeUserId}}/remove"
@@ -67,8 +64,8 @@
                             <template repeat="{{user in users}}">
                                 <div horizontal layout center wrap>
                                     <member-element userid="{{user.id}}"></member-element>
-                                    <core-icon class="small" icon="clear" on-click="{{ removeUserFromTeam }}"
-                                               on-mousedown="{{preventFocus}}"></core-icon>
+                                    <!--<core-icon class="small" icon="clear" on-click="{{ removeUserFromTeam }}"-->
+                                               <!--on-mousedown="{{preventFocus}}"></core-icon>-->
                                 </div>
                             </template>
                             <div style="width: 400px">
@@ -78,14 +75,15 @@
                                            contentType="application/json"
                                            body="{{newMember}}"
                                            on-core-response="{{newMemberResponse}}"></core-ajax>
-                                <member-select id="memberSelect" teamsUrl="/platform/teams_users"></member-select>
-                                <paper-button raised on-tap="{{addMemberToTeam}}">Invite to team</paper-button>
+                                <member-select id="memberSelectTeam" teamsUrl="/platform/teams_users"></member-select>
+                                <paper-button raised on-tap="{{addMemberToTeam}}">Add to team</paper-button>
                             </div>
                         </div>
                     </div>
                 </div>
             </core-collapse>
         </div>
+        <app-globals id="globals"></app-globals>
     </template>
     <script>
         Polymer("team-element", {
@@ -100,7 +98,7 @@
             },
 
             addMemberToTeam: function() {
-                this.selectedUser = this.$.memberSelect.selected;
+                this.selectedUser = this.$.memberSelectTeam.selected;
                 this.newMember = JSON.stringify(this.selectedUser);
                 var ajax = this.$.addMember;
                 ajax.go();
@@ -116,8 +114,16 @@
                 this.$.deleteTeam.go();
             },
 
+            leaveTeam: function() {
+                this.$.leaveTeamAjax.go();
+            },
+
             deleteTeamResponse: function() {
                 this.fire('team-delete', {team: this.team});
+            },
+
+            leaveTeamResponse: function() {
+                this.fire('team-leave', {team: this.team});
             },
 
             removeUserFromTeam: function (event, detail, target) {
@@ -182,7 +188,7 @@
                 </div>
                 <div vertical layout>
                     <template repeat="{{team in teams}}">
-                        <team-element team="{{team}}" class="teamBlock" on-team-delete="{{teamDeleted}}"></team-element>
+                        <team-element team="{{team}}" class="teamBlock" on-team-leave="{{teamLeaved}}"></team-element>
                     </template>
                 </div>
             </div>
@@ -195,6 +201,9 @@
                 var newTeamData = {};
                 newTeamData.team = {"name": this.teamName};
                 newTeamData.user = this.$.memberSelect.selected;
+                if (newTeamData.user.indexOf(this.$.globals.values.currentUser.id == -1)) {
+                    newTeamData.user.push(this.$.globals.values.currentUser.id);
+                }
                 this.newTeamJson = JSON.stringify(newTeamData);
                 this.$.addTeam.go();
             },
@@ -204,7 +213,7 @@
                 this.teams.push(team);
             },
 
-            teamDeleted: function(event, detail) {
+            teamLeaved: function(event, detail) {
                 index = this.teams.indexOf(detail.team);
                 this.teams.splice(index, 1);
             }
