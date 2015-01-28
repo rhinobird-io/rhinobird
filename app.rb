@@ -219,9 +219,20 @@ class App < Sinatra::Base
   #create team with initial users
   post '/teams/users' do
     team = Team.create!(@body["team"])
+    from_user = User.find(request.env['HTTP_USER'].to_i)
+    from_user.dashboard_records.create!(:content => "You have created a new team : " + team.name, :from_user_id => from_user.id)
+
     @body["user"].each do |userId|
       user = User.find(userId)
       team.users << user
+      unless userId.equal?(from_user.id)
+        user.dashboard_records.create!(:content => from_user.realname + " has added you to team : " + team.name, :from_user_id => from_user.id)
+        notification = user.notifications.create!(:content => from_user.realname + " has added you to team : " + team.name, :from_user_id => from_user.id)
+        notify = notification.to_json(:except => [:user_id])
+        unless settings.sockets[user.id].nil?
+          EM.next_tick { settings.sockets[user.id].send(notify) }
+        end
+      end
     end
     team.to_json
   end
@@ -249,10 +260,22 @@ class App < Sinatra::Base
     200
   end
 
-  #remove a user from team
+  #remove a user from team( or a user leaves a team)
   post '/teams/:teamId/users/:userId/remove' do
     team = Team.find(params[:teamId])
     team.users.delete(params[:userId])
+    user = User.find(params[:userId])
+    user.dashboard_records.create!(:content => "You have leaved team : " + team.name, :from_user_id => params[:userId])
+
+    team.users.each do |member|
+      member.dashboard_records.create!(:content => user.realname + " has left team : " + team.name, :from_user_id => params[:userId])
+      notification = member.notifications.create!(:content => user.realname + " has left team : " + team.name, :from_user_id => params[:userId])
+      notify = notification.to_json(:except => [:user_id])
+      unless settings.sockets[member.id].nil?
+        EM.next_tick { settings.sockets[member.id].send(notify) }
+      end
+    end
+
     200
   end
 
