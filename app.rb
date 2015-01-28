@@ -56,7 +56,9 @@ class App < Sinatra::Base
     if request.websocket?
       request.websocket do |ws|
         ws.onopen do
+          p "opening #{request.env['HTTP_USER'].to_i}"
           settings.sockets[request.env['HTTP_USER'].to_i] = ws
+          p settings.sockets
         end
         ws.onmessage do |msg|
           @received_msg = JSON.parse(msg)
@@ -300,7 +302,18 @@ class App < Sinatra::Base
     uid = request.env['HTTP_USER'].to_i
     event = Event.new(@body.except('participants'))
     @body['participants'].each { |p|
-      event.participants << User.find(p)
+      user = User.find(p)
+      event.participants << user
+      user.dashboard_records.create!({content: 'Invited you to the event ' + event.title, from_user_id: uid})
+      notification = user.notifications.create!({content: 'Invited you to the event ' + event.title, from_user_id: uid})
+      notify = notification.to_json(:except => [:user_id])
+      socket_id = p
+      p socket_id
+      p settings.sockets[socket_id]
+      p settings.sockets
+      unless settings.sockets[socket_id].nil?
+        EM.next_tick { settings.sockets[socket_id].send(notify) }
+      end
     }
     # Whether the event creator is also a participant by default?
     event.participants << User.find(uid);
