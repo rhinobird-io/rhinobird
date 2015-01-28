@@ -15,6 +15,7 @@ require 'gravatar-ultimate'
 require 'sinatra-websocket'
 require 'rest_client'
 require 'pony'
+require "bcrypt"
 
 class App < Sinatra::Base
 
@@ -29,6 +30,8 @@ class App < Sinatra::Base
   set :logging, true
 
   I18n.config.enforce_available_locales = true
+
+  include BCrypt
 
   error ActiveRecord::RecordInvalid do
     status 400
@@ -358,8 +361,10 @@ class App < Sinatra::Base
     user = User.find(request.env['HTTP_USER'].to_i)
     if @body["initial_team_id"].nil?
       invitation = Invitation.create({:email => email, :from_user_id => request.env['HTTP_USER'].to_i, :initial_team_id => -1})
+      initial_team = "none"
     else
       invitation = Invitation.create({:email => email, :from_user_id => request.env['HTTP_USER'].to_i, :initial_team_id => @body["initial_team_id"]})
+      initial_team = Team.find(@body["initial_team_id"]).name
     end
 
     Pony.mail({
@@ -379,6 +384,8 @@ class App < Sinatra::Base
                       :domain => "localhost.localdomain" # the HELO domain provided by the client to the server
                   }
               })
+
+    user.dashboard_records.create!(:content => "You have sent an invitation to " + email + " with initial team : " + initial_team, :from_user_id => user.id)
   end
 
   post '/users' do
@@ -399,6 +406,7 @@ class App < Sinatra::Base
     if user.password == @body["password"]
       new_password = Password.create(@body["newPassword"])
       User.update(request.env['HTTP_USER'].to_i, :encrypted_password => new_password)
+      user.dashboard_records.create!(:content => "Your password has been successfully changed", :from_user_id => user.id)
       200
     else
       401
