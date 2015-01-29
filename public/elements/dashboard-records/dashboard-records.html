@@ -10,16 +10,14 @@
 
 <polymer-element name="dashboard-record" attributes="record">
     <template>
-        <style>
-            .time {
-                font-size: small;
-                color:dimgrey;
-            }
-        </style>
         <core-item>
             <div flex>
-                <div class="time" horizontal layout center><member-element userid="{{record.from_user_id}}" menu="true"></member-element> {{record.created_at | date('yyyy-MM-dd HH:mm')}}</div>
-                <div class="content"><html-echo html="{{record.content}}"></html-echo></div>
+                <div horizontal layout center>
+                    <member-element view="custom" userid="{{record.from_user_id}}" menu="true">
+                        <div class="title">{{record.created_at | date('yyyy-MM-dd HH:mm')}}</div>
+                        <div class="content"><html-echo html="{{record.content}}"></html-echo></div>
+                    </member-element>
+                </div>
             </div>
         </core-item>
     </template>
