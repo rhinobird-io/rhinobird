@@ -64,7 +64,6 @@ class App < Sinatra::Base
         ws.onmessage do |msg|
           @received_msg = JSON.parse(msg)
           mark_notification_as_read!
-          # EM.next_tick { ws.send(msg) }
         end
         ws.onclose do
           settings.sockets.delete(ws)
@@ -268,7 +267,7 @@ class App < Sinatra::Base
     team = Team.find(params[:teamId])
     team.users.delete(params[:userId])
     user = User.find(params[:userId])
-    user.dashboard_records.create!(:content => "You have leaved team : " + team.name, :from_user_id => params[:userId])
+    user.dashboard_records.create!(:content => "You have left team : " + team.name, :from_user_id => params[:userId])
 
     team.users.each do |member|
       member.dashboard_records.create!(:content => user.realname + " has left team : " + team.name, :from_user_id => params[:userId])
