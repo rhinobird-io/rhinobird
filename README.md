@@ -2,6 +2,10 @@
 
 Advanced, awesome, cutting-edge teamwork software.
 
+https://docs.google.com/document/d/1sRo4YhwMwz1bbdfCx4VEbeZdOkYfB_hB-t7UJ9Uewk0/edit?usp=sharing
+
+https://docs.google.com/document/d/133C_q2xz7ld76JHtSsO7fm3Hb4O623sWayZ8pdKUY-s/edit?usp=sharing
+
 ## Technology
 
 1. Web Component
