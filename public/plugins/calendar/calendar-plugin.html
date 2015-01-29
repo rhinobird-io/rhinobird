@@ -310,7 +310,7 @@
                 <template if="{{mode=='edit'}}">
                     <paper-fab mini icon="done" class="accentColor" on-tap="{{saveEvent}}"></paper-fab>
                 </template>
-                <template if="{{mode=='view'}}">
+                <template if="{{mode=='view' && this.selected.creator_id == $.globals.values.currentUser.id}}">
                     <paper-fab mini icon="remove" class="accentColor" on-tap="{{deleteEvent}}"></paper-fab>
                 </template>
                 <span class="subTitle">Schedule</span>
@@ -580,7 +580,7 @@
             },
             select: function (event, detail, target) {
                 this.selected = target.templateInstance.model.model;
-                console.log(this.selected);
+                //console.log(this.selected);
                 var self = this;
                 setTimeout(function () {
                     self.$.autogrowArea.update(self.$.textArea);
