@@ -25,7 +25,7 @@
         </paper-input-decorator>
         <core-ajax url="/platform/users" auto handleAs="json" response="{{users}}"></core-ajax>
 
-        <paper-shadow z="1" id="menu">
+        <paper-shadow z="1" id="menu" hidden?="{{!showMenu}}">
             <div>
                 <core-selector id="selector" selected="0">
                     <template repeat="{{ u in filteredUsers}}">
@@ -39,13 +39,16 @@
     </template>
     <script>
         Polymer({
+            showMenu: false,
             label: 'Text',
             textInputted: function (event, detail, target) {
+                this.showMenu = false;
                 var lastWord = target.value.match(/([^\s]*)$/)[1];
                 if (lastWord.length == 0) {
                     return;
                 }
                 if (lastWord.charAt(0) == '@') {
+                    this.showMenu = true;
                     var text = lastWord.substring(1);
                     this.filteredUsers = this.filterUser(text);
                 }
@@ -75,6 +78,7 @@
                 } else if (event.keyCode === 13) {
                     var user = this.$.selector.selectedModel.u;
                     sender.value = sender.value.replace(/[^\s]*$/, "@" + user.realname + " ");
+                    this.showMenu = false;
                     event.preventDefault();
                 } else {
                     this.$.selector.selected = 0;
@@ -84,6 +88,7 @@
             addUserHandler: function(event, detail, target) {
                 var user = target.templateInstance.model.u;
                 this.$.textarea.value = this.$.textarea.value.replace(/[^\s]*$/, "@" + user.realname + " ");
+                this.showMenu = false;
             }
         });
     </script>
