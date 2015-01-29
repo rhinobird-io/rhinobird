@@ -386,6 +386,7 @@ class App < Sinatra::Base
     if !event.participants.include? user_self 
       event.participants << user_self
     end
+    event.creator_id = uid
 
     event.save!
     event.to_json(include: {participants: {only: :id}})
