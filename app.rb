@@ -349,7 +349,7 @@ class App < Sinatra::Base
   end
 
   get '/users' do
-    User.all.to_json
+    User.all.to_json(except: [:encrypted_password, :created_at, :updated_at])
   end
 
   get '/user/invitation/:inviteId' do

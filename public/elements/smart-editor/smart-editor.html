@@ -1,18 +1,62 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input-decorator.html">
 <link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
+<link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
+<link rel="import" href="../../bower_components/core-selector/core-selector.html">
+<link rel="import" href="../member-select/member-element.html">
 
 <polymer-element name="smart-editor" attributes="label">
     <template>
+        <style>
+            #menu {
+                position: absolute;
+            }
+        </style>
         <paper-input-decorator label="{{label}}" floatingLabel>
             <paper-autogrow-textarea>
-                <textarea></textarea>
+                <textarea on-input="{{textInputted}}"></textarea>
             </paper-autogrow-textarea>
         </paper-input-decorator>
+        <core-ajax url="/platform/users" auto handleAs="json" response="{{users}}"></core-ajax>
+
+        <paper-shadow z="1" id="menu">
+            <div>
+                <core-selector id="selector" selected="0">
+                    <template repeat="{{ u in filteredUsers}}">
+                        <div on-tap="{{addUserHandler}}">
+                            <member-element userid="{{u.id}}"></member-element>
+                        </div>
+                    </template>
+                </core-selector>
+            </div>
+        </paper-shadow>
     </template>
     <script>
         Polymer({
-            label: 'Text'
+            label: 'Text',
+            textInputted: function (event, detail, target) {
+                var lastWord = target.value.match(/([^\s]*)$/)[1];
+                if (lastWord.length == 0) {
+                    return;
+                }
+                if (lastWord.charAt(0) == '@') {
+                    var text = lastWord.substring(1);
+                    this.filteredUsers = this.filterUser(text);
+                }
+            },
+            filterUser: function (text) {
+                var result = [];
+                text = text.toLowerCase();
+                if (this.users) {
+                    this.users.forEach(function (user) {
+                        if ((user.email.toLowerCase().indexOf(text) != -1 || user.realname.toLowerCase().indexOf(text) != -1) && result.length < 8) {
+                            result.push(user);
+                        }
+                    }, this);
+                }
+                return result;
+            }
         });
     </script>
 </polymer-element>
