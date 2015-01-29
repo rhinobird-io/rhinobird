@@ -13,9 +13,13 @@
                 position: absolute;
                 background-color: #C5CAE9;
             }
+
             .core-selected {
                 background-color: #FF4081;
                 color: white;
+            }
+            .wrapper {
+                position: relative;
             }
         </style>
         <paper-input-decorator label="{{label}}" floatingLabel>
@@ -24,20 +28,23 @@
             </paper-autogrow-textarea>
         </paper-input-decorator>
         <core-ajax url="/platform/users" auto handleAs="json" response="{{users}}"></core-ajax>
-
-        <paper-shadow z="1" id="menu" hidden?="{{!showMenu}}">
-            <div>
-                <core-selector id="selector" selected="0">
-                    <template repeat="{{ u in filteredUsers}}">
-                        <div on-tap="{{addUserHandler}}">
-                            <member-element userid="{{u.id}}"></member-element>
-                        </div>
-                    </template>
-                </core-selector>
-            </div>
-        </paper-shadow>
+        <div class="wrapper">
+            <paper-shadow z="1" id="menu" hidden?="{{!showMenu}}">
+                <div>
+                    <core-selector id="selector" selected="0">
+                        <template repeat="{{ u in filteredUsers}}">
+                            <div on-tap="{{addUserHandler}}">
+                                <member-element userid="{{u.id}}"></member-element>
+                            </div>
+                        </template>
+                    </core-selector>
+                </div>
+            </paper-shadow>
+        </div>
     </template>
+    <script src="../../lib/textarea-caret-position.js"></script>
     <script>
+        var getCaretCoordinates = require('textarea-caret-position');
         Polymer({
             showMenu: false,
             label: 'Text',
@@ -48,6 +55,9 @@
                     return;
                 }
                 if (lastWord.charAt(0) == '@') {
+                    var coordinates = getCaretCoordinates(target, target.selectionEnd - lastWord.length);
+                    this.$.menu.style.top = coordinates.top + "px";
+                    this.$.menu.style.left = coordinates.left + "px";
                     this.showMenu = true;
                     var text = lastWord.substring(1);
                     this.filteredUsers = this.filterUser(text);
@@ -85,7 +95,7 @@
                     this.$.selector.parentElement.scrollTop = 0;
                 }
             },
-            addUserHandler: function(event, detail, target) {
+            addUserHandler: function (event, detail, target) {
                 var user = target.templateInstance.model.u;
                 this.$.textarea.value = this.$.textarea.value.replace(/[^\s]*$/, "@" + user.realname + " ");
                 this.showMenu = false;
