@@ -1,0 +1,18 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input-decorator.html">
+<link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
+
+<polymer-element name="smart-editor" attributes="label">
+    <template>
+        <paper-input-decorator label="{{label}}" floatingLabel>
+            <paper-autogrow-textarea>
+                <textarea></textarea>
+            </paper-autogrow-textarea>
+        </paper-input-decorator>
+    </template>
+    <script>
+        Polymer({
+            label: 'Text'
+        });
+    </script>
+</polymer-element>
