@@ -382,7 +382,13 @@ class App < Sinatra::Base
       end
     }
 
+    # Whether the event creator is also a participant by default?
+    user_self = User.find(uid)
+    if !event.participants.include? user_self 
+      event.participants << user_self
+    end
 
+    event.save!
     event.to_json(include: {participants: {only: :id}})
   end
 
