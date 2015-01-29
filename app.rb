@@ -296,6 +296,15 @@ class App < Sinatra::Base
     User.find(params[:userId]).events.order(:from).to_json(include: {participants: {only: :id}})
   end
 
+  get '/events/:eventId' do
+    begin
+      event = Event.find(params[:eventId])
+      event.to_json(include: {participants: {only: :id}})
+    rescue Exception => e
+      404
+    end
+  end
+
   post '/events' do
     uid = request.env['HTTP_USER'].to_i
     event = Event.new(@body.except('participants'))
