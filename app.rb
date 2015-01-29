@@ -322,8 +322,12 @@ class App < Sinatra::Base
 
   delete '/events/:eventId' do
     event = Event.find(params[:eventId])
-    event.destroy
-    200
+    if event.creator.id == request.env['HTTP_USER'].to_i
+      event.destroy
+      200
+    else
+      403
+    end
   end
 
   get '/users' do
