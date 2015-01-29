@@ -15,7 +15,6 @@
 <link rel="import" href="../../elements/smart-time-display/smart-time-display.html">
 <link rel="import" href="../../bower_components/core-list/core-list.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
-
 <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
 
@@ -487,7 +486,6 @@
             </div>
         </div>
         <app-globals id="globals"></app-globals>
-
         <template if="{{$.globals.values.currentUser && eventId == null}}">
             <core-ajax
                 auto
@@ -598,8 +596,10 @@
                 });
                 this.refresh();
                 this.isListLoaded = true;
+                
                 if (this.events.length > 0)
                     this.range = {min: this.events[0].fromTime, max: this.events[this.events.length - 1].fromTime};
+
             },
             handleSingleEvent: function(event, detail) {
                 this.selected = detail.response;
