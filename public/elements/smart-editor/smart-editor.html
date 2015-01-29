@@ -5,8 +5,27 @@
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
 <link rel="import" href="../../bower_components/core-selector/core-selector.html">
 <link rel="import" href="../member-select/member-element.html">
+<link rel="import" href="../html-echo/html-echo.html">
 
-<polymer-element name="smart-editor" attributes="label">
+<polymer-element name="smart-display" attributes="value">
+    <template>
+        <div>
+            <html-echo html="{{wrap(value)}}"></html-echo>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            wrap: function (value) {
+                if (value) {
+                    //test
+                    return value.replace(/(@[^\s]+)/g, "<a href='#'>$1</a>");
+                }
+            }
+        });
+    </script>
+</polymer-element>
+
+<polymer-element name="smart-editor" attributes="label value">
     <template>
         <style>
             #menu {
@@ -19,13 +38,15 @@
                 background-color: #FF4081;
                 color: white;
             }
+
             .wrapper {
                 position: relative;
             }
         </style>
         <paper-input-decorator label="{{label}}" floatingLabel>
-            <paper-autogrow-textarea>
-                <textarea on-input="{{textInputted}}" on-keydown="{{doFilter}}" id="textarea"></textarea>
+            <paper-autogrow-textarea id="autogrow">
+                <textarea on-input="{{textInputted}}" on-keydown="{{doFilter}}" id="textarea"
+                          value="{{value}}"></textarea>
             </paper-autogrow-textarea>
         </paper-input-decorator>
         <core-ajax url="/platform/users" auto handleAs="json" response="{{users}}"></core-ajax>
@@ -88,7 +109,8 @@
                     }
                 } else if (event.keyCode === 13) {
                     var user = this.$.selector.selectedModel.u;
-                    sender.value = sender.value.replace(/[^\s]*$/, "@" + user.realname + " ");
+                    this.value = this.value.replace(/[^\s]*$/, "@" + user.realname + " ");
+                    this.$.autogrow.update(this.$.textarea);
                     this.showMenu = false;
                     event.preventDefault();
                 } else {
@@ -98,7 +120,8 @@
             },
             addUserHandler: function (event, detail, target) {
                 var user = target.templateInstance.model.u;
-                this.$.textarea.value = this.$.textarea.value.replace(/[^\s]*$/, "@" + user.realname + " ");
+                this.value = this.value.replace(/[^\s]*$/, "@" + user.realname + " ");
+                this.$.autogrow.update(this.$.textarea);
                 this.showMenu = false;
             }
         });

@@ -11,9 +11,12 @@
     </style>
 </head>
 <body>
-<div layout vertical center-center fit>
-    <smart-editor></smart-editor>
-</div>
+<template is="auto-binding">
+    <div layout vertical center fit>
+        <smart-display value="{{value}}"></smart-display>
+        <smart-editor value="{{value}}"></smart-editor>
+    </div>
+</template>
 
 </body>
 </html>
