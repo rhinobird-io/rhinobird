@@ -19,6 +19,8 @@
                 if (value) {
                     //test
                     return value.replace(/(@[^\s]+)/g, "<a href='#'>$1</a>");
+                } else{
+                    return "";
                 }
             }
         });
