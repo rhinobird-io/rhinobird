@@ -14,7 +14,7 @@
 <link rel="import" href="../../elements/smart-time-display/smart-time-display.html">
 <link rel="import" href="../../bower_components/core-list/core-list.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
-
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
 <core-style id="calendar">
     paper-tabs::shadow #selectionBar{
@@ -230,6 +230,16 @@
         *transition: opacity ease-in 0.2s
     }
 
+    .message {
+        text-align: center;
+        color: rgba(0, 0, 0, .8);
+        font-size: 24px;
+        font-weight: 600;
+        margin-top: 10%;
+
+        font-family: 'Open Sans';
+    }
+
     @media screen and (min-width: 1170px) {
         .event {
             position: absolute;
@@ -298,19 +308,19 @@
     }
 </core-style>
 
-<polymer-element name="schedule-list">
+<polymer-element name="schedule-list" attributes="eventId">
     <template>
         <core-style ref="theme"></core-style>
         <core-style ref="calendar"></core-style>
         <div layout vertical fit>
             <div class="mainColor wrapper">
-                <template if="{{mode=='list'}}">
+                <template if="{{mode=='list' && eventId == null}}">
                     <paper-fab mini icon="add" class="accentColor" on-tap="{{jumpToAdd}}"></paper-fab>
                 </template>
                 <template if="{{mode=='edit'}}">
                     <paper-fab mini icon="done" class="accentColor" on-tap="{{saveEvent}}"></paper-fab>
                 </template>
-                <template if="{{mode=='view' && this.selected.creator_id == $.globals.values.currentUser.id}}">
+                <template if="{{mode=='view' && selected.creator_id == $.globals.values.currentUser.id}}">
                     <paper-fab mini icon="remove" class="accentColor" on-tap="{{deleteEvent}}"></paper-fab>
                 </template>
                 <span class="subTitle">Schedule</span>
@@ -469,16 +479,25 @@
                             </div>
                         </div>
                     </section>
+                    <section>
+                        <div class="message">Event not found, back to <a href="#" on-tap="{{main}}">calendar</a>.</div>
+                    </section>
                 </core-animated-pages>
             </div>
         </div>
         <app-globals id="globals"></app-globals>
-        <template if="{{$.globals.values.currentUser}}">
+        <core-ajax
+                id="getEvents"
+                url="/platform/users/{{$.globals.values.currentUser.id}}/events"
+                handleAs="json"
+                on-core-response="{{handleEvents}}"></core-ajax>
+        <template if="{{$.globals.values.currentUser && eventId != null}}">
             <core-ajax
                     auto
-                    url="/platform/users/{{$.globals.values.currentUser.id}}/events"
+                    url="/platform/events/{{eventId}}"
                     handleAs="json"
-                    on-core-response="{{handleEvents}}"></core-ajax>
+                    on-core-error="{{handleSingleEventError}}"
+                    on-core-response="{{handleSingleEvent}}"></core-ajax>
         </template>
         <core-ajax id="postEvent"
                    url="/platform/events"
@@ -502,6 +521,7 @@
     <script>
         Polymer({
             mode: "list",
+            isListLoaded: false,
             computed:{
                 modeDisabled: 'mode=="view"'
             },
@@ -512,6 +532,10 @@
             observe: {
                 'selected.period': 'changeTab'
             },
+            
+            ready: function() {
+            },
+
             refresh: function() {
                 this.events.sort(function(o1, o2) {
                     if (o1.from < o2.from) return -1;
@@ -551,6 +575,27 @@
                     });
                 });
                 this.refresh();
+                this.isListLoaded = true;
+            },
+            handleSingleEvent: function(event, detail) {
+                this.selected = detail.response;
+                this.parseEvent(this.selected);
+                console.log(this.selected.creator_id)
+                var self = this;
+                setTimeout(function () {
+                    self.$.autogrowArea.update(self.$.textArea);
+                    self.$.decorator.updateLabelVisibility(self.$.textArea.value);
+                    self.$.pages.selected = 1;
+                }, 100);
+                this.mode = 'view';
+            },
+            handleSingleEventError: function(event, detail) {
+                console.log(detail)
+                if (detail.xhr.status == 404) {
+                    console.log('not found');
+                    this.mode = 'view';
+                    this.$.pages.selected = 2;
+                }
             },
             changeTab: function (oldV, newV) {
                 this.tabSelected = newV ? 0 : 1;
@@ -592,6 +637,13 @@
             main: function () {
                 this.$.pages.selected = 0;
                 this.mode = 'list';
+                if (!this.isListLoaded) {
+                    //console.log("hahah")
+                    //var router = document.querySelector("app-router");
+                    //router.go("/calendar");
+                    this.$.getEvents.go();
+                }
+                this.eventId = null;
             },
             jumpToAdd: function () {
                 this.selected = {from: new Date(), to: new Date(), participants: [], full_day: false, period: true};
@@ -640,17 +692,18 @@
     </script>
 </polymer-element>
 
-<polymer-element name="calendar-plugin">
+<polymer-element name="calendar-plugin" attributes="eventId">
     <template>
         <core-style ref="theme"></core-style>
         <style>
 
         </style>
         <home-container>
-            <schedule-list></schedule-list>
+            <schedule-list eventId="{{eventId}}"></schedule-list>
         </home-container>
     </template>
     <script>
-        Polymer({});
+        Polymer({
+        });
     </script>
 </polymer-element>
