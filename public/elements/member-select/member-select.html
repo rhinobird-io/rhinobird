@@ -198,6 +198,7 @@
                 this.teams = this.teams || [];
                 this.searchText = '';
                 this.isShowMenu = false;
+                this.selected = [];
             },
 
             doFilter: function (event, detail, sender) {
@@ -263,7 +264,7 @@
                 } else {
                     this.$.menu.style.bottom = wrapperHeight + 'px';
                 }
-                    
+
                 this.isShowMenu = true;
 
             },
@@ -328,7 +329,7 @@
 
             // public attributes
             teamsUrl: '',
-            selected: []
+            selected: null
         });
     </script>
 </polymer-element>
