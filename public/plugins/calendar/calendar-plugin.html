@@ -14,8 +14,11 @@
 <link rel="import" href="../../elements/smart-time-display/smart-time-display.html">
 <link rel="import" href="../../bower_components/core-list/core-list.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/event-infinite-scroll/event-infinite-scroll.html">
+
 <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
 <core-style id="calendar">
     paper-tabs::shadow #selectionBar{
         background-color: {{g.theme.accentBgColor}};
@@ -328,45 +331,9 @@
             <div flex vertical layout class="list">
                 <core-animated-pages selected="0" transitions="cross-fade-all" id="pages" flex>
                     <section>
+                    <event-infinite-scroll on-reach-bottom="{{timelineReachBottom}}" on-reach-top="{{timelineReachTop}}">
                         <div class="container" fit>
                             <div class="timeline" vertical layout>
-                                <!--
-                                <core-list data="{{eventsByDays}}" flex>
-                                    <template>
-                                        <div class="listitem">
-                                        <div class="dayDivider">
-                                            <hr />
-                                            <div class="dayDividerLabel">{{model.date}}</div>
-                                        </div>
-                                        <core-list data="{{model.events}}">
-                                            <template>
-                                                <div class="listitem">
-                                                    <div layout horizontal class="block" center on-tap="{{select}}">
-                                                        <div class="event mainColor">
-                                                            <core-icon icon="event"></core-icon>
-                                                        </div>
-                                                        <div hero hero-id="{{event.id}}" vertical layout flex class="content">
-                                                            <div>{{model.title}}</div>
-                                                            <div class="time iconColor">
-                                                                <smart-time-display from="{{model.from}}" to="{{model.to}}"
-                                                                                    period="{{model.period}}"
-                                                                                    full_day="{{model.full_day}}"></smart-time-display>
-                                                            </div>
-                                                        </div>
-                                                        <div class="info">
-                                                        <core-icon icon="info" class="iconColor"></core-icon>
-                                                        </div>
-                                                        <paper-ripple fit></paper-ripple>
-                                                    </div>
-                                                </div>
-                                            </template>
-                                        </core-list>
-                                        </div>
-                                    </template>
-                                </core-list>
-                                -->
-
-                                
                                 <core-list data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;">
                                     <template>
                                         <div divider class="dayDivider">
@@ -402,6 +369,7 @@
 
                             </div>
                         </div>
+                    </event-infinite-scroll>
                     </section>
                     <section>
                         <div hero hero-id="{{selected.id}}" class="detail" vertical layout fit center slide-up>
@@ -480,7 +448,7 @@
                         </div>
                     </section>
                     <section>
-                        <div class="message">Event not found, back to <a href="#" on-tap="{{main}}">calendar</a>.</div>
+                        <div class="message">Event not found, back to <a href="#/calendar">calendar</a>.</div>
                     </section>
                 </core-animated-pages>
             </div>
@@ -691,6 +659,12 @@
                 this.main();
                 this.$.eventDeletedToast.show();
                 this.refresh();
+            },
+            timelineReachBottom: function() {
+                console.log('hahaha');
+            },
+            timelineReachTop: function() {
+
             }
         });
     </script>

@@ -22,7 +22,8 @@
     "lodash": "~2.4.1",
     "app-router": "~2.3.2",
     "paper-date-picker": "~0.1.4",
-    "md-timepicker": "https://github.com/uqlibrary/md-timepicker.git#master"
+    "md-timepicker": "https://github.com/uqlibrary/md-timepicker.git#master",
+    "event-infinite-scroll": "https://github.com/chadliu23/event-infinite-scroll"
   },
   "resolutions": {
     "polymer": "0.5.4",
