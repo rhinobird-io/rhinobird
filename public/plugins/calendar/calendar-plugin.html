@@ -486,11 +486,15 @@
             </div>
         </div>
         <app-globals id="globals"></app-globals>
-        <core-ajax
+
+        <template if="{{$.globals.values.currentUser && eventId == null}}">
+            <core-ajax
+                auto
                 id="getEvents"
                 url="/platform/users/{{$.globals.values.currentUser.id}}/events"
                 handleAs="json"
                 on-core-response="{{handleEvents}}"></core-ajax>
+        </template>
         <template if="{{$.globals.values.currentUser && eventId != null}}">
             <core-ajax
                     auto
