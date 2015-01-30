@@ -19,7 +19,7 @@
                 if (value) {
                     //test
                     return value.replace(/(@[^\s]+)/g, "<a href='#'>$1</a>");
-                } else{
+                } else {
                     return "";
                 }
             }
@@ -110,11 +110,13 @@
                         this.$.selector.selectNext(true);
                     }
                 } else if (event.keyCode === 13) {
-                    var user = this.$.selector.selectedModel.u;
-                    this.value = this.value.replace(/[^\s]*$/, "@" + user.name + " ");
-                    this.$.autogrow.update(this.$.textarea);
-                    this.showMenu = false;
-                    event.preventDefault();
+                    if (this.showMenu) {
+                        var user = this.$.selector.selectedModel.u;
+                        this.value = this.value.replace(/[^\s]*$/, "@" + user.name + " ");
+                        this.$.autogrow.update(this.$.textarea);
+                        this.showMenu = false;
+                        event.preventDefault();
+                    }
                 } else {
                     this.$.selector.selected = 0;
                     this.$.selector.parentElement.scrollTop = 0;
