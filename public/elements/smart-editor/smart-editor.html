@@ -75,7 +75,7 @@
             label: 'Text',
             textInputted: function (event, detail, target) {
                 this.showMenu = false;
-                var lastWord = target.value.match(/([^\s]*)$/)[1];
+                var lastWord = target.value.substring(0, target.selectionEnd).match(/([^\s]*)$/)[1];
                 if (lastWord.length == 0) {
                     return;
                 }
@@ -113,8 +113,7 @@
                 } else if (event.keyCode === 13) {
                     if (this.showMenu) {
                         var user = this.$.selector.selectedModel.u;
-                        this.value = this.value.replace(/[^\s]*$/, "@" + user.name + " ");
-                        this.$.autogrow.update(this.$.textarea);
+                        this.replaceText(user);
                         this.showMenu = false;
                         event.preventDefault();
                     }
@@ -125,9 +124,20 @@
             },
             addUserHandler: function (event, detail, target) {
                 var user = target.templateInstance.model.u;
-                this.value = this.value.replace(/[^\s]*$/, "@" + user.name + " ");
-                this.$.autogrow.update(this.$.textarea);
+                this.replaceText(user);
                 this.showMenu = false;
+            },
+            replaceText: function(user) {
+                var left, right;
+                left = this.value.substring(0, this.$.textarea.selectionEnd);
+                right = this.value.substring(this.$.textarea.selectionEnd);
+                left = left.replace(/[^\s]*$/, "@" + user.name + " ");
+                this.value = left + right;
+                this.$.autogrow.update(this.$.textarea);
+                var self = this;
+                setTimeout(function(){
+                    self.$.textarea.selectionEnd = left.length+1;
+                }, 0);
             }
         });
     </script>
