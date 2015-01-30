@@ -15,6 +15,8 @@
 <link rel="import" href="../../elements/smart-time-display/smart-time-display.html">
 <link rel="import" href="../../bower_components/core-list/core-list.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/event-infinite-scroll/event-infinite-scroll.html">
+
 <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
 
@@ -360,7 +362,6 @@
                             <div class="loading top-loading">{{loadingOlderText}}</div>
                         </template>
                         <div class="container" id="container" fit>
-                            
                             <div class="timeline" vertical layout>
                                 <core-list data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;">
                                     <template>
@@ -398,7 +399,6 @@
                                 
                             </div>
                         </div>
-
                         <template if="{{loadingMoreNewerEvents}}">
                                 <div class="loading bottom-loading">{{loadingNewerText}}</div>
                         </template>
