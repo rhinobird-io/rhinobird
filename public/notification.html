@@ -34,7 +34,7 @@
             <paper-dropdown id="notifyList" class="dropdown" halign="right" style="color:#000;width: 400px; max-height: 400px" on-core-overlay-open="{{checkNotifications}}" on-core-overlay-close-completed="{{markAsChecked}}">
                 <core-menu class="menu" style="overflow-x:hidden">
                     <template repeat="{{notification in orderNotification(notifications)}}">
-                        <paper-item>
+                        <paper-item on-tap="{{jumpToTargetUrl}}">
                             <notification-record notification="{{notification}}"></notification-record>
                         </paper-item>
                     </template>
@@ -145,51 +145,6 @@
                 document.showNotification(this.notificationData.from_user_id, this.notificationData.content);
             },
 
-//            showNotification: function () {
-//                if (!Notification) {
-//                    alert('Please use a modern version of Chrome');
-//                    return;
-//                }
-//
-//                if (Notification.permission !== "granted")
-//                    Notification.requestPermission();
-//
-//                if (this.$.globals.values.memberCache[this.notificationData.from_user_id]) {
-//                    var gravatar = this.$.globals.values.memberCache[this.notificationData.from_user_id];
-//                    document.createNotification(gravatar.username, gravatar.url + "?d=identicon", this.notificationData.content);
-//                } else {
-//                    that = this;
-//                    xhr = new XMLHttpRequest();
-//                    xhr.onload = function () {
-//                        that.gravatars = JSON.parse(this.responseText);
-//                        that.$.globals.values.memberCache[that.notificationData.from_user_id] = that.gravatars[0];
-//                        document.createNotification(that.gravatars[0].username, that.gravatars[0].url + "?d=identicon", that.notificationData.content);
-//                    };
-//                    xhr.open("GET", "/platform/gravatar?0=" + encodeURIComponent(this.notificationData.from_user_id), true);
-//                    xhr.send();
-//                }
-//            },
-
-//            createNotification: function(title, icon, body, url) {
-//                var notification = new Notification(title, {
-//                    icon: icon,
-//                    body: body
-//                });
-//
-//                notification.onclick = function() {
-//                    window.focus();
-//                    if (this.url) {
-//                        window.location.href = url;
-//                    }
-//                };
-//
-//                setTimeout((function (notify) {
-//                    return function () {
-//                        notify.close();
-//                    }
-//                })(notification), 5000);
-//            },
-
             orderNotification: function(notifications) {
                 if (notifications) {
                     return notifications.sort(function(a,b) {
@@ -280,6 +235,12 @@
             hasBeenScrolledToView: function(index) {
                 var itemRect = this.notificationElements[index].querySelector("notification-record").shadowRoot.querySelector("member-element > #content").getBoundingClientRect();
                 return (this.parentRect.bottom > itemRect.bottom);
+            },
+
+            jumpToTargetUrl: function(event, detail, target) {
+                if (target.templateInstance.model.notification.url) {
+                    window.location.href = target.templateInstance.model.notification.url;
+                }
             }
         });
     </script>
