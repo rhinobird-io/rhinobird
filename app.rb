@@ -371,6 +371,23 @@ class App < Sinatra::Base
   delete '/events/:eventId' do
     event = Event.find(params[:eventId])
     if event.creator.id == request.env['HTTP_USER'].to_i
+      uid = event.creator.id
+
+      content = 'Has canceled the event ' + event.title
+
+      event.participants.each { |p|
+        user = User.find(p.id)
+        next if p.id == uid 
+        
+        user.dashboard_records.create!({content: content, from_user_id: uid})
+        notification = user.notifications.create!({content: content, from_user_id: uid})
+        notify = notification.to_json(:except => uid)
+        socket_id = p.id
+        unless settings.sockets[socket_id].nil?
+          EM.next_tick { settings.sockets[socket_id].send(notify) }
+        end
+      }
+      
       event.destroy
       200
     else
