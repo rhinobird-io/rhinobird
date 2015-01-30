@@ -355,12 +355,12 @@ class App < Sinatra::Base
   end
 
   get '/events/:eventId' do
-    begin
+    #begin
       event = Event.find(params[:eventId])
       event.to_json(include: {participants: {only: :id}})
-    rescue Exception => e
-      404
-    end
+    #rescue Exception => e
+    #  404
+    #end
   end
 
   post '/events' do
@@ -399,6 +399,20 @@ class App < Sinatra::Base
     event.creator_id = uid
 
     event.save!
+
+    @body['participants'].each { |p|
+      user = User.find(p)
+      user.dashboard_records.create!({content: 'Invited you to the event <a href="#/calendar/' + event.id.to_s + '">' + event.title + '</a>', from_user_id: uid})
+
+      notification = user.notifications.create!({content: 'Invited you to the event ' + event.title, from_user_id: uid})
+      notify = notification.to_json(:except => [:user_id])
+      socket_id = p
+      unless settings.sockets[socket_id].nil?
+        EM.next_tick { settings.sockets[socket_id].send(notify) }
+      end
+    }
+
+
     event.to_json(include: {participants: {only: :id}})
   end
 
