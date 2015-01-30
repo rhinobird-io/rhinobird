@@ -92,7 +92,7 @@
                 text = text.toLowerCase();
                 if (this.users) {
                     this.users.forEach(function (user) {
-                        if ((user.email.toLowerCase().indexOf(text) != -1 || user.realname.toLowerCase().indexOf(text) != -1) && result.length < 8) {
+                        if ((user.email.toLowerCase().indexOf(text) != -1 || user.name.toLowerCase().indexOf(text) != -1 || user.realname.toLowerCase().indexOf(text) != -1) && result.length < 8) {
                             result.push(user);
                         }
                     }, this);
@@ -111,7 +111,7 @@
                     }
                 } else if (event.keyCode === 13) {
                     var user = this.$.selector.selectedModel.u;
-                    this.value = this.value.replace(/[^\s]*$/, "@" + user.realname + " ");
+                    this.value = this.value.replace(/[^\s]*$/, "@" + user.name + " ");
                     this.$.autogrow.update(this.$.textarea);
                     this.showMenu = false;
                     event.preventDefault();
@@ -122,7 +122,7 @@
             },
             addUserHandler: function (event, detail, target) {
                 var user = target.templateInstance.model.u;
-                this.value = this.value.replace(/[^\s]*$/, "@" + user.realname + " ");
+                this.value = this.value.replace(/[^\s]*$/, "@" + user.name + " ");
                 this.$.autogrow.update(this.$.textarea);
                 this.showMenu = false;
             }
