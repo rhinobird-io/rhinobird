@@ -3,6 +3,7 @@
 <link rel="import" href="bower_components/core-icon/core-icon.html">
 <link rel="import" href="bower_components/core-icons/social-icons.html">
 <link rel="import" href="bower_components/core-style/core-style.html">
+<link rel="import" href="notification-record.html">
 
 <polymer-element name="notification-element">
     <template>
@@ -35,17 +36,11 @@
         <template if="{{notifications.length != 0}}">
             <paper-menu-button>
                 <paper-icon-button icon="social:notifications"></paper-icon-button>
-                <paper-dropdown class="dropdown" halign="right" style="color:#000;width: 400px" on-core-overlay-close-completed="{{clearNotifications}}">
-                    <core-menu class="menu">
-                        <template repeat="{{notification in notifications}}">
+                <paper-dropdown id="notifyList" class="dropdown" halign="right" style="color:#000;width: 400px; max-height: 400px" on-core-overlay-open="{{checkNotifications}}" on-core-overlay-close-completed="{{markAsChecked}}">
+                    <core-menu class="menu" style="overflow-x:hidden">
+                        <template repeat="{{notification in orderNotification(notifications)}}">
                             <paper-item>
-                                <div>
-                                    <div horizontal layout center>
-                                        <member-element userid="{{notification.from_user_id}}"></member-element>
-                                        {{notification.created_at | date('yyyy-MM-dd HH:mm')}}
-                                    </div>
-                                    <label>{{notification.content}}</label>
-                                </div>
+                                <notification-record notification="{{notification}}"></notification-record>
                             </paper-item>
                         </template>
                     </core-menu>
@@ -65,6 +60,19 @@
                 if (!this.$.globals.values.websocket) {
                     this.$.globals.values.websocket = this.connect(this);
                 }
+            },
+
+            domReady: function() {
+                var scrollTimeout = null;
+                that = this;
+                this.$.notifyList.shadowRoot.querySelector("#scroller").addEventListener("scroll", function(event, detail, target) {
+                    if (scrollTimeout) {
+                        clearTimeout(scrollTimeout);
+                    }
+                    scrollTimeout = setTimeout(function(){
+                        that.findLastCheckedNotification();
+                    },500);
+                });
             },
 
             connect: function (that) {
@@ -109,34 +117,155 @@
                 if (Notification.permission !== "granted")
                     Notification.requestPermission();
 
-                that = this;
-                xhr = new XMLHttpRequest();
-                xhr.onload = function () {
-                    that.gravatars = JSON.parse(this.responseText);
-                    var notification = new Notification(that.gravatars[0].username, {
-                        icon: that.gravatars[0].url + "?d=identicon",
-                        body: that.notificationData.content
-                    });
-
-                    setTimeout((function (notify) {
-                        return function () {
-                            notify.close();
-                        }
-                    })(notification), 5000);
-                };
-                xhr.open("GET", "/platform/gravatar?0=" + encodeURIComponent(this.notificationData.from_user_id), true);
-                xhr.send();
+                if (this.$.globals.values.memberCache[this.notificationData.from_user_id]) {
+                    var gravatar = this.$.globals.values.memberCache[this.notificationData.from_user_id];
+                    this.createNotification(gravatar.username, gravatar.url + "?d=identicon", this.notificationData.content);
+                } else {
+                    that = this;
+                    xhr = new XMLHttpRequest();
+                    xhr.onload = function () {
+                        that.gravatars = JSON.parse(this.responseText);
+                        that.$.globals.values.memberCache[that.notificationData.from_user_id] = that.gravatars[0];
+                        that.createNotification(that.gravatars[0].username, that.gravatars[0].url + "?d=identicon", that.notificationData.content);
+                    };
+                    xhr.open("GET", "/platform/gravatar?0=" + encodeURIComponent(this.notificationData.from_user_id), true);
+                    xhr.send();
+                }
             },
 
-            clearNotifications: function() {
-                var notificationIds = [];
-                for (index in  this.notifications) {
-                    notificationIds.push({"id": this.notifications[index].id});
+            createNotification: function(title, icon, body) {
+                var notification = new Notification(title, {
+                    icon: icon,
+                    body: body
+                });
+
+                setTimeout((function (notify) {
+                    return function () {
+                        notify.close();
+                    }
+                })(notification), 5000);
+            },
+
+            markNotificationIndex: function() {
+                for (index in this.notifications) {
+                    this.notifications[index].arrayIndex = index;
                 }
-                this.notificationsJson = JSON.stringify(notificationIds);
+            },
+
+            orderNotification: function(notifications) {
+                if (notifications) {
+                    this.printArray(notifications);
+                    console.log("--------------------------------------------");
+                    result = notifications.sort(function(a,b) {
+                        if (a.checked && !b.checked) {
+                            return 1;
+                        }
+
+                        if (!a.checked && b.checked) {
+                            return -1;
+                        }
+
+                        if (b.created_at > a.created_at) {
+                            return 1;
+                        }
+
+                        if (b.created_at < a.created_at) {
+                            return -1;
+                        }
+
+                        return 0;
+                    });
+                    this.printArray(result);
+                    return result;
+                }
+
+            },
+
+            printArray: function(arr) {
+                for (index in arr) {
+                    console.log(arr[index].checked + "   " + arr[index].created_at);
+                }
+            },
+
+            checkNotifications: function() {
+                var that = this;
+                setTimeout(function() {
+                    that.notificationElements = that.$.notifyList.querySelectorAll("paper-item");
+                    that.parentRect = that.$.notifyList.shadowRoot.querySelector("#scroller").getBoundingClientRect();
+                    that.findLastCheckedNotification();
+                }, 100);
+            },
+
+            findLastCheckedNotification: function() {
+                if (!this.notifications || this.notifications[0].checked) {
+                    return;
+                }
+
+                var lastNotificationIndexInView = this.findLastNotificationInView(0, this.notificationElements.length - 1);
+
+                if (!this.maxCheckedNotificationIndex || (this.maxCheckedNotificationIndex < lastNotificationIndexInView)) {
+                    this.maxCheckedNotificationIndex = lastNotificationIndexInView;
+                }
+            },
+
+            markAsChecked: function() {
+                console.log("start to clear");
+                console.log(this.maxCheckedNotificationIndex);
+                if (!this.maxCheckedNotificationIndex || this.maxCheckedNotificationIndex == -1) {
+                    return;
+                }
+
+                this.notificationIds = [];
+                for (var index = 0; index <= this.maxCheckedNotificationIndex; index ++) {
+                    var notification = this.notificationElements[index].querySelector("notification-record").notification;
+                    this.notificationIds.push({"id": notification.id});
+                    notification.checked = true;
+                }
+
+                this.notificationsJson = JSON.stringify(this.notificationIds);
+                console.log("Message sent : " + this.notificationsJson);
                 this.$.globals.values.websocket.send(this.notificationsJson);
-                this.notifications = [];
+                this.notifications = this.orderNotification(this.notifications);
+                this.maxCheckedNotificationIndex = -1;
+            },
+
+            findLastNotificationInView: function(left, right) {
+
+                if (left >= right) {
+                    return left;
+                }
+
+                if (left + 1 == right) {
+                    if (this.hasBeenScrolledToView(right)) {
+                        return right;
+                    } else {
+                        return left;
+                    }
+                }
+
+                var mid = Math.floor((left + right) / 2);
+
+                if (this.hasBeenScrolledToView(mid)) {
+                    return this.findLastNotificationInView(mid, right);
+                } else {
+                    return this.findLastNotificationInView(left, mid - 1);
+                }
+            },
+
+            hasBeenScrolledToView: function(index) {
+                var itemRect = this.notificationElements[index].querySelector("notification-record").shadowRoot.querySelector("member-element > #content").getBoundingClientRect();
+                return (this.parentRect.bottom > itemRect.bottom);
             }
+
+//            findLastCheckedNotification: function() {
+//                var notificationIds = [];
+//                for (index in  this.notifications) {
+//                    notificationIds.push({"id": this.notifications[index].id});
+//                }
+//                this.notificationsJson = JSON.stringify(notificationIds);
+//                this.$.globals.values.websocket.send(this.notificationsJson);
+//                this.notifications = [];
+//            }
         });
     </script>
 </polymer-element>

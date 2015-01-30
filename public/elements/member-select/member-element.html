@@ -31,6 +31,12 @@
                 font-size: small;
                 color:dimgrey;
             }
+
+            ::content .content {
+                word-wrap: break-word;
+                /*width: 300px;*/
+            }
+
         </style>
         <core-ajax id="getGravatar"
                    url="/platform/gravatar/{{userid}}"
@@ -46,12 +52,14 @@
                 <template if="{{view && view != 'default'}}">
                     <div class="element" horizontal layout>
                         <avatar-image userid="{{userid}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}" on-click="{{toggle}}"></avatar-image>
-                        <div vertical layout style="margin: 5px">
-                            <div horizontal layout class="title" on-click="{{toggle}}">
+                        <div vertical layout style="margin-left: 5px">
+                            <div horizontal layout on-click="{{toggle}}">
                                 <span style="margin-right: 5px">{{gravatar.username}}</span>
-                                <content select=".title"></content>
+                                <div class="title" flex>
+                                    <content select=".title"></content>
+                                </div>
                             </div>
-                            <content select=".content" ></content>
+                            <content select=".content"></content>
                         </div>
                     </div>
                 </template>
@@ -74,9 +82,11 @@
                 <div class="element" horizontal layout>
                     <avatar-image userid="{{userid}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}"></avatar-image>
                     <div vertical layout style="margin: 5px">
-                        <div horizontal layout class="title">
+                        <div horizontal layout>
                             <span style="margin-right: 5px">{{gravatar.username}}</span>
-                            <content select=".title"></content>
+                            <div class="title">
+                                <content select=".title"></content>
+                            </div>
                         </div>
                         <content select=".content" ></content>
                     </div>
