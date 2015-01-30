@@ -355,12 +355,12 @@ class App < Sinatra::Base
   end
 
   get '/events/:eventId' do
-    begin
+    #begin
       event = Event.find(params[:eventId])
       event.to_json(include: {participants: {only: :id}})
-    rescue Exception => e
-      404
-    end
+    #rescue Exception => e
+    #  404
+    #end
   end
 
   post '/events' do
@@ -370,6 +370,7 @@ class App < Sinatra::Base
       user = User.find(p)
       event.participants << user
     }
+    
     # Whether the event creator is also a participant by default?
     user_self = User.find(uid)
     if !event.participants.include? user_self 
@@ -390,14 +391,8 @@ class App < Sinatra::Base
         EM.next_tick { settings.sockets[socket_id].send(notify) }
       end
     }
-    # Whether the event creator is also a participant by default?
-    user_self = User.find(uid)
-    if !event.participants.include? user_self 
-      event.participants << user_self
-    end
-    event.creator_id = uid
 
-    event.save!
+
     event.to_json(include: {participants: {only: :id}})
   end
 
