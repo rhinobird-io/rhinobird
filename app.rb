@@ -44,7 +44,7 @@ class App < Sinatra::Base
   end
 
   def login_required!
-    halt 401 if request.env['HTTP_USER'].nil?
+    halt 401 if @userid.nil?
   end
 
   get '/login' do
@@ -54,7 +54,7 @@ class App < Sinatra::Base
 
   #set notifications to the checked status
   def mark_notification_as_read!
-    notification = User.find(request.env['HTTP_USER'].to_i).notifications
+    notification = User.find(@userid).notifications
     @received_msg.each do |notify|
       notification.update(notify["id"], :checked => true);
     end
@@ -64,7 +64,7 @@ class App < Sinatra::Base
     if request.websocket?
       request.websocket do |ws|
         ws.onopen do
-          settings.sockets[request.env['HTTP_USER'].to_i] = ws
+          settings.sockets[@userid] = ws
         end
         ws.onmessage do |msg|
           @received_msg = JSON.parse(msg)
@@ -82,6 +82,7 @@ class App < Sinatra::Base
   end
 
   before do
+    @userid = request.env['HTTP_X_USER']
     login_required! unless ( ['/users', '/login'].include?(request.path_info) || request.path_info =~ /\/user\/invitation.*/)
     content_type 'application/json'
     if request.media_type == 'application/json'
@@ -201,13 +202,13 @@ class App < Sinatra::Base
     end
 
     avatar = {:image_data => Base64.encode64(image_data)}
-    User.find(request.env['HTTP_USER'].to_i).local_avatar = LocalAvatar.create!(avatar)
+    User.find(@userid).local_avatar = LocalAvatar.create!(avatar)
   end
 
   #remove local avatar
   post '/avatar/remove' do
     # @local_avatar = nil
-    User.find(request.env['HTTP_USER'].to_i).local_avatar.delete
+    User.find(@userid).local_avatar.delete
   end
 
   get '/teams' do
@@ -226,7 +227,7 @@ class App < Sinatra::Base
   #create team with initial users
   post '/teams/users' do
     team = Team.create!(@body["team"])
-    from_user = User.find(request.env['HTTP_USER'].to_i)
+    from_user = User.find(@userid)
     from_user.dashboard_records.create!(:content => "You have created a new team : " + team.name, :from_user_id => from_user.id)
 
     @body["user"].each do |userId|
@@ -309,16 +310,16 @@ class App < Sinatra::Base
   end
 
   get '/loggedOnUser' do
-    if request.env['HTTP_USER'].nil?
+    if @userid.nil?
       404
     else
-      User.find(request.env['HTTP_USER'].to_i).to_json(:except => [:encrypted_password])
+      User.find(@userid).to_json(:except => [:encrypted_password])
     end
   end
 
   get '/profile' do
     profile = {}
-    profile["user"] = User.find(request.env['HTTP_USER'].to_i)
+    profile["user"] = User.find(@userid)
 
   end
 
@@ -336,7 +337,7 @@ class App < Sinatra::Base
   end
 
   post '/events' do
-    uid = request.env['HTTP_USER'].to_i
+    uid = @userid
     event = Event.new(@body.except('participants'))
     @body['participants'].each { |p|
       user = User.find(p)
@@ -387,12 +388,12 @@ class App < Sinatra::Base
 
   post '/user/invite' do
     email = @body["email"]
-    user = User.find(request.env['HTTP_USER'].to_i)
+    user = User.find(@userid)
     if @body["initial_team_id"].nil?
-      invitation = Invitation.create({:email => email, :from_user_id => request.env['HTTP_USER'].to_i, :initial_team_id => -1})
+      invitation = Invitation.create({:email => email, :from_user_id => @userid, :initial_team_id => -1})
       initial_team = "none"
     else
-      invitation = Invitation.create({:email => email, :from_user_id => request.env['HTTP_USER'].to_i, :initial_team_id => @body["initial_team_id"]})
+      invitation = Invitation.create({:email => email, :from_user_id => @userid, :initial_team_id => @body["initial_team_id"]})
       initial_team = Team.find(@body["initial_team_id"]).name
     end
 
@@ -431,10 +432,10 @@ class App < Sinatra::Base
 
   #change password
   post '/user/password' do
-    user = User.find(request.env['HTTP_USER'].to_i)
+    user = User.find(@userid)
     if user.password == @body["password"]
       new_password = Password.create(@body["newPassword"])
-      User.update(request.env['HTTP_USER'].to_i, :encrypted_password => new_password)
+      User.update(@userid, :encrypted_password => new_password)
       user.dashboard_records.create!(:content => "Your password has been successfully changed", :from_user_id => user.id)
       200
     else
@@ -466,7 +467,7 @@ class App < Sinatra::Base
   post '/users/dashboard_records' do
     users = @body["users"]
     content =@body["content"]
-    content["from_user_id"] = request.env['HTTP_USER'].to_i
+    content["from_user_id"] = @userid
     users.each do |user|
       record = User.find(user).dashboard_records.create!(content)
     end
@@ -498,7 +499,7 @@ class App < Sinatra::Base
   post '/users/notifications' do
     users = @body["users"]
     content =@body["content"]
-    content["from_user_id"] = request.env['HTTP_USER'].to_i
+    content["from_user_id"] = @userid
     users.each do |user|
       notification = User.find(user).notifications.create!(content)
       notify = notification.to_json(:except => [:user_id])
