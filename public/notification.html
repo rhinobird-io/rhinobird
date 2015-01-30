@@ -50,6 +50,49 @@
     <script>
         Polymer("notification-element", {
 
+            created: function() {
+                Document.prototype.createNotification = function(title, icon, body, url) {
+
+                    var notification = new Notification(title, {
+                        icon: icon,
+                        body: body
+                    });
+
+                    notification.onclick = function() {
+                        window.focus();
+                        if (this.url) {
+                            window.location.href = url;
+                        }
+                    };
+
+                    setTimeout((function (notify) {
+                        return function () {
+                            notify.close();
+                        }
+                    })(notification), 5000);
+                };
+
+                var that = this;
+                Document.prototype.showNotification = function(userId, body, url) {
+                    if (!that.$.globals.values) {
+                        console.error("app globals is not used, avatar cache can not be used");
+                    } else {
+                        if (that.$.globals.values.memberCache[userId]) {
+                            document.createNotification(that.$.globals.values.memberCache[userId].username, that.$.globals.values.memberCache[userId].url + "?d=identicon", body, url);
+                        } else {
+                            xhr = new XMLHttpRequest();
+                            xhr.onload = function () {
+                                that.gravatars = JSON.parse(this.responseText);
+                                that.$.globals.values.memberCache[userId] = that.gravatars[0];
+                                document.createNotification(that.gravatars[0].username, that.gravatars[0].url + "?d=identicon", body, url);
+                            };
+                            xhr.open("GET", "/platform/gravatar?0=" + encodeURIComponent(that.notificationData.from_user_id), true);
+                            xhr.send();
+                        }
+                    }
+                }
+            },
+
             ready: function () {
                 if (!this.$.globals.values.websocket) {
                     this.$.globals.values.websocket = this.connect(this);
@@ -99,50 +142,53 @@
 
             handleNotification: function () {
                 this.notifications.unshift(this.notificationData);
-                this.showNotification();
+                document.showNotification(this.notificationData.from_user_id, this.notificationData.content);
             },
 
-            showNotification: function () {
-                if (!Notification) {
-                    alert('Please use a modern version of Chrome');
-                    return;
-                }
+//            showNotification: function () {
+//                if (!Notification) {
+//                    alert('Please use a modern version of Chrome');
+//                    return;
+//                }
+//
+//                if (Notification.permission !== "granted")
+//                    Notification.requestPermission();
+//
+//                if (this.$.globals.values.memberCache[this.notificationData.from_user_id]) {
+//                    var gravatar = this.$.globals.values.memberCache[this.notificationData.from_user_id];
+//                    document.createNotification(gravatar.username, gravatar.url + "?d=identicon", this.notificationData.content);
+//                } else {
+//                    that = this;
+//                    xhr = new XMLHttpRequest();
+//                    xhr.onload = function () {
+//                        that.gravatars = JSON.parse(this.responseText);
+//                        that.$.globals.values.memberCache[that.notificationData.from_user_id] = that.gravatars[0];
+//                        document.createNotification(that.gravatars[0].username, that.gravatars[0].url + "?d=identicon", that.notificationData.content);
+//                    };
+//                    xhr.open("GET", "/platform/gravatar?0=" + encodeURIComponent(this.notificationData.from_user_id), true);
+//                    xhr.send();
+//                }
+//            },
 
-                if (Notification.permission !== "granted")
-                    Notification.requestPermission();
-
-                if (this.$.globals.values.memberCache[this.notificationData.from_user_id]) {
-                    var gravatar = this.$.globals.values.memberCache[this.notificationData.from_user_id];
-                    this.createNotification(gravatar.username, gravatar.url + "?d=identicon", this.notificationData.content);
-                } else {
-                    that = this;
-                    xhr = new XMLHttpRequest();
-                    xhr.onload = function () {
-                        that.gravatars = JSON.parse(this.responseText);
-                        that.$.globals.values.memberCache[that.notificationData.from_user_id] = that.gravatars[0];
-                        that.createNotification(that.gravatars[0].username, that.gravatars[0].url + "?d=identicon", that.notificationData.content);
-                    };
-                    xhr.open("GET", "/platform/gravatar?0=" + encodeURIComponent(this.notificationData.from_user_id), true);
-                    xhr.send();
-                }
-            },
-
-            createNotification: function(title, icon, body) {
-                var notification = new Notification(title, {
-                    icon: icon,
-                    body: body
-                });
-
-                notification.onclick = function() {
-                    window.focus();
-                };
-
-                setTimeout((function (notify) {
-                    return function () {
-                        notify.close();
-                    }
-                })(notification), 5000);
-            },
+//            createNotification: function(title, icon, body, url) {
+//                var notification = new Notification(title, {
+//                    icon: icon,
+//                    body: body
+//                });
+//
+//                notification.onclick = function() {
+//                    window.focus();
+//                    if (this.url) {
+//                        window.location.href = url;
+//                    }
+//                };
+//
+//                setTimeout((function (notify) {
+//                    return function () {
+//                        notify.close();
+//                    }
+//                })(notification), 5000);
+//            },
 
             orderNotification: function(notifications) {
                 if (notifications) {
