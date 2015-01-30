@@ -18,8 +18,19 @@
         Polymer({
             wrap: function (value) {
                 if (value) {
-                    //test
-                    return value.replace(/(@[^\s]+)/g, "<member-profile><a class='trigger' href='#'>$1</a></member-profile>");
+                    var root = document.createElement("span");
+                    root.innerHTML = value.replace(/(@[^\s]+)/g, "<at>$1</at>");
+                    var list = root.querySelectorAll("at");
+                    for (var i = 0; i < list.length; i++) {
+                        var name = list[i].innerHTML;
+                        var profile = document.createElement("span");
+                        profile.innerHTML =
+                            "<member-profile userid=31>" +  // TODO Replace userid
+                            "<a class='trigger' href='#'>" + name + "</a>" +
+                            "</member-profile>";
+                        root.replaceChild(profile, list[i]);
+                    }
+                    return root.innerHTML;
                 } else {
                     return "";
                 }
