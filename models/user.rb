@@ -16,6 +16,7 @@ class User < ActiveRecord::Base
   validates :realname, presence: true
   validates :email, presence: true, email: true, uniqueness: true
   validates :name, presence: true, uniqueness: true
+  validates_format_of :name, with: /[A-Za-z]\w*/
 
   has_many :users_teams, dependent: :destroy
   has_many :teams, :through => :users_teams
