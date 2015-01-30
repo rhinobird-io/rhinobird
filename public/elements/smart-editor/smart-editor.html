@@ -1,11 +1,12 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../member-select/member-element.html">
+<link rel="import" href="../member-profile/member-profile.html">
+<link rel="import" href="../html-echo/html-echo.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input-decorator.html">
 <link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
 <link rel="import" href="../../bower_components/core-selector/core-selector.html">
-<link rel="import" href="../member-select/member-element.html">
-<link rel="import" href="../html-echo/html-echo.html">
 
 <polymer-element name="smart-display" attributes="value">
     <template>
@@ -18,7 +19,7 @@
             wrap: function (value) {
                 if (value) {
                     //test
-                    return value.replace(/(@[^\s]+)/g, "<a href='#'>$1</a>");
+                    return value.replace(/(@[^\s]+)/g, "<member-profile><a class='trigger' href='#'>$1</a></member-profile>");
                 } else {
                     return "";
                 }

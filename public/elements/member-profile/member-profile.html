@@ -1,0 +1,20 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-dropdown/paper-dropdown.html">
+<link rel="import" href="../member-select/member-element.html">
+
+<polymer-element name="member-profile" attributes="userid">
+    <template>
+        <content select=".trigger" on-tap="{{toggle}}"></content>
+        <paper-dropdown id="dropdown">
+            <member-element userid="{{userid}}"></member-element>
+        </paper-dropdown>
+    </template>
+    <script>
+        Polymer({
+            toggle: function () {
+                this.$.dropdown.toggle();
+            },
+            userid: ''
+        });
+    </script>
+</polymer-element>
