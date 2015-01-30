@@ -29,26 +29,20 @@
                     response="{{notifications}}"></core-ajax>
         </template>
 
-        <template if="{{notifications.length == 0}}">
+        <paper-menu-button>
             <paper-icon-button icon="social:notifications"></paper-icon-button>
-        </template>
+            <paper-dropdown id="notifyList" class="dropdown" halign="right" style="color:#000;width: 400px; max-height: 400px" on-core-overlay-open="{{checkNotifications}}" on-core-overlay-close-completed="{{markAsChecked}}">
+                <core-menu class="menu" style="overflow-x:hidden">
+                    <template repeat="{{notification in orderNotification(notifications)}}">
+                        <paper-item>
+                            <notification-record notification="{{notification}}"></notification-record>
+                        </paper-item>
+                    </template>
+                </core-menu>
+            </paper-dropdown>
+        </paper-menu-button>
 
-        <template if="{{notifications.length != 0}}">
-            <paper-menu-button>
-                <paper-icon-button icon="social:notifications"></paper-icon-button>
-                <paper-dropdown id="notifyList" class="dropdown" halign="right" style="color:#000;width: 400px; max-height: 400px" on-core-overlay-open="{{checkNotifications}}" on-core-overlay-close-completed="{{markAsChecked}}">
-                    <core-menu class="menu" style="overflow-x:hidden">
-                        <template repeat="{{notification in orderNotification(notifications)}}">
-                            <paper-item>
-                                <notification-record notification="{{notification}}"></notification-record>
-                            </paper-item>
-                        </template>
-                    </core-menu>
-                </paper-dropdown>
-            </paper-menu-button>
-        </template>
-
-        <template if="{{notifications.length != 0}}">
+        <template if="{{notifications && notifications.length != 0 && !notifications[0].checked}}">
             <div class="count accentColor"></div>
         </template>
         <app-globals id="globals"></app-globals>
@@ -139,6 +133,10 @@
                     body: body
                 });
 
+                notification.onclick = function() {
+                    window.focus();
+                };
+
                 setTimeout((function (notify) {
                     return function () {
                         notify.close();
@@ -146,17 +144,9 @@
                 })(notification), 5000);
             },
 
-            markNotificationIndex: function() {
-                for (index in this.notifications) {
-                    this.notifications[index].arrayIndex = index;
-                }
-            },
-
             orderNotification: function(notifications) {
                 if (notifications) {
-                    this.printArray(notifications);
-                    console.log("--------------------------------------------");
-                    result = notifications.sort(function(a,b) {
+                    return notifications.sort(function(a,b) {
                         if (a.checked && !b.checked) {
                             return 1;
                         }
@@ -175,16 +165,8 @@
 
                         return 0;
                     });
-                    this.printArray(result);
-                    return result;
                 }
 
-            },
-
-            printArray: function(arr) {
-                for (index in arr) {
-                    console.log(arr[index].checked + "   " + arr[index].created_at);
-                }
             },
 
             checkNotifications: function() {
@@ -209,8 +191,6 @@
             },
 
             markAsChecked: function() {
-                console.log("start to clear");
-                console.log(this.maxCheckedNotificationIndex);
                 if (!this.maxCheckedNotificationIndex || this.maxCheckedNotificationIndex == -1) {
                     return;
                 }
@@ -223,7 +203,6 @@
                 }
 
                 this.notificationsJson = JSON.stringify(this.notificationIds);
-                console.log("Message sent : " + this.notificationsJson);
                 this.$.globals.values.websocket.send(this.notificationsJson);
                 this.notifications = this.orderNotification(this.notifications);
                 this.maxCheckedNotificationIndex = -1;
@@ -256,16 +235,6 @@
                 var itemRect = this.notificationElements[index].querySelector("notification-record").shadowRoot.querySelector("member-element > #content").getBoundingClientRect();
                 return (this.parentRect.bottom > itemRect.bottom);
             }
-
-//            findLastCheckedNotification: function() {
-//                var notificationIds = [];
-//                for (index in  this.notifications) {
-//                    notificationIds.push({"id": this.notifications[index].id});
-//                }
-//                this.notificationsJson = JSON.stringify(notificationIds);
-//                this.$.globals.values.websocket.send(this.notificationsJson);
-//                this.notifications = [];
-//            }
         });
     </script>
 </polymer-element>
