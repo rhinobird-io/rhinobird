@@ -452,8 +452,20 @@ class App < Sinatra::Base
   end
 
   #get specified part of notifications for one user
-  get '/users/:userId/notifications/:startIndex' do
-    User.find(params[:userId]).notifications.to_json
+  get '/users/:userId/notifications/:startIndex/:limit' do
+    return_obj = {}
+    notifications = User.find(params[:userId]).notifications
+    if params[:startIndex] == 0
+      if notifications.where(checked: false).count < params[:limit]
+        return_obj["notifications"] = notifications.limit(params[:limit]).offset(0)
+      else
+        return_obj["notifications"] = notifications.where(checked: false)
+      end
+    else
+      return_obj["notifications"] = notifications.limit(params[:limit]).offset(params[:startIndex])
+    end
+    return_obj["total"] = notifications.count
+    return_obj.to_json
   end
 
   # add a notification to one user
