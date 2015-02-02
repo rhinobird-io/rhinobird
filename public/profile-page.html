@@ -89,8 +89,8 @@
                 <div vertical layout>
                     <div horizontal layout>
                         <div style="width:400px" vertical layout>
-                            <paper-input label="name" floatinglabel disabled value="{{user.realname}}"></paper-input>
-                            <paper-input label="email" floatinglabel disabled value="{{user.email}}"></paper-input>
+                            <paper-input label="name" floatinglabel disabled value="{{$.globals.values.currentUser.realname}}"></paper-input>
+                            <paper-input label="email" floatinglabel disabled value="{{$.globals.values.currentUser.email}}"></paper-input>
                         </div>
                         <div vertical layout style="width: 400px;margin-left: 100px">
                             <core-ajax id="inviteUserAjax"
@@ -182,10 +182,6 @@
     </template>
     <script>
         Polymer("profile-page", {
-            ready: function() {
-                // clone the user object
-                this.user = JSON.parse(JSON.stringify(this.$.globals.values.currentUser));
-            },
 
             avatarUpload: function() {
                 this.$.uploader.progressInvisible = true;
