@@ -159,7 +159,7 @@
                             </div>
                             <div horizontal layout center>
                                 <template if="{{gravatar.url}}">
-                                    <img src="{{gravatar.url}}?d=identicon" style="margin: 20px"/>
+                                    <img src="{{gravatar.url}}?d=identicon" style="margin: 20px" width="160" height="160"/>
                                 </template>
                                 <core-ajax id="removeLocalAvatarAjax"
                                            url="/platform/avatar/remove"
