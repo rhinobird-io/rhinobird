@@ -24,9 +24,10 @@
             <core-ajax
                     auto
                     id="notificationAjax"
-                    url="/platform/users/{{$.globals.values.currentUser.id}}/notifications"
+                    url="/platform/users/{{$.globals.values.currentUser.id}}/notifications/{{startIndex}}/{{limit}}"
                     handleAs="json"
-                    response="{{notifications}}"></core-ajax>
+                    response="{{moreNotifications}}"
+                    on-core-response="{{moreNotificationLoaded}}"></core-ajax>
         </template>
 
         <paper-menu-button>
@@ -94,6 +95,10 @@
             },
 
             ready: function () {
+                this.startIndex = 0;
+                this.limit = 10;
+                this.nowLoading = false;
+                this.notifications = [];
                 if (!this.$.globals.values.websocket) {
                     this.$.globals.values.websocket = this.connect(this);
                 }
@@ -109,7 +114,20 @@
                     scrollTimeout = setTimeout(function(){
                         that.findLastCheckedNotification();
                     },500);
+
+                    var scrollBottom = this.scrollTop + this.clientHeight;
+                    var belowView = this.scrollHeight - scrollBottom;
+                    if (belowView < this.clientHeight * 0.1 && !that.nowLoading && that.totalNotificationCount && that.startIndex + that.limit < that.totalNotificationCount) {
+                        that.nowLoading = true;
+                        that.startIndex += that.limit;
+                    }
                 });
+            },
+
+            moreNotificationLoaded: function() {
+                this.totalNotificationCount = this.moreNotifications.total;
+                this.notifications = this.notifications.concat(this.moreNotifications.notifications);
+                this.nowLoading = false;
             },
 
             connect: function (that) {
