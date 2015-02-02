@@ -82,7 +82,7 @@ class App < Sinatra::Base
   end
 
   before do
-    @userid = request.env['HTTP_X_USER']
+    @userid = request.env['HTTP_X_USER'].to_i
     login_required! unless ( ['/users', '/login'].include?(request.path_info) || request.path_info =~ /\/user\/invitation.*/)
     content_type 'application/json'
     if request.media_type == 'application/json'
@@ -370,8 +370,8 @@ class App < Sinatra::Base
 
   delete '/events/:eventId' do
     event = Event.find(params[:eventId])
-    if event.creator.id == request.env['HTTP_USER'].to_i
-      uid = event.creator.id
+    if @userid == event.creator_id
+      uid = @userid
 
       content = 'Has canceled the event ' + event.title
 
