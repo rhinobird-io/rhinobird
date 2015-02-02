@@ -59,7 +59,7 @@ class App < Sinatra::Base
     if request.websocket?
       request.websocket do |ws|
         ws.onopen do
-          settings.sockets[@userid] = ws
+          settings.sockets[@userid.to_i] = ws
         end
         ws.onmessage do |msg|
           @received_msg = JSON.parse(msg)
@@ -173,7 +173,7 @@ class App < Sinatra::Base
     if user.local_avatar.nil?
       url = Gravatar.new(user.email).image_url
     else
-      url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}" + "/platform/avatar/" + User.find(user_id).local_avatar.id.to_s
+      url = "/platform/avatar/" + User.find(user_id).local_avatar.id.to_s
     end
 
     return url
@@ -448,6 +448,11 @@ class App < Sinatra::Base
 
   #get all notifications for one user
   get '/users/:userId/notifications' do
+    User.find(params[:userId]).notifications.to_json
+  end
+
+  #get specified part of notifications for one user
+  get '/users/:userId/notifications/:startIndex' do
     User.find(params[:userId]).notifications.to_json
   end
 

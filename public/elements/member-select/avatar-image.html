@@ -14,7 +14,7 @@
                    handleAs="json"
                    on-core-response="{{handleResponse}}"></core-ajax>
         <template if="{{$.globals.values.memberCache[userid] && default && size}}">
-            <img src="{{$.globals.values.memberCache[userid].url}}?d={{default}}&s={{size}}"/>
+            <img src="{{$.globals.values.memberCache[userid].url}}?d={{default}}&s={{size}}" width="{{size}}" height="{{size}}"/>
         </template>
         <app-globals id="globals"></app-globals>
     </template>
