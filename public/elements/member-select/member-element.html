@@ -2,23 +2,6 @@
 <link rel="import" href="../app-globals/app-globals.html">
 <link rel="import" href="avatar-image.html">
 
-<polymer-element name="x-trigger" relative="" on-tap="{{toggle}}" noink="">
-    <template>
-        <shadow></shadow>
-        <content></content>
-    </template>
-    <script>
-        Polymer({
-            toggle: function(event, detail, target) {
-                if (!this.dropdown) {
-                    this.dropdown = this.querySelector('paper-dropdown');
-                }
-                this.dropdown && this.dropdown.toggle();
-            }
-        });
-    </script>
-</polymer-element>
-
 <polymer-element name="member-element" attributes="userid menu imagesize view">
     <template>
         <style>

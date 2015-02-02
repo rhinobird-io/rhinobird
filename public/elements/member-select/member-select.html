@@ -80,7 +80,20 @@
             <div>
                 <paper-input-decorator label="{{label}}" floatingLabel labelVisible="{{_labelVisible}}" disabled="{{disabled}}">
                     <div horizontal layout center wrap>
-                        <template repeat="{{ uid in selected}}">
+                        <template repeat="{{ tid in selectedTeam}}">
+                            <div horizontal layout center class="badge">
+                                <!--<member-element userid="{{uid}}"></member-element>-->
+                                <div horizontal layout center style="height: 28px">
+                                    <span style="margin: 5px">{{teamIdMap[tid].name}}</span>
+                                </div>
+
+                                <template if="{{!disabled}}">
+                                    <core-icon class="small" icon="clear" on-click="{{ removeTeamHandler }}"
+                                               on-mousedown="{{preventFocus}}"></core-icon>
+                                </template>
+                            </div>
+                        </template>
+                        <template repeat="{{ uid in selectedUser}}">
                             <div horizontal layout center class="badge">
                                 <member-element userid="{{uid}}"></member-element>
                                 <template if="{{!disabled}}">
@@ -199,6 +212,8 @@
                 this.searchText = '';
                 this.isShowMenu = false;
                 this.selected = [];
+                this.selectedTeam = [];
+                this.selectedUser = [];
             },
 
             doFilter: function (event, detail, sender) {
@@ -220,9 +235,14 @@
                         this.addOneUser(this.$.selector.selectedModel.u.id);
                     }
                 } else if (event.keyCode === 8) { // backspace
-                    if (this.searchText.length === 0 && this.selected.length > 0) {
-                        var userid = this.selected[this.selected.length - 1];
-                        this.removeOneUser(userid);
+                    if (this.searchText.length === 0) {
+                        if (this.selectedUser.length > 0) {
+                            var userid = this.selectedUser[this.selectedUser.length - 1];
+                            this.removeOneUser(userid);
+                        } else if (this.selectedTeam.length > 0) {
+                            var teamId = this.selectedTeam[this.selectedTeam.length - 1];
+                            this.removeOneTeam(teamId);
+                        }
                     }
                 } else {
                     this.$.selector.selected = 0;
@@ -280,6 +300,16 @@
 
             handleTeamsResponse: function (event) {
                 this.teams = event.detail.response;
+
+                this.teamIdMap = {};
+                this.userTeamMap = {};
+
+                this.teams.forEach(function(t) {
+                    this.teamIdMap[t.id] = t;
+                    t.users.forEach(function(u) {
+                        this.userTeamMap[u.id + "_" + t.id] = true;
+                    }, this);
+                }, this);
             },
             handleUsersResponse: function (event) {
                 this.users = event.detail.response;
@@ -299,9 +329,50 @@
                 team.users.forEach(function (user) {
                     if (this.selected.indexOf(user.id) == -1) {
                         this.selected.push(user.id);
-                        this.searchText = '';
                     }
                 }, this);
+
+                if (this.selectedTeam.indexOf(team.id) == -1) {
+                    this.selectedTeam.push(team.id);
+                    this.searchText = '';
+                }
+            },
+
+            removeTeamHandler: function (event, detail, target) {
+                var teamId = target.templateInstance.model.tid;
+                this.removeOneTeam(teamId);
+                event.stopPropagation();
+            },
+
+            removeOneTeam: function (teamId) {
+                index = this.selectedTeam.indexOf(teamId);
+                this.selectedTeam.splice(index, 1);
+
+                this.teamIdMap[teamId].users.forEach(function(u) {
+                    if (!this.isSelectedDuplicate(u.id)) {
+                        this.selected.splice(this.selected.indexOf(u.id), 1);
+                    }
+                }, this);
+            },
+
+            /**
+             * When removing a team, if the member of this team has been contained in another selected team or individual select,
+             * then keep this member's selected state.
+             */
+            isSelectedDuplicate: function(uid) {
+                var selected = false;
+
+                if (this.selectedUser.indexOf(uid) != -1) {
+                    selected = true;
+                } else {
+                    for (index in this.selectedTeam) {
+                        if (this.userTeamMap[uid + "_" + this.selectedTeam[index]]) {
+                            selected = true;
+                            break;
+                        }
+                    }
+                }
+                return selected;
             },
 
             addUserHandler: function (event, detail, sender) {
@@ -314,6 +385,10 @@
                     this.selected.push(userId);
                     this.searchText = '';
                 }
+
+                if (this.selectedUser.indexOf(userId) == -1) {
+                    this.selectedUser.push(userId);
+                }
             },
 
             removeUserHandler: function (event, detail, target) {
@@ -323,8 +398,8 @@
             },
 
             removeOneUser: function (userId) {
-                index = this.selected.indexOf(userId);
-                this.selected.splice(index, 1);
+                this.selected.splice(this.selected.indexOf(userId), 1);
+                this.selectedUser.splice(this.selectedUser.indexOf(userId));
             },
 
             // public attributes
