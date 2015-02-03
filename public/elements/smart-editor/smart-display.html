@@ -35,20 +35,19 @@
                 }
             },
 
+            stripTags: function(value) {
+                return value.replace(/</g, "&lt;");
+            },
+
             wrap: function (value) {
                 if (!value) return "";
+                value = this.stripTags(value);
                 var root = document.createElement("span");
                 if (this.enableCode) {
                     // Preserve and remove code blocks
-                    root.innerHTML = value.replace(/```(.*)\n(((?!```\n)[\s\S])*)```/g,
-                            "<pre><code class='$1'>$2</code></pre>");
-                    var codeBlocks = [];
-                    var list = root.querySelectorAll("pre code");
-                    for (var i = 0; i < list.length; i++) {
-                        codeBlocks.push(list[i].innerHTML);
-                        list[i].innerHTML = "";
-                    }
-                    value = root.innerHTML;
+                    var regex = /```(.*)\n(((?!```\n)[\s\S])*)```/g;
+                    var codeBlocks = value.match(regex);
+                    value = value.replace(regex, "<pre><code class='$1'></code></pre>");
                 }
                 // Replace newline with <br>
                 value = value.replace(/(<\/(div|pre)>)\n/g, "$1")
@@ -92,8 +91,8 @@
                     var list = root.querySelectorAll("pre code");
                     for (var i = 0; i < list.length; i++) {
                         var code = codeBlocks[i];
-                        list[i].innerHTML = code;
-				        hljs.highlightBlock(list[i]);
+                        list[i].innerHTML = code.substring(code.indexOf("\n") + 1, code.length - 3);
+                        hljs.highlightBlock(list[i]);
                     }
                     value = root.innerHTML;
                 }
