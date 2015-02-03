@@ -54,12 +54,12 @@
         <template if="{{!menu}}">
             <template if="{{!view || view == 'default'}}">
                 <div class="element" horizontal layout center>
-                    <avatar-image userid="{{userid}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}"></avatar-image><span style="margin: 5px">{{gravatar.username}}</span>
+                    <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}"></avatar-image><span style="margin: 5px">{{gravatar.username}}</span>
                 </div>
             </template>
             <template if="{{view && view != 'default'}}">
                 <div class="element" horizontal layout>
-                    <avatar-image userid="{{userid}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}"></avatar-image>
+                    <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}"></avatar-image>
                     <div vertical layout style="margin: 5px">
                         <div horizontal layout>
                             <span style="margin-right: 5px">{{gravatar.username}}</span>
@@ -84,7 +84,11 @@
             },
 
             avatarReady: function() {
-                this.gravatar = this.$.globals.values.memberCache[this.userid];
+                if (this.userid) {
+                    this.gravatar = this.$.globals.values.memberCache[this.userid];
+                } else {
+                    this.gravatar = this.$.globals.values.memberCache[this.username];
+                }
             },
 
             toggle: function(event, detail, target) {

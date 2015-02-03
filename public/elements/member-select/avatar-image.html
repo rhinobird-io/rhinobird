@@ -13,8 +13,12 @@
                    url="/platform/gravatar/{{keyType}}/{{keyValue}}"
                    handleAs="json"
                    on-core-response="{{handleResponse}}"></core-ajax>
-        <template if="{{$.globals.values.memberCache[userid] && default && size}}">
+        <template if="{{userid && $.globals.values.memberCache[userid] && default && size}}">
             <img src="{{$.globals.values.memberCache[userid].url}}?d={{default}}&s={{size}}" width="{{size}}" height="{{size}}"/>
+        </template>
+
+        <template if="{{username && $.globals.values.memberCache[username] && default && size}}">
+            <img src="{{$.globals.values.memberCache[username].url}}?d={{default}}&s={{size}}" width="{{size}}" height="{{size}}"/>
         </template>
         <app-globals id="globals"></app-globals>
     </template>
@@ -26,9 +30,10 @@
                 var result = JSON.parse(this.responseText);
                 for(var i=0; i<result.length; i++) {
                     memberCache[result[i].id] = result[i];
+                    memberCache[result[i].name] = result[i];
                 }
             };
-            xhr.open("GET", "/platform/gravatars", true);
+            xhr.open("GET", "/platform/gravatars/all", true);
             xhr.send();
             Polymer({
 
@@ -66,12 +71,10 @@
                             if (this.userid) {
                                 this.keyType = "id";
                                 this.keyValue = this.userid;
-                            } else {
+                            } else if (this.username) {
                                 this.keyType = "name";
                                 this.keyValue = this.username;
                             }
-
-                            this.userJson = JSON.stringify(userObj);
                             this.$.getGravatar.go();
                         } else {
                             this.fire("avatar-ready");

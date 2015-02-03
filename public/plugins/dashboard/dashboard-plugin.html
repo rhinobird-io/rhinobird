@@ -1,19 +1,19 @@
 <link rel="import" href="../../home-container.html">
 <link rel="import" href="../../bower_components/ajax-file-input/ajax-file-input.html">
 <link rel="import" href="../../elements/dashboard-records/dashboard-records.html">
+<link rel="import" href="../../elements/member-select/member-element.html">
 
 <polymer-element name="dashboard-plugin">
     <template>
         <home-container>
             <div class="title">Dashboad</div>
-            <core-ajax
-                    id="addNotificationAjax"
-                    method="post"
-                    contentType="application/json"
-                    body="{{notificationBody}}"
-                    url="/platform/users/{{$.globals.values.currentUser.id}}/notifications"></core-ajax>
-            <paper-button on-tap="{{addNotification}}">AddNotification</paper-button>
-
+            <!--<core-ajax-->
+                    <!--id="addNotificationAjax"-->
+                    <!--method="post"-->
+                    <!--contentType="application/json"-->
+                    <!--body="{{notificationBody}}"-->
+                    <!--url="/platform/users/{{$.globals.values.currentUser.id}}/notifications"></core-ajax>-->
+            <!--<paper-button on-tap="{{addNotification}}">AddNotification</paper-button>-->
             <!--<core-ajax-->
                     <!--id="addMultiNotificationAjax"-->
                     <!--method="post"-->
@@ -29,12 +29,12 @@
         Polymer("dashboard-plugin", {
             ready: function() {
                 this.currentUser = this.shadowRoot.querySelector("home-container").currentUser;
-            },
-
-            addNotification: function() {
-                this.notificationBody = JSON.stringify({"content": "test notification", "from_user_id": this.$.globals.values.currentUser.id });
-                this.$.addNotificationAjax.go();
             }
+
+//            addNotification: function() {
+//                this.notificationBody = JSON.stringify({"content": "test notification", "from_user_id": this.$.globals.values.currentUser.id });
+//                this.$.addNotificationAjax.go();
+//            }
 //
 //            addMultiNotification: function() {
 //                this.multiNotificationBody = JSON.stringify({"content": {"content": "test notification"}, "users": [this.$.globals.values.currentUser.id] });
