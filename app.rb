@@ -69,6 +69,8 @@ class App < Sinatra::Base
           settings.sockets.delete(ws)
         end
       end
+    elsif @userid.nil?
+      redirect "/login"
     else
       content_type 'text/html'
       send_file File.join(settings.public_folder, 'index.html')
