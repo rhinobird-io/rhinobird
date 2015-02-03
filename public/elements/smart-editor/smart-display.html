@@ -13,6 +13,7 @@
             enableSlash: true,
             enableCode: true,
             enableLink: true,
+
             slashTrigger: function(text, plugin, args) {
                 if (args == undefined) args = "";
                 if (plugin == "vity") {
@@ -29,11 +30,12 @@
                     return link;
                 }
             },
+
             wrap: function (value) {
                 if (!value) return "";
+                var root = document.createElement("span");
                 if (this.enableCode) {
                     // Preserve and remove code blocks
-                    var root = document.createElement("span");
                     root.innerHTML = value.replace(/```(.*)\n(((?!```\n)[\s\S])*)```/g,
                             "<pre><code class='$1'>$2</code></pre>");
                     var codeBlocks = [];
@@ -45,7 +47,6 @@
                     value = root.innerHTML;
                 }
                 if (this.enableAt) {
-                    var root = document.createElement("span");
                     root.innerHTML = value.replace(/(^|\s)(@[\w\.-]+)/g, "$1<at>$2</at>");
                     var list = root.querySelectorAll("at");
                     for (var i = 0; i < list.length; i++) {
@@ -60,7 +61,6 @@
                     value = root.innerHTML;
                 }
                 if (this.enableSlash) {
-                    var root = document.createElement("span");
                     var regex = /(^|\s)(\/([\w\.-]+)(:(\S+))?)/g;
                     root.innerHTML = value.replace(regex, "$1<slash>$2</slash>");
                     var list = root.querySelectorAll("slash");
@@ -81,7 +81,6 @@
                 }
                 if (this.enableCode) {
                     // Re-insert code blocks
-                    var root = document.createElement("span");
                     root.innerHTML = value;
                     var list = root.querySelectorAll("pre code");
                     for (var i = 0; i < list.length; i++) {
