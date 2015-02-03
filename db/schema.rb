@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150121085604) do
+ActiveRecord::Schema.define(version: 20150203040157) do
 
   create_table "appointments", force: :cascade do |t|
     t.integer "event_id"
@@ -35,12 +35,12 @@ ActiveRecord::Schema.define(version: 20150121085604) do
     t.string   "title"
     t.boolean  "full_day"
     t.boolean  "period"
-    t.datetime "from"
-    t.datetime "to"
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "creator_id"
+    t.datetime "fromTime"
+    t.datetime "toTime"
   end
 
   add_index "events", ["creator_id"], name: "index_events_on_creator_id"
