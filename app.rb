@@ -75,6 +75,8 @@ class App < Sinatra::Base
           settings.sockets.delete(ws)
         end
       end
+    elsif @userid.nil?
+      redirect "/login"
     else
       content_type 'text/html'
       send_file File.join(settings.public_folder, 'index.html')
@@ -83,8 +85,12 @@ class App < Sinatra::Base
   end
 
   before do
-    @userid = request.env['HTTP_X_USER'].to_i
-    login_required! unless ( ['/users', '/login'].include?(request.path_info) || request.path_info =~ /\/user\/invitation.*/)
+    unless request.env['HTTP_X_USER'].nil?
+      @userid = request.env['HTTP_X_USER'].to_i
+    end
+
+    login_required! unless ( ['/users', '/login', '/'].include?(request.path_info) || request.path_info =~ /\/user\/invitation.*/)
+
     content_type 'application/json'
     if request.media_type == 'application/json'
       body = request.body.read
@@ -131,21 +137,27 @@ class App < Sinatra::Base
   end
 
   #gravatar related
-  get '/gravatars' do
+  get '/gravatars/all' do
     User.all.map { |u|
       {
           id: u.id,
           url: get_image_url(u.id, u),
+          name: u.name,
           username: u.realname
       }
     }.to_json
   end
 
-  get '/gravatar/:userId' do
-    user = User.find(params[:userId])
+  get '/gravatar/:type/:value' do
+    if params[:type] == "id"
+      user = User.find(params[:value])
+    else
+      user = User.where(name: params[:value]).take
+    end
     gravatar = {}
     gravatar["username"] = user.realname
-    gravatar["url"] = get_image_url(params[:userId], user)
+    gravatar["userid"] = user.id
+    gravatar["url"] = get_image_url(user.id, user)
     if user.local_avatar.nil?
       gravatar["local"] = false
     else
@@ -154,7 +166,8 @@ class App < Sinatra::Base
     gravatar.to_json
   end
 
-  get '/gravatar' do
+  #get the array of gravatars with the given list of user id
+  get '/gravatars' do
     gravatars = []
     @params.each do |param|
       user = User.find(param[1])
@@ -177,7 +190,7 @@ class App < Sinatra::Base
     if user.local_avatar.nil?
       url = Gravatar.new(user.email).image_url
     else
-      url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}" + "/platform/avatar/" + User.find(user_id).local_avatar.id.to_s
+      url = "/platform/avatar/" + User.find(user_id).local_avatar.id.to_s
     end
 
     return url
@@ -294,7 +307,7 @@ class App < Sinatra::Base
       status 410
     elsif user.password == @body["password"]
       token = SecureRandom.hex
-      RestClient.post auth_url, { 'token' => token, 'userId' => user.id.to_s }.to_json, :content_type => :json
+      RestClient.post auth_url, {'token' => token, 'userId' => user.id.to_s}.to_json, :content_type => :json
       response.set_cookie("Auth", {
                                     :value => token,
                                     :httponly => false,
@@ -441,7 +454,7 @@ class App < Sinatra::Base
   end
 
   get '/users' do
-    User.all.to_json
+    User.all.to_json(except: [:encrypted_password, :created_at, :updated_at])
   end
 
   get '/user/invitation/:inviteId' do
@@ -485,7 +498,7 @@ class App < Sinatra::Base
       User.create!(@body)
     else
       team = Team.find(@body["initial_team_id"])
-      user_obj = {:realname => @body["realname"], :email => @body["email"], :password => @body["password"]}
+      user_obj = {name: @body['name'], realname: @body['realname'], email: @body['email'], password: @body['password']}
       user = User.create!(user_obj)
       team.users << user
     end
@@ -536,14 +549,26 @@ class App < Sinatra::Base
     200
   end
 
-  #get unchecked notifications for one user
+  #get all notifications for one user
   get '/users/:userId/notifications' do
-    User.find(params[:userId]).notifications.where({checked: false}).to_json
+    User.find(params[:userId]).notifications.to_json
   end
 
-  #get all notification history for one user
-  get '/users/:userId/notifications/history' do
-    User.find(params[:userId]).notifications.to_json
+  #get specified part of notifications for one user
+  get '/users/:userId/notifications/:startIndex/:limit' do
+    return_obj = {}
+    notifications = User.find(params[:userId]).notifications
+    if params[:startIndex] == 0
+      if notifications.where(checked: false).count < params[:limit]
+        return_obj["notifications"] = notifications.limit(params[:limit]).offset(0)
+      else
+        return_obj["notifications"] = notifications.where(checked: false)
+      end
+    else
+      return_obj["notifications"] = notifications.limit(params[:limit]).offset(params[:startIndex])
+    end
+    return_obj["total"] = notifications.count
+    return_obj.to_json
   end
 
   # add a notification to one user
