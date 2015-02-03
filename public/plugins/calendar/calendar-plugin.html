@@ -597,7 +597,7 @@
                 });
                 this.refresh();
                 this.isListLoaded = true;
-
+                
                 if (this.events.length > 0)
                     this.range = {min: this.events[0].fromTime, max: this.events[this.events.length - 1].fromTime};
             },
@@ -773,7 +773,7 @@
                         this.loadingOlderText = 'No more older events.';
                     }*/
                 }
-                
+
                 if (type == 1)
                     this.loadingMoreNewerEvents = false;
                 else if (type == 2)
