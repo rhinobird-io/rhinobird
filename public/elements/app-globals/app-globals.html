@@ -1,9 +1,19 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
 <polymer-element name="app-globals" attributes="values">
+    <template>
+        <core-ajax
+                id="getCurrentUserAjax"
+                method="get"
+                contentType="application/json"
+                url="/platform/loggedOnUser"
+                handleAs="json"
+                on-core-response="{{currentUserCallback}}"></core-ajax>
+    </template>
     <script>
         (function() {
             var values = {};
+            var getUserInProgress = false;
 
             Polymer({
                 ready: function() {
@@ -12,6 +22,21 @@
                         var attr = this.attributes[i];
                         values[attr.nodeName] = attr.value;
                     }
+
+                    if (!this.values["currentUser"]) {
+                        if (!getUserInProgress) {
+                            getUserInProgress = true;
+                            this.$.getCurrentUserAjax.go();
+                        }
+                    } else {
+                        this.fire("current-user-ready");
+                    }
+                },
+
+                currentUserCallback: function(event, response) {
+                    this.values["currentUser"] = response.response;
+                    getUserInProgress = false;
+                    this.fire("current-user-ready");
                 }
             });
         })();
