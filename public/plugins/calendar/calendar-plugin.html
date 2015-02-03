@@ -15,7 +15,6 @@
 <link rel="import" href="../../elements/smart-time-display/smart-time-display.html">
 <link rel="import" href="../../bower_components/core-list/core-list.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
-<link rel="import" href="../../bower_components/event-infinite-scroll/event-infinite-scroll.html">
 
 <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
@@ -362,6 +361,10 @@
                             <div class="loading top-loading">{{loadingOlderText}}</div>
                         </template>
                         <div class="container" id="container" fit>
+<<<<<<< HEAD
+=======
+                            
+>>>>>>> Scroll to load more events && table events column change.
                             <div class="timeline" vertical layout>
                                 <core-list data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;">
                                     <template>
@@ -399,6 +402,10 @@
                                 
                             </div>
                         </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> Scroll to load more events && table events column change.
                         <template if="{{loadingMoreNewerEvents}}">
                                 <div class="loading bottom-loading">{{loadingNewerText}}</div>
                         </template>
@@ -596,10 +603,9 @@
                 });
                 this.refresh();
                 this.isListLoaded = true;
-                
+
                 if (this.events.length > 0)
                     this.range = {min: this.events[0].fromTime, max: this.events[this.events.length - 1].fromTime};
-
             },
             handleSingleEvent: function(event, detail) {
                 this.selected = detail.response;
@@ -773,6 +779,7 @@
                         this.loadingOlderText = 'No more older events.';
                     }*/
                 }
+<<<<<<< HEAD
 
                 if (type == 1)
                     this.loadingMoreNewerEvents = false;
@@ -780,6 +787,15 @@
                     this.loadingMoreOlderEvents = false;
 
                 if (type == 1)
+=======
+
+                if (type == 1)
+                    this.loadingMoreNewerEvents = false;
+                else if (type == 2)
+                    this.loadingMoreOlderEvents = false;
+
+                if (type == 1)
+>>>>>>> Scroll to load more events && table events column change.
                     this.$.threshold.clearLower();
                 else if (type == 2)
                     this.$.threshold.clearUpper();
