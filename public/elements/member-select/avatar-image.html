@@ -8,6 +8,10 @@
             :host.small {
                 font-size: small;
             }
+
+            img {
+                display: block;
+            }
         </style>
         <core-ajax id="getGravatar"
                    url="/platform/gravatar/{{userid}}"
@@ -42,7 +46,7 @@
 
                 domReady: function() {
                     if (!this.size) {
-                        this.size = 15;
+                        this.size = 16;
                     }
 
                     if (!this.default) {
