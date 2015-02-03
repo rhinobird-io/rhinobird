@@ -144,7 +144,7 @@
         position: absolute;
         left: 16px;
         top: -20px;
-        z-index: 1000000000;
+        z-index: 1;
     }
 
     .list {
@@ -474,6 +474,7 @@
                                     <member-select teamsUrl="/platform/teams_users"
                                                    disabled="{{modeDisabled}}"
                                                    allUserSelected="{{selected.participants}}"
+                                                   users="{{selected.participants}}"
                                                    label="Participants"
                                                    adaptive></member-select>
                                 </div>
