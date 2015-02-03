@@ -127,11 +127,12 @@ class App < Sinatra::Base
   end
 
   #gravatar related
-  get '/gravatars' do
+  get '/gravatars/all' do
     User.all.map { |u|
       {
           id: u.id,
           url: get_image_url(u.id, u),
+          name: u.name,
           username: u.realname
       }
     }.to_json
@@ -141,7 +142,7 @@ class App < Sinatra::Base
     if params[:type] == "id"
       user = User.find(params[:value])
     else
-      user = User.where(username: params[:value]).take
+      user = User.where(name: params[:value]).take
     end
     gravatar = {}
     gravatar["username"] = user.realname
