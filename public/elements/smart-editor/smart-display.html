@@ -1,0 +1,71 @@
+<script src="../../bower_components/highlightjs/highlight.pack.js"></script>
+
+<polymer-element name="smart-display" attributes="value at slash code">
+    <template>
+        <link rel="stylesheet" href="../../bower_components/highlightjs/styles/default.css">
+        <div>
+            <html-echo html="{{wrap(value)}}"></html-echo>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            wrap: function (value) {
+                if (!value) return "";
+                if (this.code) {
+                    var root = document.createElement("span");
+                    root.innerHTML = value.replace(/(```.*\n((?!```\n)[\s\S])*```)/g, "<pre>$1</pre>");
+                    var codeBlocks = [];
+                    var list = root.querySelectorAll("pre");
+                    for (var i = 0; i < list.length; i++) {
+                        codeBlocks.push(list[i].innerHTML);
+                        list[i].innerHTML = "";
+                    }
+                    value = root.innerHTML;
+                }
+                if (this.at) {
+                    var root = document.createElement("span");
+                    root.innerHTML = value.replace(/((^|\s)@[\w\.]+)/g, "<at>$1</at>");
+                    var list = root.querySelectorAll("at");
+                    for (var i = 0; i < list.length; i++) {
+                        var name = list[i].innerHTML;
+                        var profile = document.createElement("span");
+                        profile.innerHTML =
+                            "<member-profile userid=31>" +  // TODO Replace userid
+                            "<a class='trigger' href='#'>" + name + "</a>" +
+                            "</member-profile>";
+                        root.replaceChild(profile, list[i]);
+                    }
+                    value = root.innerHTML;
+                }
+                if (this.slash) {
+                    var root = document.createElement("span");
+                    root.innerHTML = value.replace(/((^|\s)\/[\w]+)/g, "<slash>$1</slash>");
+                    var list = root.querySelectorAll("slash");
+                    for (var i = 0; i < list.length; i++) {
+                        var name = list[i].innerHTML;
+                        var link = document.createElement("span");
+                        link.innerHTML = "<a href='#'>" + name + "</a>";  // TODO Replace with component
+                        root.replaceChild(link, list[i]);
+                    }
+                    value = root.innerHTML;
+                }
+                if (this.code) {
+                    var root = document.createElement("span");
+                    root.innerHTML = value.replace(/(```.*\n((?!```\n)[\s\S])*```)/g, "<pre>$1</pre>");
+                    var list = root.querySelectorAll("pre");
+                    for (var i = 0; i < list.length; i++) {
+                        var code = codeBlocks[i];
+                        code = code.replace(/^```/, "");
+                        var lang = code.match(/.*/);
+                        code = code.replace(/^.*\n/, "").replace(/```$/, "");
+                        list[i].innerHTML = "<code>" + code + "</code>";
+                        list[i].querySelector("code").className = lang;
+				        hljs.highlightBlock(list[i].querySelector("code"));
+                    }
+                    value = root.innerHTML;
+                }
+                return value;
+            }
+        });
+    </script>
+</polymer-element>

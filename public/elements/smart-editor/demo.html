@@ -4,6 +4,7 @@
     <script src="../../bower_components/webcomponentsjs/webcomponents.min.js"></script>
 
     <link rel="import" href="smart-editor.html">
+    <link rel="import" href="smart-display.html">
     <style>
         smart-editor {
             width: 600px;
@@ -13,7 +14,7 @@
 <body>
 <template is="auto-binding">
     <div layout vertical center fit>
-        <smart-display value="{{value}}"></smart-display>
+        <smart-display value="{{value}}" at=1 slash=1 code=1></smart-display>
         <smart-editor value="{{value}}"></smart-editor>
     </div>
 </template>
