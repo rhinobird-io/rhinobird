@@ -2,24 +2,7 @@
 <link rel="import" href="../app-globals/app-globals.html">
 <link rel="import" href="avatar-image.html">
 
-<polymer-element name="x-trigger" relative="" on-tap="{{toggle}}" noink="">
-    <template>
-        <shadow></shadow>
-        <content></content>
-    </template>
-    <script>
-        Polymer({
-            toggle: function(event, detail, target) {
-                if (!this.dropdown) {
-                    this.dropdown = this.querySelector('paper-dropdown');
-                }
-                this.dropdown && this.dropdown.toggle();
-            }
-        });
-    </script>
-</polymer-element>
-
-<polymer-element name="member-element" attributes="userid menu imagesize view">
+<polymer-element name="member-element" attributes="userid username menu imagesize view">
     <template>
         <style>
 
@@ -32,27 +15,30 @@
                 color:dimgrey;
             }
 
+            ::content .content {
+                word-wrap: break-word;
+                /*width: 300px;*/
+            }
+
         </style>
-        <core-ajax id="getGravatar"
-                   url="/platform/gravatar/{{userid}}"
-                   handleAs="json"
-                   on-core-response="{{handleResponse}}"></core-ajax>
         <template if="{{menu}}">
             <div>
                 <template if="{{!view || view == 'default'}}">
                     <div class="element" horizontal layout center>
-                        <avatar-image userid="{{userid}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}"></avatar-image><span style="margin: 5px">{{gravatar.username}}</span>
+                        <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}"></avatar-image><span style="margin: 5px">{{gravatar.username}}</span>
                     </div>
                 </template>
                 <template if="{{view && view != 'default'}}">
                     <div class="element" horizontal layout>
-                        <avatar-image userid="{{userid}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}" on-click="{{toggle}}"></avatar-image>
-                        <div vertical layout style="margin: 5px">
-                            <div horizontal layout class="title" on-click="{{toggle}}">
+                        <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}" on-click="{{toggle}}"></avatar-image>
+                        <div vertical layout style="margin-left: 5px">
+                            <div horizontal layout on-click="{{toggle}}">
                                 <span style="margin-right: 5px">{{gravatar.username}}</span>
-                                <content select=".title"></content>
+                                <div class="title" flex>
+                                    <content select=".title"></content>
+                                </div>
                             </div>
-                            <content select=".content" ></content>
+                            <content select=".content"></content>
                         </div>
                     </div>
                 </template>
@@ -68,16 +54,18 @@
         <template if="{{!menu}}">
             <template if="{{!view || view == 'default'}}">
                 <div class="element" horizontal layout center>
-                    <avatar-image userid="{{userid}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}"></avatar-image><span style="margin: 5px">{{gravatar.username}}</span>
+                    <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}"></avatar-image><span style="margin: 5px">{{gravatar.username}}</span>
                 </div>
             </template>
             <template if="{{view && view != 'default'}}">
                 <div class="element" horizontal layout>
-                    <avatar-image userid="{{userid}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}"></avatar-image>
+                    <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}"></avatar-image>
                     <div vertical layout style="margin: 5px">
-                        <div horizontal layout class="title">
+                        <div horizontal layout>
                             <span style="margin-right: 5px">{{gravatar.username}}</span>
-                            <content select=".title"></content>
+                            <div class="title">
+                                <content select=".title"></content>
+                            </div>
                         </div>
                         <content select=".content" ></content>
                     </div>
@@ -96,7 +84,11 @@
             },
 
             avatarReady: function() {
-                this.gravatar = this.$.globals.values.memberCache[this.userid];
+                if (this.userid) {
+                    this.gravatar = this.$.globals.values.memberCache[this.userid];
+                } else {
+                    this.gravatar = this.$.globals.values.memberCache[this.username];
+                }
             },
 
             toggle: function(event, detail, target) {

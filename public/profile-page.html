@@ -1,80 +1,7 @@
 <link rel="import" href="home-container.html">
 <link rel="import" href="elements/app-globals/app-globals.html">
 <link rel="import" href="bower_components/ajax-file-input/ajax-file-input.html">
-<link rel="import" href="bower_components/core-selector/core-selector.html">
-
-<polymer-element name="team-select" attributes="maxLen">
-    <template>
-        <core-ajax id="getTeamsAjax"
-                   auto
-                   url="/platform/teams"
-                   handleAs="json"
-                   response="{{teams}}"></core-ajax>
-        <paper-input-decorator label="Invite to team(optional)" labelVisible="{{_labelVisible}}" floatinglabel value="{{initialTeam}}">
-            <div horizontal layout center wrap>
-                <template repeat="{{team in selected}}">
-                    <label>{{team.name}}</label>
-                    <core-icon class="small" icon="clear" on-click="{{ removeUserHandler }}"
-                               on-mousedown="{{preventFocus}}"></core-icon>
-                </template>
-                <input is="core-input" value="{{initialTeam}}"
-                       on-focus="{{ showMenu }}" on-blur="{{ hideMenu }}">
-            </div>
-
-        </paper-input-decorator>
-        <template if="{{isShowMenu}}">
-            <core-selector id="selector" selected="0" excludedLocalNames="label">
-                <template repeat="{{ t in teams}}">
-                    <div on-tap="{{selectTeamHandler}}">
-                        {{t.name}}
-                    </div>
-                </template>
-            </core-selector>
-        </template>
-    </template>
-    <script>
-        Polymer("team-select", {
-
-            _labelVisible: true,
-            selected: [],
-
-            showMenu: function () {
-                this.isShowMenu = true;
-            },
-
-            hideMenu: function (event, detail, sender) {
-                var self = this;
-                setTimeout(function () {
-                    self.isShowMenu = false;
-                    self.$.selector.selected = 0;
-                }, 100);
-            },
-
-            selectTeamHandler: function (event, detail, target) {
-                var team = target.templateInstance.model.t;
-                if (this.maxLen && this.maxLen > 0) {
-                    currentLen = this.selected.length;
-                    if (currentLen == this.maxLen) {
-                        this.selected.shift();
-                    }
-                }
-                this.selected.push(team);
-                this._labelVisible = false;
-            },
-
-            removeUserHandler: function (event, detail, target) {
-                var team = target.templateInstance.model.t;
-                index = this.selected.indexOf(team);
-                this.selected.splice(index, 1);
-                if (this.selected.length === 0) {
-                    this._labelVisible = true;
-                }
-                event.stopPropagation();
-            }
-        });
-    </script>
-
-</polymer-element>
+<link rel="import" href="elements/member-select/member-select.html">
 
 <polymer-element name="profile-page">
     <template>
@@ -89,18 +16,17 @@
                 <div vertical layout>
                     <div horizontal layout>
                         <div style="width:400px" vertical layout>
-                            <paper-input label="name" floatinglabel disabled value="{{user.realname}}"></paper-input>
-                            <paper-input label="email" floatinglabel disabled value="{{user.email}}"></paper-input>
+                            <paper-input label="name" floatinglabel disabled value="{{$.globals.values.currentUser.realname}}"></paper-input>
+                            <paper-input label="email" floatinglabel disabled value="{{$.globals.values.currentUser.email}}"></paper-input>
                         </div>
                         <div vertical layout style="width: 400px;margin-left: 100px">
                             <core-ajax id="inviteUserAjax"
                                        url="/platform/user/invite"
                                        method="post"
                                        contentType="application/json"
-                                       body="{{newUserJson}}"
-                                       on-core-response="{{inviteSuccess}}"></core-ajax>
+                                       body="{{newUserJson}}"></core-ajax>
                             <paper-input label="Email" floatinglabel value="{{userEmail}}"></paper-input>
-                            <team-select id="initialTeam" maxLen="1"></team-select>
+                            <member-select id="initialTeam" type="team" maxLen="1" ></member-select>
                             <paper-button raised on-tap="{{inviteNewMember}}">Invite New Member</paper-button>
                             <paper-toast id="toastInviteSuccess" text="Invitation has been sent to {{userEmail}}" role="status" touch-action="none"
                                          tabindex="-1"
@@ -139,7 +65,7 @@
                                 <template if="{{$.globals.values.currentUser}}">
                                     <core-ajax id="getGravatar"
                                                auto
-                                               url="/platform/gravatar/{{$.globals.values.currentUser.id}}"
+                                               url="/platform/gravatar/id/{{$.globals.values.currentUser.id}}"
                                                handleAs="json"
                                                method="get"
                                                response="{{gravatar}}"
@@ -159,7 +85,7 @@
                             </div>
                             <div horizontal layout center>
                                 <template if="{{gravatar.url}}">
-                                    <img src="{{gravatar.url}}?d=identicon" style="margin: 20px"/>
+                                    <img src="{{gravatar.url}}?d=identicon" style="margin: 20px" width="160" height="160"/>
                                 </template>
                                 <core-ajax id="removeLocalAvatarAjax"
                                            url="/platform/avatar/remove"
@@ -182,13 +108,8 @@
     </template>
     <script>
         Polymer("profile-page", {
-            ready: function() {
-                // clone the user object
-                this.user = JSON.parse(JSON.stringify(this.$.globals.values.currentUser));
-            },
-
             avatarUpload: function() {
-                this.$.uploader.progressInvisible = true;
+                this.$.uploader.shadowRoot.querySelector("core-label").parentElement.parentElement.hidden = true;
                 this.$.avatarAjaxDiv.querySelector("#getGravatar").go();
             },
 
@@ -201,7 +122,8 @@
             },
 
             gravatarResponse: function() {
-                this.$.globals.values.memberCache[this.$.globals.values.currentUser.id] = this.gravatar;
+                this.$.globals.values.memberCache[this.gravatar.userid] = this.gravatar;
+                this.$.globals.values.memberCache[this.gravatar.username] = this.gravatar;
             },
 
             changePassword: function() {
@@ -232,17 +154,14 @@
             inviteNewMember: function() {
                 this.newUser = {};
                 this.newUser.email = this.userEmail;
-                var selectedTeams = this.$.initialTeam.selected;
+                var selectedTeams = this.$.initialTeam.selected.teams;
                 if (selectedTeams.length !== 0) {
-                    this.newUser.initial_team_id = selectedTeams[0].id;
+                    this.newUser.initial_team_id = selectedTeams[0];
                 }
 
                 this.newUserJson = JSON.stringify(this.newUser);
-                this.$.inviteUserAjax.go();
-            },
-
-            inviteSuccess: function() {
                 this.$.toastInviteSuccess.toggle();
+                this.$.inviteUserAjax.go();
             }
         });
     </script>

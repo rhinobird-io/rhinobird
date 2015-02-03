@@ -11,7 +11,7 @@ namespace :db do
       team = Team.create!({name: Faker::Company.name})
       10.times do
         realname = Faker::Name.name
-        user = team.users.create!({realname: realname, email: Faker::Internet.email(realname), encrypted_password: Password.create("123")})
+        user = team.users.create!({realname: realname, name: Faker::Internet.user_name(realname), email: Faker::Internet.email(realname), encrypted_password: Password.create("123")})
         3.times do
           user.dashboard_records.create!({content: Faker::Lorem.sentence, from_user_id: Random.rand(1..30)})
           user.notifications.create!({content: Faker::Lorem.sentence, from_user_id: Random.rand(1..30)})
