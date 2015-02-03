@@ -69,6 +69,8 @@ class App < Sinatra::Base
           settings.sockets.delete(ws)
         end
       end
+    elsif @userid.nil?
+      redirect "/login"
     else
       content_type 'text/html'
       send_file File.join(settings.public_folder, 'index.html')
@@ -78,7 +80,7 @@ class App < Sinatra::Base
 
   before do
     @userid = request.env['HTTP_X_USER']
-    login_required! unless ( ['/users', '/login'].include?(request.path_info) || request.path_info =~ /\/user\/invitation.*/)
+    login_required! unless ( ['/users', '/login', '/'].include?(request.path_info) || request.path_info =~ /\/user\/invitation.*/)
     content_type 'application/json'
     if request.media_type == 'application/json'
       body = request.body.read
@@ -288,7 +290,7 @@ class App < Sinatra::Base
       status 410
     elsif user.password == @body["password"]
       token = SecureRandom.hex
-      RestClient.post auth_url, { 'token' => token, 'userId' => user.id.to_s }.to_json, :content_type => :json
+      RestClient.post auth_url, {'token' => token, 'userId' => user.id.to_s}.to_json, :content_type => :json
       response.set_cookie("Auth", {
                                     :value => token,
                                     :httponly => false,
@@ -349,7 +351,7 @@ class App < Sinatra::Base
   end
 
   get '/users' do
-    User.all.to_json
+    User.all.to_json(except: [:encrypted_password, :created_at, :updated_at])
   end
 
   get '/user/invitation/:inviteId' do
@@ -393,7 +395,7 @@ class App < Sinatra::Base
       User.create!(@body)
     else
       team = Team.find(@body["initial_team_id"])
-      user_obj = {:realname => @body["realname"], :email => @body["email"], :password => @body["password"]}
+      user_obj = {name: @body['name'], realname: @body['realname'], email: @body['email'], password: @body['password']}
       user = User.create!(user_obj)
       team.users << user
     end

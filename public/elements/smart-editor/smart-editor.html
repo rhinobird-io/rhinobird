@@ -1,0 +1,124 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../member-select/member-element.html">
+<link rel="import" href="../member-profile/member-profile.html">
+<link rel="import" href="../html-echo/html-echo.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input-decorator.html">
+<link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
+<link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
+<link rel="import" href="../../bower_components/core-selector/core-selector.html">
+
+<polymer-element name="smart-editor" attributes="label value">
+    <template>
+        <style>
+            #menu {
+                position: absolute;
+                background-color: #C5CAE9;
+                padding: 10px 14px;
+            }
+
+            .core-selected {
+                background-color: #FF4081;
+                color: white;
+            }
+
+            .wrapper {
+                position: relative;
+            }
+        </style>
+        <paper-input-decorator label="{{label}}" floatingLabel>
+            <paper-autogrow-textarea id="autogrow">
+                <textarea on-input="{{textInputted}}" on-keydown="{{doFilter}}" id="textarea"
+                          value="{{value}}"></textarea>
+            </paper-autogrow-textarea>
+        </paper-input-decorator>
+        <core-ajax url="/platform/users" auto handleAs="json" response="{{users}}"></core-ajax>
+        <div class="wrapper">
+            <paper-shadow z="1" id="menu" hidden?="{{!showMenu}}">
+                <div>
+                    <core-selector id="selector" selected="0">
+                        <template repeat="{{ u in filteredUsers}}">
+                            <div on-tap="{{addUserHandler}}">
+                                <member-element userid="{{u.id}}"></member-element>
+                            </div>
+                        </template>
+                    </core-selector>
+                </div>
+            </paper-shadow>
+        </div>
+    </template>
+    <script src="../../lib/textarea-caret-position.js"></script>
+    <script>
+        var getCaretCoordinates = require('textarea-caret-position');
+        Polymer({
+            showMenu: false,
+            label: 'Text',
+            textInputted: function (event, detail, target) {
+                this.showMenu = false;
+                var lastWord = target.value.substring(0, target.selectionEnd).match(/([^\s]*)$/)[1];
+                if (lastWord.length == 0) {
+                    return;
+                }
+                if (lastWord.charAt(0) == '@') {
+                    var coordinates = getCaretCoordinates(target, target.selectionEnd - lastWord.length);
+                    this.$.menu.style.top = coordinates.top + "px";
+                    this.$.menu.style.left = coordinates.left + "px";
+                    this.showMenu = true;
+                    var text = lastWord.substring(1);
+                    this.filteredUsers = this.filterUser(text);
+                }
+            },
+            filterUser: function (text) {
+                var result = [];
+                text = text.toLowerCase();
+                if (this.users) {
+                    this.users.forEach(function (user) {
+                        if ((user.email.toLowerCase().indexOf(text) != -1 || user.name.toLowerCase().indexOf(text) != -1 || user.realname.toLowerCase().indexOf(text) != -1) && result.length < 8) {
+                            result.push(user);
+                        }
+                    }, this);
+                }
+                return result;
+            },
+            doFilter: function (event, detail, sender) {
+
+                if (event.keyCode === 38 || event.keyCode === 40) { // up down keys
+                    //avoid change cursor on input
+                    event.preventDefault();
+                    if (event.keyCode === 38) {
+                        this.$.selector.selectPrevious(true);
+                    } else {
+                        this.$.selector.selectNext(true);
+                    }
+                } else if (event.keyCode === 13) {
+                    if (this.showMenu) {
+                        var user = this.$.selector.selectedModel.u;
+                        this.replaceText(user);
+                        this.showMenu = false;
+                        event.preventDefault();
+                    }
+                } else {
+                    this.$.selector.selected = 0;
+                    this.$.selector.parentElement.scrollTop = 0;
+                }
+            },
+            addUserHandler: function (event, detail, target) {
+                var user = target.templateInstance.model.u;
+                this.replaceText(user);
+                this.showMenu = false;
+            },
+            replaceText: function(user) {
+                var left, right;
+                left = this.value.substring(0, this.$.textarea.selectionEnd);
+                right = this.value.substring(this.$.textarea.selectionEnd);
+                left = left.replace(/[^\s]*$/, "@" + user.name + " ");
+                this.value = left + right;
+                this.$.autogrow.update(this.$.textarea);
+                var self = this;
+                setTimeout(function(){
+                    self.$.textarea.selectionEnd = left.length+1;
+                }, 0);
+            }
+        });
+    </script>
+</polymer-element>
