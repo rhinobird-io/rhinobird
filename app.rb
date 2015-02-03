@@ -15,7 +15,8 @@ require 'gravatar-ultimate'
 require 'sinatra-websocket'
 require 'rest_client'
 require 'pony'
-require "bcrypt"
+require 'bcrypt'
+require 'date'
 
 class App < Sinatra::Base
 
@@ -323,17 +324,34 @@ class App < Sinatra::Base
 
   end
 
+  get '/events' do
+    today = Date.today
+    events = Event.where("creator_id = ? AND fromTime >= ?", @userid, today).limit(5)
+    events.order(:fromTime).to_json(include: {participants: {only: :id}})
+  end
+
+  get '/events/after/:fromTime' do
+    from = DateTime.parse(params[:fromTime])
+    logger.info from
+
+    events = Event.where("creator_id = ? AND fromTime > ?", @userid, from).limit(5)
+    events.order(:fromTime).to_json(include: {participants: {only: :id}})  
+  end
+
+  get '/events/before/:fromTime' do
+    from = DateTime.parse(params[:fromTime])
+    logger.info from
+    events = Event.where("creator_id = ? AND fromTime < ?", @userid, from).limit(5)
+    events.order(:fromTime).to_json(include: {participants: {only: :id}})
+  end
+
   get '/users/:userId/events' do
-    User.find(params[:userId]).events.order(:from).to_json(include: {participants: {only: :id}})
+    User.find(params[:userId]).events.order(:fromTime).to_json(include: {participants: {only: :id}})
   end
 
   get '/events/:eventId' do
-    #begin
       event = Event.find(params[:eventId])
       event.to_json(include: {participants: {only: :id}})
-    #rescue Exception => e
-    #  404
-    #end
   end
 
   post '/events' do
