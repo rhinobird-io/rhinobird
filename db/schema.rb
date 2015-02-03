@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150130025158) do
+ActiveRecord::Schema.define(version: 20150130101153) do
 
   create_table "appointments", force: :cascade do |t|
     t.integer "event_id"
@@ -69,6 +69,7 @@ ActiveRecord::Schema.define(version: 20150130025158) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.boolean  "checked",      default: false
+    t.string   "url"
   end
 
   add_index "notifications", ["user_id"], name: "index_notifications_on_user_id"
