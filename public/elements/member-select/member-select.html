@@ -11,7 +11,7 @@
 <link rel="import" href="../../bower_components/core-selector/core-selector.html">
 <link rel="import" href="member-element.html">
 
-<polymer-element name="member-select" attributes="selected disabled label">
+<polymer-element name="member-select" attributes="selected disabled label adaptive width height">
     <template>
         <core-ajax url="/platform/teams_users" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>
         <core-ajax url="/platform/users" auto handleAs="json" on-core-response="{{handleUsersResponse}}"></core-ajax>
@@ -25,14 +25,14 @@
                 *-webkit-border-radius: 5px;
                 position: absolute;
                 padding: 0;
-                width: 300px;
+                width: {{widthInString}};
                 z-index: 10;
                 box-shadow: 0 0 6px #555;
                 box-sizing: border-box;
             }
 
             #menu > div {
-                height: 200px;
+                height: {{height}}px;
                 padding: 10px 14px;
                 background-color: #C5CAE9;
                 overflow-y: auto;
@@ -62,6 +62,7 @@
                 padding: 2px;
                 border-radius: 0.25em;
                 border: 1px solid #C5CAE9;
+                margin: 2px;
                 margin-right: 4px;
             }
 
@@ -199,6 +200,15 @@
                 this.searchText = '';
                 this.isShowMenu = false;
                 this.selected = [];
+                
+                if (this.adaptive) {
+                    this.widthInString = '100%';
+                } else {
+                    this.width = this.width || 300;
+                    this.widthInString = this.width + 'px';
+                }
+                this.height = this.height || 200;
+
             },
 
             doFilter: function (event, detail, sender) {
@@ -255,7 +265,7 @@
                 var parentHeight = this.$.wrapper.offsetParent.offsetHeight;
                 var offsetTop = this.$.wrapper.offsetTop;
                 var wrapperHeight = this.$.wrapper.offsetHeight;
-                var menuHeight = 200;
+                var menuHeight = this.height + 20;
 
                 console.log(this.$.menu.offsetWidth);
                 if (offsetTop - scrollTop + wrapperHeight + menuHeight <= parentHeight) {
