@@ -1,0 +1,26 @@
+<link rel="import" href="bower_components/core-icons/av-icons.html">
+
+<polymer-element name="notification-record" attributes="notification">
+    <template>
+        <style>
+            .content {
+                width: 300px;
+            }
+        </style>
+        <member-element id="element" imagesize="40" view="custom" userid="{{notification.from_user_id}}">
+            <div class="title" horizontal layout center>
+                {{notification.created_at | date('yyyy-MM-dd HH:mm')}}
+                <template if="{{!notification.checked}}">
+                    <core-icon style="margin-left: 10px" icon="av:new-releases"></core-icon>
+                </template>
+            </div>
+            <div id="content" class="content">
+               {{notification.content}}
+            </div>
+        </member-element>
+    </template>
+    <script>
+        Polymer("notification-record", {
+        });
+    </script>
+</polymer-element>
