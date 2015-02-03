@@ -59,7 +59,7 @@ class App < Sinatra::Base
     if request.websocket?
       request.websocket do |ws|
         ws.onopen do
-          settings.sockets[@userid.to_i] = ws
+          settings.sockets[@userid] = ws
         end
         ws.onmessage do |msg|
           @received_msg = JSON.parse(msg)
@@ -79,7 +79,10 @@ class App < Sinatra::Base
   end
 
   before do
-    @userid = request.env['HTTP_X_USER']
+    unless request.env['HTTP_X_USER'].nil?
+      @userid = request.env['HTTP_X_USER'].to_i
+    end
+
     login_required! unless ( ['/users', '/login', '/'].include?(request.path_info) || request.path_info =~ /\/user\/invitation.*/)
     content_type 'application/json'
     if request.media_type == 'application/json'
