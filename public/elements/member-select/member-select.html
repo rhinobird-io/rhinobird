@@ -112,7 +112,7 @@
                 <div>
                     <core-selector id="selector" selected="0" excludedLocalNames="label">
                         <label class="block">Teams</label>
-                        <template repeat="{{ t in filteredTeam}}">
+                        <template repeat="{{ t in filterTeam(teams, selected, searchText, changeFlag)}}">
                             <div class="item team" on-tap="{{addTeamHandler}}">
                                 <div horizontal layout center>
                                     <core-icon icon="social:people" width="15" height="15"></core-icon>
@@ -122,7 +122,7 @@
                         </template>
 
                         <label class="block">Members</label>
-                        <template repeat="{{ u in filteredUser}}">
+                        <template repeat="{{ u in filterUser(users, selected, searchText, changeFlag)}}">
                             <div on-tap="{{addUserHandler}}" class="item">
                                 <member-element userid="{{u.id}}"></member-element>
                             </div>
@@ -204,7 +204,7 @@
 
                     //filter selected
                     users.forEach(function (u) {
-                        if (selected.indexOf(u.id) == -1 && (u.realname.toLowerCase().indexOf(searchText) != -1)) {
+                        if (selected.users.indexOf(u.id) == -1 && (u.realname.toLowerCase().indexOf(searchText) != -1)) {
                             result.push(u);
                         }
                     });
@@ -315,7 +315,6 @@
                         this.userTeamMap[u.id + "_" + t.id] = true;
                     }, this);
                 }, this);
-                this.filteredTeam = this.teams;
             },
             handleUsersResponse: function (event) {
                 this.users = event.detail.response;
@@ -324,7 +323,6 @@
                 this.users.forEach(function (u) {
                         this.usersNameMap[u.realname] = u;
                 }, this);
-                this.filteredUser = this.users;
             },
 
             addTeamHandler: function (event, detail, target) {
@@ -343,8 +341,7 @@
                     this.selected.teams.push(team.id);
                     this.searchText = '';
                 }
-                this.filteredTeam = this.filterTeam(this.teams, this.selected, this.searchText);
-                this.filteredUser = this.filterUser(this.users, this.allUserSelected, this.searchText);
+                this.changeFlag = !this.changeFlag;
             },
 
             removeTeamHandler: function (event, detail, target) {
@@ -362,8 +359,7 @@
                         this.allUserSelected.splice(this.allUserSelected.indexOf(u.id), 1);
                     }
                 }, this);
-                this.filteredTeam = this.filterTeam(this.teams, this.selected, this.searchText);
-                this.filteredUser = this.filterUser(this.users, this.allUserSelected, this.searchText);
+                this.changeFlag = !this.changeFlag;
             },
 
             /**
@@ -400,7 +396,7 @@
                 if (this.selected.users.indexOf(userId) == -1) {
                     this.selected.users.push(userId);
                 }
-                this.filteredUser = this.filterUser(this.users, this.allUserSelected, this.searchText);
+                this.changeFlag = !this.changeFlag;
             },
 
             removeUserHandler: function (event, detail, target) {
@@ -412,7 +408,7 @@
             removeOneUser: function (userId) {
                 this.allUserSelected.splice(this.allUserSelected.indexOf(userId), 1);
                 this.selected.users.splice(this.selected.users.indexOf(userId));
-                this.filteredUser = this.filterUser(this.users, this.allUserSelected, this.searchText);
+                this.changeFlag = !this.changeFlag;
             },
 
             // public attributes

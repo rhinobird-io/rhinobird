@@ -59,8 +59,7 @@
                         <div>
                             <core-ajax id="removeUserFromTeamAjax"
                                        url="/platform/teams/{{team.id}}/users/{{removeUserId}}/remove"
-                                       method="post"
-                                       on-core-response="{{removeUserFromTeamResponse}}"></core-ajax>
+                                       method="post"></core-ajax>
                             <template repeat="{{user in users}}">
                                 <div horizontal layout center wrap>
                                     <member-element userid="{{user.id}}"></member-element>
@@ -73,8 +72,7 @@
                                            url="/platform/teams/{{team.id}}/users"
                                            method="post"
                                            contentType="application/json"
-                                           body="{{newMember}}"
-                                           on-core-response="{{newMemberResponse}}"></core-ajax>
+                                           body="{{newMember}}"></core-ajax>
                                 <member-select id="memberSelectTeam" teamsUrl="/platform/teams_users"></member-select>
                                 <paper-button raised on-tap="{{addMemberToTeam}}">Add to team</paper-button>
                             </div>
@@ -111,19 +109,13 @@
             },
 
             deleteTeam: function() {
+                this.fire('team-delete', {team: this.team});
                 this.$.deleteTeam.go();
             },
 
             leaveTeam: function() {
-                this.$.leaveTeamAjax.go();
-            },
-
-            deleteTeamResponse: function() {
-                this.fire('team-delete', {team: this.team});
-            },
-
-            leaveTeamResponse: function() {
                 this.fire('team-leave', {team: this.team});
+                this.$.leaveTeamAjax.go();
             },
 
             removeUserFromTeam: function (event, detail, target) {
@@ -201,7 +193,9 @@
                 var newTeamData = {};
                 newTeamData.team = {"name": this.teamName};
                 newTeamData.user = JSON.parse(JSON.stringify(this.$.memberSelect.allUserSelected));
-                if (newTeamData.user.indexOf(this.$.globals.values.currentUser.id == -1)) {
+                console.log(newTeamData.user);
+                if (newTeamData.user.indexOf(this.$.globals.values.currentUser.id) == -1) {
+                    console.log(this.$.globals.values.currentUser.id);
                     newTeamData.user.push(this.$.globals.values.currentUser.id);
                 }
                 this.newTeamJson = JSON.stringify(newTeamData);
