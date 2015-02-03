@@ -1,12 +1,33 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/paper-dropdown/paper-dropdown.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/core-icons/core-icons.html">
+<link rel="import" href="../../bower_components/core-icon/core-icon.html">
+<link rel="import" href="../../bower_components/core-icons/social-icons.html">
 <link rel="import" href="../member-select/member-element.html">
 
 <polymer-element name="member-profile" attributes="userid">
     <template>
+        <style>
+            .container {
+                padding: 1em;
+            }
+            #dropdown {
+                width: 200px;
+            }
+        </style>
         <content select=".trigger" on-tap="{{toggle}}"></content>
         <paper-dropdown id="dropdown">
-            <member-element userid="{{userid}}"></member-element>
+            <div layout vertical>
+                <div class="container">
+                    <member-element view="custom" userid="{{userid}}">
+                    </member-element>
+                </div>
+                <paper-item>
+                    <core-icon icon="social:person"></core-icon>
+                    View Profile
+                </paper-item>
+            </div>
         </paper-dropdown>
     </template>
     <script>
