@@ -9,6 +9,7 @@
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
 <link rel="import" href="../../bower_components/core-selector/core-selector.html">
+<link rel="import" href="../../bower_components/core-icons/social-icons.html">
 <link rel="import" href="member-element.html">
 
 <polymer-element name="member-select" attributes="selected disabled label">
@@ -80,10 +81,10 @@
             <div>
                 <paper-input-decorator label="{{label}}" floatingLabel labelVisible="{{_labelVisible}}" disabled="{{disabled}}">
                     <div horizontal layout center wrap>
-                        <template repeat="{{ tid in selectedTeam}}">
+                        <template repeat="{{ tid in selected.teams}}">
                             <div horizontal layout center class="badge">
-                                <!--<member-element userid="{{uid}}"></member-element>-->
-                                <div horizontal layout center style="height: 28px">
+                                <div horizontal layout center>
+                                    <core-icon icon="social:people" width="15" height="15"></core-icon>
                                     <span style="margin: 5px">{{teamIdMap[tid].name}}</span>
                                 </div>
 
@@ -93,7 +94,7 @@
                                 </template>
                             </div>
                         </template>
-                        <template repeat="{{ uid in selectedUser}}">
+                        <template repeat="{{ uid in selected.users}}">
                             <div horizontal layout center class="badge">
                                 <member-element userid="{{uid}}"></member-element>
                                 <template if="{{!disabled}}">
@@ -111,14 +112,17 @@
                 <div>
                     <core-selector id="selector" selected="0" excludedLocalNames="label">
                         <label class="block">Teams</label>
-                        <template repeat="{{ t in filterTeam(teams, selected, searchText, changeFlag)}}">
+                        <template repeat="{{ t in filteredTeam}}">
                             <div class="item team" on-tap="{{addTeamHandler}}">
-                                {{t.name}}
+                                <div horizontal layout center>
+                                    <core-icon icon="social:people" width="15" height="15"></core-icon>
+                                    <span style="margin: 5px">{{t.name}}</span>
+                                </div>
                             </div>
                         </template>
 
                         <label class="block">Members</label>
-                        <template repeat="{{ u in filterUser(users, selected, searchText, changeFlag)}}">
+                        <template repeat="{{ u in filteredUser}}">
                             <div on-tap="{{addUserHandler}}" class="item">
                                 <member-element userid="{{u.id}}"></member-element>
                             </div>
@@ -156,7 +160,7 @@
         Polymer({
             label: "Members",
             computed: {
-                _labelVisible: 'selected.length === 0 && !isShowMenu'
+                _labelVisible: 'allUserSelected.length === 0 && !isShowMenu'
             },
             preventFocus: function (event) {
                 event.stopPropagation();
@@ -174,14 +178,14 @@
                 if (teams && selected) {
                     //filter selected
                     teams.forEach(function (t) {
-                        var allSelected = true;
-                        for (var i = 0; i < t.users.length; i++) {
-                            if (selected.indexOf(t.users[i].id) == -1) {
-                                allSelected = false;
-                                break;
-                            }
-                        }
-                        if (!allSelected && t.name.toLowerCase().indexOf(searchText) != -1) {
+//                        var allUserSelected = true;
+//                        for (var i = 0; i < t.users.length; i++) {
+//                            if (selected.indexOf(t.users[i].id) == -1) {
+//                                allUserSelected = false;
+//                                break;
+//                            }
+//                        }
+                        if (selected.teams.indexOf(t.id) == -1 && t.name.toLowerCase().indexOf(searchText) != -1) {
                             result.push(t);
                         }
                     });
@@ -211,9 +215,10 @@
                 this.teams = this.teams || [];
                 this.searchText = '';
                 this.isShowMenu = false;
-                this.selected = [];
-                this.selectedTeam = [];
-                this.selectedUser = [];
+                this.allUserSelected = [];
+                this.selected = {};
+                this.selected.teams = [];
+                this.selected.users = [];
             },
 
             doFilter: function (event, detail, sender) {
@@ -236,11 +241,11 @@
                     }
                 } else if (event.keyCode === 8) { // backspace
                     if (this.searchText.length === 0) {
-                        if (this.selectedUser.length > 0) {
-                            var userid = this.selectedUser[this.selectedUser.length - 1];
+                        if (this.selected.users.length > 0) {
+                            var userid = this.selected.users[this.selected.users.length - 1];
                             this.removeOneUser(userid);
-                        } else if (this.selectedTeam.length > 0) {
-                            var teamId = this.selectedTeam[this.selectedTeam.length - 1];
+                        } else if (this.selected.teams.length > 0) {
+                            var teamId = this.selected.teams[this.selected.teams.length - 1];
                             this.removeOneTeam(teamId);
                         }
                     }
@@ -310,6 +315,7 @@
                         this.userTeamMap[u.id + "_" + t.id] = true;
                     }, this);
                 }, this);
+                this.filteredTeam = this.teams;
             },
             handleUsersResponse: function (event) {
                 this.users = event.detail.response;
@@ -318,6 +324,7 @@
                 this.users.forEach(function (u) {
                         this.usersNameMap[u.realname] = u;
                 }, this);
+                this.filteredUser = this.users;
             },
 
             addTeamHandler: function (event, detail, target) {
@@ -327,15 +334,17 @@
 
             addOneTeam: function (team) {
                 team.users.forEach(function (user) {
-                    if (this.selected.indexOf(user.id) == -1) {
-                        this.selected.push(user.id);
+                    if (this.allUserSelected.indexOf(user.id) == -1) {
+                        this.allUserSelected.push(user.id);
                     }
                 }, this);
 
-                if (this.selectedTeam.indexOf(team.id) == -1) {
-                    this.selectedTeam.push(team.id);
+                if (this.selected.teams.indexOf(team.id) == -1) {
+                    this.selected.teams.push(team.id);
                     this.searchText = '';
                 }
+                this.filteredTeam = this.filterTeam(this.teams, this.selected, this.searchText);
+                this.filteredUser = this.filterUser(this.users, this.allUserSelected, this.searchText);
             },
 
             removeTeamHandler: function (event, detail, target) {
@@ -345,14 +354,16 @@
             },
 
             removeOneTeam: function (teamId) {
-                index = this.selectedTeam.indexOf(teamId);
-                this.selectedTeam.splice(index, 1);
+                index = this.selected.teams.indexOf(teamId);
+                this.selected.teams.splice(index, 1);
 
                 this.teamIdMap[teamId].users.forEach(function(u) {
                     if (!this.isSelectedDuplicate(u.id)) {
-                        this.selected.splice(this.selected.indexOf(u.id), 1);
+                        this.allUserSelected.splice(this.allUserSelected.indexOf(u.id), 1);
                     }
                 }, this);
+                this.filteredTeam = this.filterTeam(this.teams, this.selected, this.searchText);
+                this.filteredUser = this.filterUser(this.users, this.allUserSelected, this.searchText);
             },
 
             /**
@@ -362,11 +373,11 @@
             isSelectedDuplicate: function(uid) {
                 var selected = false;
 
-                if (this.selectedUser.indexOf(uid) != -1) {
+                if (this.selected.users.indexOf(uid) != -1) {
                     selected = true;
                 } else {
-                    for (index in this.selectedTeam) {
-                        if (this.userTeamMap[uid + "_" + this.selectedTeam[index]]) {
+                    for (index in this.selected.teams) {
+                        if (this.userTeamMap[uid + "_" + this.selected.teams[index]]) {
                             selected = true;
                             break;
                         }
@@ -381,14 +392,15 @@
             },
 
             addOneUser: function (userId) {
-                if (this.selected.indexOf(userId) == -1) {
-                    this.selected.push(userId);
+                if (this.allUserSelected.indexOf(userId) == -1) {
+                    this.allUserSelected.push(userId);
                     this.searchText = '';
                 }
 
-                if (this.selectedUser.indexOf(userId) == -1) {
-                    this.selectedUser.push(userId);
+                if (this.selected.users.indexOf(userId) == -1) {
+                    this.selected.users.push(userId);
                 }
+                this.filteredUser = this.filterUser(this.users, this.allUserSelected, this.searchText);
             },
 
             removeUserHandler: function (event, detail, target) {
@@ -398,13 +410,15 @@
             },
 
             removeOneUser: function (userId) {
-                this.selected.splice(this.selected.indexOf(userId), 1);
-                this.selectedUser.splice(this.selectedUser.indexOf(userId));
+                this.allUserSelected.splice(this.allUserSelected.indexOf(userId), 1);
+                this.selected.users.splice(this.selected.users.indexOf(userId));
+                this.filteredUser = this.filterUser(this.users, this.allUserSelected, this.searchText);
             },
 
             // public attributes
             teamsUrl: '',
-            selected: null
+            selected: null,
+            allUserSelected: null
         });
     </script>
 </polymer-element>

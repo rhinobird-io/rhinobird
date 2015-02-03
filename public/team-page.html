@@ -200,7 +200,7 @@
             newTeam: function() {
                 var newTeamData = {};
                 newTeamData.team = {"name": this.teamName};
-                newTeamData.user = this.$.memberSelect.selected;
+                newTeamData.user = JSON.parse(JSON.stringify(this.$.memberSelect.allUserSelected));
                 if (newTeamData.user.indexOf(this.$.globals.values.currentUser.id == -1)) {
                     newTeamData.user.push(this.$.globals.values.currentUser.id);
                 }
