@@ -1,3 +1,4 @@
+<link rel="import" href="../app-globals/app-globals.html">
 <script src="../../bower_components/highlightjs/highlight.pack.js"></script>
 
 <polymer-element name="smart-display" attributes="value">
@@ -6,6 +7,7 @@
         <div>
             <html-echo html="{{wrap(value)}}"></html-echo>
         </div>
+        <app-globals id="globals"></app-globals>
     </template>
     <script>
         Polymer({
@@ -18,6 +20,8 @@
                 if (args == undefined) args = "";
                 if (plugin == "vity") {
                     var link = document.createElement("a");
+                    //var user = this.$.globals.values.currentUser;
+                    //link.href = "https://46.137.243.49:5151/index.html#" + args + "@" + user.realname;
                     link.href = "https://46.137.243.49:5151/index.html#" + args;
                     link.target = "_blank";
                     link.innerHTML = text;
@@ -46,6 +50,9 @@
                     }
                     value = root.innerHTML;
                 }
+                // Replace newline with <br>
+                value = value.replace(/(<\/(div|pre)>)\n/g, "$1")
+                        .replace(/\n/g,"\n<br>\n").replace(/(<\/(div|pre)>)/g, "$1\n");
                 if (this.enableAt) {
                     root.innerHTML = value.replace(/(^|\s)(@[\w\.-]+)/g, "$1<at>$2</at>");
                     var list = root.querySelectorAll("at");
