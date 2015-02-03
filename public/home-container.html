@@ -102,26 +102,28 @@
                     </div>
                 </div>
             </core-header-panel>
-            <div tool>
-                <content select=".title"></content>
-            </div>
-            <div tool horizontal layout center flex end-justified class="bottom">
-                <core-ajax
-                        id="logoutAjax"
-                        method="post"
-                        contentType="application/json"
-                        url="/platform/logout"
-                        on-core-response="{{logoutCallback}}"></core-ajax>
+            <div tool flex horizontal layout center>
+                <div flex>
+                    <content select=".title"></content>
+                </div>
+                <div horizontal end-justified layout>
+                    <core-ajax
+                            id="logoutAjax"
+                            method="post"
+                            contentType="application/json"
+                            url="/platform/logout"
+                            on-core-response="{{logoutCallback}}"></core-ajax>
 
-                <core-ajax
-                        id="currentUserAjax"
-                        method="get"
-                        contentType="application/json"
-                        url="/platform/loggedOnUser"
-                        on-core-response="{{currentUserCallback}}"
-                        on-core-error="{{noUserCallback}}"></core-ajax>
+                    <core-ajax
+                            id="currentUserAjax"
+                            method="get"
+                            contentType="application/json"
+                            url="/platform/loggedOnUser"
+                            on-core-response="{{currentUserCallback}}"
+                            on-core-error="{{noUserCallback}}"></core-ajax>
 
-                <notification-element></notification-element>
+                    <notification-element></notification-element>
+                </div>
             </div>
             <content></content>
             <app-globals id="globals"></app-globals>
