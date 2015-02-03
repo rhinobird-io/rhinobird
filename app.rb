@@ -355,12 +355,8 @@ class App < Sinatra::Base
   end
 
   get '/events/:eventId' do
-    #begin
       event = Event.find(params[:eventId])
       event.to_json(include: {participants: {only: :id}})
-    #rescue Exception => e
-    #  404
-    #end
   end
 
   post '/events' do
