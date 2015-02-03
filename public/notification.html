@@ -144,6 +144,8 @@
 
                     socket.onclose = function () {
                         console.log("Socket Status: " + socket.readyState + " (closed)");
+                        console.log("Reconnecting ...");
+                        this.connect();
                     };
 
                     socket.onmessage = function (msg) {

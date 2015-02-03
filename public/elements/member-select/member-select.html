@@ -190,7 +190,7 @@
 //                                break;
 //                            }
 //                        }
-                        if (selected.teams.indexOf(t.id) == -1 && t.name.toLowerCase().indexOf(searchText) != -1) {
+                        if (selected.teams && selected.teams.indexOf(t.id) == -1 && t.name.toLowerCase().indexOf(searchText) != -1) {
                             result.push(t);
                         }
                     });
@@ -209,7 +209,7 @@
 
                     //filter selected
                     users.forEach(function (u) {
-                        if (selected.users.indexOf(u.id) == -1 && (u.realname.toLowerCase().indexOf(searchText) != -1)) {
+                        if (selected.users && selected.users.indexOf(u.id) == -1 && (u.realname.toLowerCase().indexOf(searchText) != -1)) {
                             result.push(u);
                         }
                     });
