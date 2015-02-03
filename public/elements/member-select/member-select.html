@@ -64,6 +64,7 @@
                 border-radius: 0.25em;
                 border: 1px solid #C5CAE9;
                 margin-right: 4px;
+                margin-top: 4px;
             }
 
             .block {
@@ -220,9 +221,11 @@
                 this.searchText = '';
                 this.isShowMenu = false;
                 this.allUserSelected = [];
-                this.selected = {};
-                this.selected.teams = [];
-                this.selected.users = [];
+                if (!this.selected) {
+                    this.selected = {};
+                    this.selected.teams = [];
+                    this.selected.users = [];
+                }
             },
 
             doFilter: function (event, detail, sender) {

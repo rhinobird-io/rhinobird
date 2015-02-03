@@ -87,7 +87,7 @@
                                 that.$.globals.values.memberCache[userId] = that.gravatars[0];
                                 document.createNotification(that.gravatars[0].username, that.gravatars[0].url + "?d=identicon", body, url);
                             };
-                            xhr.open("GET", "/platform/gravatar?0=" + encodeURIComponent(that.notificationData.from_user_id), true);
+                            xhr.open("GET", "/platform/gravatars?0=" + encodeURIComponent(that.notificationData.from_user_id), true);
                             xhr.send();
                         }
                     }

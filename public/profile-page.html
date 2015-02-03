@@ -65,7 +65,7 @@
                                 <template if="{{$.globals.values.currentUser}}">
                                     <core-ajax id="getGravatar"
                                                auto
-                                               url="/platform/gravatar/{{$.globals.values.currentUser.id}}"
+                                               url="/platform/gravatar/id/{{$.globals.values.currentUser.id}}"
                                                handleAs="json"
                                                method="get"
                                                response="{{gravatar}}"
@@ -108,9 +108,8 @@
     </template>
     <script>
         Polymer("profile-page", {
-
             avatarUpload: function() {
-                this.$.uploader.progressInvisible = true;
+                this.$.uploader.shadowRoot.querySelector("core-label").parentElement.parentElement.hidden = true;
                 this.$.avatarAjaxDiv.querySelector("#getGravatar").go();
             },
 
@@ -123,7 +122,8 @@
             },
 
             gravatarResponse: function() {
-                this.$.globals.values.memberCache[this.$.globals.values.currentUser.id] = this.gravatar;
+                this.$.globals.values.memberCache[this.gravatar.userid] = this.gravatar;
+                this.$.globals.values.memberCache[this.gravatar.username] = this.gravatar;
             },
 
             changePassword: function() {

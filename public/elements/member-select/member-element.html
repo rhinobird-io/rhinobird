@@ -2,7 +2,7 @@
 <link rel="import" href="../app-globals/app-globals.html">
 <link rel="import" href="avatar-image.html">
 
-<polymer-element name="member-element" attributes="userid menu imagesize view">
+<polymer-element name="member-element" attributes="userid username menu imagesize view">
     <template>
         <style>
 
@@ -21,20 +21,16 @@
             }
 
         </style>
-        <core-ajax id="getGravatar"
-                   url="/platform/gravatar/{{userid}}"
-                   handleAs="json"
-                   on-core-response="{{handleResponse}}"></core-ajax>
         <template if="{{menu}}">
             <div>
                 <template if="{{!view || view == 'default'}}">
                     <div class="element" horizontal layout center>
-                        <avatar-image userid="{{userid}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}"></avatar-image><span style="margin: 5px">{{gravatar.username}}</span>
+                        <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}"></avatar-image><span style="margin: 5px">{{gravatar.username}}</span>
                     </div>
                 </template>
                 <template if="{{view && view != 'default'}}">
                     <div class="element" horizontal layout>
-                        <avatar-image userid="{{userid}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}" on-click="{{toggle}}"></avatar-image>
+                        <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-avatar-ready="{{avatarReady}}" on-click="{{toggle}}"></avatar-image>
                         <div vertical layout style="margin-left: 5px">
                             <div horizontal layout on-click="{{toggle}}">
                                 <span style="margin-right: 5px">{{gravatar.username}}</span>

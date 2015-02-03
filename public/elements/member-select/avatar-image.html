@@ -1,7 +1,7 @@
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="../app-globals/app-globals.html">
 
-<polymer-element name="avatar-image" attributes="userid size default">
+<polymer-element name="avatar-image" attributes="userid username size default">
     <template>
         <style>
 
@@ -10,7 +10,7 @@
             }
         </style>
         <core-ajax id="getGravatar"
-                   url="/platform/gravatar/{{userid}}"
+                   url="/platform/gravatar/{{keyType}}/{{keyValue}}"
                    handleAs="json"
                    on-core-response="{{handleResponse}}"></core-ajax>
         <template if="{{$.globals.values.memberCache[userid] && default && size}}">
@@ -33,7 +33,6 @@
             Polymer({
 
                 ready: function() {
-
                     if (!this.$.globals.values.memberCache) {
                         this.$.globals.values.memberCache = memberCache;
                         this.fire("avatar-ready");
@@ -51,21 +50,39 @@
                 },
 
                 useridChanged: function (oldValue, newValue) {
+                    this.changeAction(oldValue, newValue);
+                },
+
+                usernameChanged: function (oldValue, newValue) {
+                    this.changeAction(oldValue, newValue);
+                },
+
+                changeAction: function(oldValue, newValue) {
                     if (!newValue) {
                         this.gravatar = {};
                     } else {
                         this.gravatar = this.$.globals.values.memberCache[newValue];
                         if (!this.gravatar) {
+                            if (this.userid) {
+                                this.keyType = "id";
+                                this.keyValue = this.userid;
+                            } else {
+                                this.keyType = "name";
+                                this.keyValue = this.username;
+                            }
+
+                            this.userJson = JSON.stringify(userObj);
                             this.$.getGravatar.go();
                         } else {
                             this.fire("avatar-ready");
                         }
                     }
-
                 },
+
                 handleResponse: function (event, detail, target) {
                     this.gravatar = detail.response;
-                    this.$.globals.values.memberCache[this.userid] = detail.response;
+                    this.$.globals.values.memberCache[this.gravatar.userid] = this.gravatar;
+                    this.$.globals.values.memberCache[this.gravatar.username] = this.gravatar;
                     this.fire("avatar-ready");
                 }
             });
