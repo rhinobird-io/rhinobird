@@ -12,7 +12,7 @@
 <link rel="import" href="../../bower_components/core-icons/social-icons.html">
 <link rel="import" href="member-element.html">
 
-<polymer-element name="member-select" attributes="selected disabled label">
+<polymer-element name="member-select" attributes="selected disabled label type maxLen">
     <template>
         <core-ajax url="/platform/teams_users" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>
         <core-ajax url="/platform/users" auto handleAs="json" on-core-response="{{handleUsersResponse}}"></core-ajax>
@@ -111,21 +111,25 @@
             <paper-shadow z="1" id="menu" hidden?="{{ !isShowMenu }}">
                 <div>
                     <core-selector id="selector" selected="0" excludedLocalNames="label">
-                        <label class="block">Teams</label>
-                        <template repeat="{{ t in filterTeam(teams, selected, searchText, changeFlag)}}">
-                            <div class="item team" on-tap="{{addTeamHandler}}">
-                                <div horizontal layout center>
-                                    <core-icon icon="social:people" width="15" height="15"></core-icon>
-                                    <span style="margin: 5px">{{t.name}}</span>
+                        <template if="{{type != 'user'}}">
+                            <label class="block">Teams</label>
+                            <template repeat="{{ t in filterTeam(teams, selected, searchText, changeFlag)}}">
+                                <div class="item team" on-tap="{{addTeamHandler}}">
+                                    <div horizontal layout center>
+                                        <core-icon icon="social:people" width="15" height="15"></core-icon>
+                                        <span style="margin: 5px">{{t.name}}</span>
+                                    </div>
                                 </div>
-                            </div>
+                            </template>
                         </template>
 
-                        <label class="block">Members</label>
-                        <template repeat="{{ u in filterUser(users, selected, searchText, changeFlag)}}">
-                            <div on-tap="{{addUserHandler}}" class="item">
-                                <member-element userid="{{u.id}}"></member-element>
-                            </div>
+                        <template if="{{type != 'team'}}">
+                            <label class="block">Members</label>
+                            <template repeat="{{ u in filterUser(users, selected, searchText, changeFlag)}}">
+                                <div on-tap="{{addUserHandler}}" class="item">
+                                    <member-element userid="{{u.id}}"></member-element>
+                                </div>
+                            </template>
                         </template>
                     </core-selector>
                 </div>
@@ -233,7 +237,7 @@
                         this.$.selector.selectNext(true);
                         this.fixScroll(false);
                     }
-                } else if (event.keyCode === 13) {
+                } else if (event.keyCode === 13 && this.$.selector.selectedModel) {
                     if (this.$.selector.selectedModel.t) {
                         this.addOneTeam(this.$.selector.selectedModel.t);
                     } else if (this.$.selector.selectedModel.u) {
@@ -338,6 +342,9 @@
                 }, this);
 
                 if (this.selected.teams.indexOf(team.id) == -1) {
+                    if (this.maxLen && this.selected.teams.length == this.maxLen) {
+                        this.selected.teams.shift();
+                    }
                     this.selected.teams.push(team.id);
                     this.searchText = '';
                 }
@@ -390,11 +397,14 @@
             addOneUser: function (userId) {
                 if (this.allUserSelected.indexOf(userId) == -1) {
                     this.allUserSelected.push(userId);
-                    this.searchText = '';
                 }
 
                 if (this.selected.users.indexOf(userId) == -1) {
+                    if (this.maxLen && this.selected.users.length == this.maxLen) {
+                        this.selected.users.shift();
+                    }
                     this.selected.users.push(userId);
+                    this.searchText = '';
                 }
                 this.changeFlag = !this.changeFlag;
             },
