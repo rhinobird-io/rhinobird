@@ -13,6 +13,22 @@
             enableSlash: true,
             enableCode: true,
             enableLink: true,
+            slashTrigger: function(raw, plugin, args) {
+                if (args == undefined) args = "";
+                if (plugin == "vity") {
+                    var link = document.createElement("a");
+                    link.href = "https://46.137.243.49:5151/index.html#" + args;
+                    link.target = "_blank";
+                    link.innerHTML = raw;
+                    return link;
+                } else {
+                    // TODO Design the format
+                    var link = document.createElement("a");
+                    link.href = "/" + plugin + "/cmd/" + args.replace(",", "/");
+                    link.innerHTML = raw;
+                    return link;
+                }
+            },
             wrap: function (value) {
                 if (!value) return "";
                 if (this.enableCode) {
@@ -29,7 +45,7 @@
                 }
                 if (this.enableAt) {
                     var root = document.createElement("span");
-                    root.innerHTML = value.replace(/((^|\s)@[\w\.]+)/g, "<at>$1</at>");
+                    root.innerHTML = value.replace(/((^|\s)@[\w\.-]+)/g, "<at>$1</at>");
                     var list = root.querySelectorAll("at");
                     for (var i = 0; i < list.length; i++) {
                         var name = list[i].innerHTML;
@@ -44,19 +60,19 @@
                 }
                 if (this.enableSlash) {
                     var root = document.createElement("span");
-                    root.innerHTML = value.replace(/((^|\s)\/[\w]+)/g, "<slash>$1</slash>");
+                    var regex = /((^|\s)\/([\w\.-]+)(:(\S+))?)/g ;
+                    root.innerHTML = value.replace(regex, "<slash>$1</slash>");
                     var list = root.querySelectorAll("slash");
                     for (var i = 0; i < list.length; i++) {
-                        var name = list[i].innerHTML;
-                        var link = document.createElement("span");
-                        link.innerHTML = "<a href='#'>" + name + "</a>";  // TODO Replace with component
-                        root.replaceChild(link, list[i]);
+                        var raw = list[i].innerHTML;
+                        var res = regex.exec(raw);
+                        root.replaceChild(this.slashTrigger(raw, res[3], res[5]), list[i]);
                     }
                     value = root.innerHTML;
                 }
                 if (this.enableLink) {
                     // Replace links and emails
-                    value = value.replace(/((^|\s)(http|ftp)s?:\/\/\S+)/gi, "<a href='$1'>$1</a>");
+                    value = value.replace(/((^|\s)(http|ftp)s?:\/\/\S+)/gi, "<a href='$1' target='_blank'>$1</a>");
                     value = value.replace(/((?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\]))/g, "<a href='mailto:$1'>$1</a>");
                 }
                 if (this.enableCode) {
