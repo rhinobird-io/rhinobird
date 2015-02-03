@@ -202,6 +202,10 @@
         display: inline-block;
     }
 
+    .dayDivider .dayDividerLabel.today {
+        color: rgba(240, 10, 10, .8);
+    }
+
     .dayDivider .dayDividerLabel hr {
         position: absolute;
         *top: 2px;   
@@ -366,7 +370,7 @@
                                 <core-list data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;">
                                     <template>
                                         <div divider class="dayDivider">
-                                            <div class="dayDividerLabel {{model.position}}">
+                                            <div class="dayDividerLabel {{model.position}} {{model.today}}">
                                                 <hr/>
                                                 <div class="dayDividerLabelContent">{{groupModel.date}}</div>
                                             </div>
@@ -475,7 +479,8 @@
                                     <member-select teamsUrl="/platform/teams_users"
                                                    disabled="{{modeDisabled}}"
                                                    selected="{{selected.participants}}"
-                                                   label="Participants"></member-select>
+                                                   label="Participants"
+                                                   adaptive></member-select>
                                 </div>
                             </div>
                         </div>
