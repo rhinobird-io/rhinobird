@@ -115,40 +115,22 @@
                             url="/platform/logout"
                             on-core-response="{{logoutCallback}}"></core-ajax>
 
-                    <core-ajax
-                            id="currentUserAjax"
-                            method="get"
-                            contentType="application/json"
-                            url="/platform/loggedOnUser"
-                            on-core-response="{{currentUserCallback}}"
-                            on-core-error="{{noUserCallback}}"></core-ajax>
-
                     <notification-element></notification-element>
                 </div>
             </div>
             <content></content>
-            <app-globals id="globals"></app-globals>
+            <app-globals id="globals" on-current-user-ready="{{initCurrentUser}}"></app-globals>
         </core-scaffold>
     </template>
     <script>
         Polymer("home-container", {
-            ready : function() {
-
-                if (this.$.globals.values.currentUser) {
-                    this.userName = this.$.globals.values.currentUser.realname;
-                } else {
-                    this.$.currentUserAjax.go();
-                }
+            initCurrentUser : function() {
+                this.userName = this.$.globals.values.currentUser.realname;
             },
 
             currentUserCallback: function(event, response) {
                 this.$.globals.values.currentUser = JSON.parse(response.response);
                 this.userName = this.$.globals.values.currentUser.realname;
-            },
-
-            noUserCallback: function() {
-                this.$.globals.values.currentUser = null;
-                this.userName = "Sign In";
             },
 
             logoutFunc: function() {
