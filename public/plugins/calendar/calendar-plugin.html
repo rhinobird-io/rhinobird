@@ -488,22 +488,23 @@
             </div>
         </div>
         <app-globals id="globals"></app-globals>
-        <template if="{{$.globals.values.currentUser && eventId == null}}">
-            <core-ajax
-                auto
-                id="getEvents"
-                url="/platform/events"
-                handleAs="json"
-                on-core-response="{{handleEvents}}"></core-ajax>
-        </template>
+        <core-ajax
+            
+            id="getEvents"
+            url="/platform/events"
+            handleAs="json"
+            on-core-response="{{handleEvents}}"></core-ajax>
         <template if="{{$.globals.values.currentUser && eventId != null}}">
             <core-ajax
                     auto
                     url="/platform/events/{{eventId}}"
                     handleAs="json"
                     on-core-error="{{handleSingleEventError}}"
-                    on-core-response="{{handleSingleEvent}}"></core-ajax>
+                    on-core-response="{{handleSingleEvent}}">
+            </core-ajax>
+            
         </template>
+       
         <core-ajax
                 id="getMoreNewerEvents"
                 url="/platform/events/after/{{range.max}}"
@@ -561,6 +562,13 @@
                 window.onresize = function(event) {
                     self.refresh();
                 }
+
+                if (!this.isListLoaded && this.eventId == null) {
+                    //console.log("hahah")
+                    //var router = document.querySelector("app-router");
+                    //router.go("/calendar");
+                    this.$.getEvents.go();
+                }
             },
 
             refresh: function() {
@@ -609,8 +617,10 @@
             },
             handleSingleEvent: function(event, detail) {
                 this.selected = detail.response;
-                this.parseEvent(this.selected);
-                console.log(this.selected.creator_id)
+                this.parseEvent(this.selected);                
+                this.selected.selected = {};
+                this.selected.selected.users = this.selected.participants;
+                this.selected.selected.teams = [];
                 var self = this;
                 setTimeout(function () {
                     self.$.autogrowArea.update(self.$.textArea);
