@@ -28,8 +28,11 @@
         color: {{g.theme.accentBgColor}};
     }
 
-    paper-toggle-button::shadow #toggleBar[checked], paper-toggle-button::shadow paper-radio-button::shadow #onRadio {
+    paper-toggle-button::shadow [checked] .toggle{
         background-color: {{g.theme.accentBgColor}};
+    }
+    paper-toggle-button::shadow [checked] .toggle-ink {
+        color: {{g.theme.accentBgColor}};
     }
 
     :host {
