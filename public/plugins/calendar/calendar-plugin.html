@@ -474,7 +474,7 @@
                                     <member-select teamsUrl="/platform/teams_users"
                                                    disabled="{{modeDisabled}}"
                                                    allUserSelected="{{selected.participants}}"
-                                                   users="{{selected.participants}}"
+                                                   selected="{{selected.selected}}"
                                                    label="Participants"
                                                    adaptive></member-select>
                                 </div>
@@ -530,6 +530,7 @@
                 >
         </core-ajax>
 
+        <paper-toast id="titleCannotBeEmpty" text="Please enter the event's title."></paper-toast>
         <paper-toast id="eventSavedToast" text="Event has been saved!"></paper-toast>
         <paper-toast id="eventDeletedToast" text="Event has been deleted!"></paper-toast>
     </template>
@@ -650,6 +651,9 @@
             },
             select: function (event, detail, target) {
                 this.selected = target.templateInstance.model.model;
+                this.selected.selected = {};
+                this.selected.selected.users = this.selected.participants;
+                this.selected.selected.teams = [];
                 //console.log(this.selected);
                 var self = this;
                 setTimeout(function () {
@@ -672,6 +676,9 @@
             },
             jumpToAdd: function () {
                 this.selected = {fromTime: new Date(), toTime: new Date(), participants: [], full_day: false, period: true};
+                this.selected.selected = {};
+                this.selected.selected.teams = [];
+                this.selected.selected.users = [];
                 var self = this;
                 setTimeout(function () {
                     self.$.autogrowArea.update(self.$.textArea);
@@ -681,6 +688,11 @@
                 this.mode = 'edit';
             },
             saveEvent: function(){
+                if (this.selected.title == null || this.selected.title.length == 0) {
+                    this.$.titleCannotBeEmpty.show();
+                    
+                    return;
+                }
                 this.eventBody = JSON.stringify(this.selected);
                 this.$.postEvent.go();
             },
