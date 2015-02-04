@@ -10,6 +10,12 @@
         <app-globals id="globals"></app-globals>
     </template>
     <script>
+        function stripTags(value) {
+            return value.replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;");
+        }
+
         Polymer({
             enableAt: true,
             enableSlash: true,
@@ -35,13 +41,9 @@
                 }
             },
 
-            stripTags: function(value) {
-                return value.replace(/</g, "&lt;");
-            },
-
             wrap: function (value) {
                 if (!value) return "";
-                value = this.stripTags(value);
+                value = stripTags(value);
                 var root = document.createElement("span");
                 if (this.enableCode) {
                     // Preserve and remove code blocks
