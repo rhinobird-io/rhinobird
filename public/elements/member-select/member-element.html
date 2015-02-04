@@ -26,29 +26,25 @@
                 <template if="{{!view || view == 'default'}}">
                     <div class="element" horizontal layout center>
                         <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}"></avatar-image>
-                        <span style="margin: 5px">
-                            <template if="{{userid}}">
-                                {{$.globals.values.memberCache[userid].username}}
-                            </template>
-                            <template if="{{username}}">
-                                {{username}}
-                            </template>
-                        </span>
+                        <template if="{{userid}}">
+                            <span style="margin: 5px">{{$.globals.values.memberCache[userid].username}}</span>
+                        </template>
+                        <template if="{{username}}">
+                            <span style="margin: 5px">{{username}}</span>
+                        </template>
                     </div>
                 </template>
                 <template if="{{view && view != 'default'}}">
                     <div class="element" horizontal layout>
                         <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-click="{{toggle}}"></avatar-image>
                         <div vertical layout style="margin-left: 5px">
-                            <div horizontal layout on-click="{{toggle}}">
-                                <span style="margin: 5px">
-                                    <template if="{{userid}}">
-                                        {{$.globals.values.memberCache[userid].username}}
-                                    </template>
-                                    <template if="{{username}}">
-                                        {{username}}
-                                    </template>
-                                </span>
+                            <div horizontal layout center on-click="{{toggle}}">
+                                <template if="{{userid}}">
+                                    <span style="margin: 5px">{{$.globals.values.memberCache[userid].username}}</span>
+                                </template>
+                                <template if="{{username}}">
+                                    <span style="margin: 5px">{{username}}</span>
+                                </template>
                                 <div class="title" flex>
                                     <content select=".title"></content>
                                 </div>
@@ -70,29 +66,25 @@
             <template if="{{!view || view == 'default'}}">
                 <div class="element" horizontal layout center>
                     <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}"></avatar-image>
-                    <span style="margin: 5px">
-                        <template if="{{userid}}">
-                            {{$.globals.values.memberCache[userid].username}}
-                        </template>
-                        <template if="{{username}}">
-                            {{username}}
-                        </template>
-                    </span>
+                    <template if="{{userid}}">
+                        <span style="margin: 5px">{{$.globals.values.memberCache[userid].username}}</span>
+                    </template>
+                    <template if="{{username}}">
+                        <span style="margin: 5px">{{username}}</span>
+                    </template>
                 </div>
             </template>
             <template if="{{view && view != 'default'}}">
                 <div class="element" horizontal layout>
                     <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}"></avatar-image>
                     <div vertical layout style="margin: 5px">
-                        <div horizontal layout>
-                            <span style="margin: 5px">
-                                <template if="{{userid}}">
-                                    {{$.globals.values.memberCache[userid].username}}
-                                </template>
-                                <template if="{{username}}">
-                                    {{username}}
-                                </template>
-                            </span>
+                        <div horizontal layout center>
+                            <template if="{{userid}}">
+                                <span style="margin: 5px">{{$.globals.values.memberCache[userid].username}}</span>
+                            </template>
+                            <template if="{{username}}">
+                                <span style="margin: 5px">{{username}}</span>
+                            </template>
                             <div class="title">
                                 <content select=".title"></content>
                             </div>
