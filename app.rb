@@ -339,7 +339,7 @@ class App < Sinatra::Base
 
   get '/events' do
     today = Date.today
-    events = Event.where("creator_id = ? AND fromTime >= ?", @userid, today).limit(5)
+    events = User.find(@userid).events.where("fromTime >= ?", today).limit(5)
     events.order(:fromTime).to_json(include: {participants: {only: :id}})
   end
 
@@ -347,14 +347,14 @@ class App < Sinatra::Base
     from = DateTime.parse(params[:fromTime])
     logger.info from
 
-    events = Event.where("creator_id = ? AND fromTime > ?", @userid, from).limit(5)
+    events = User.find(@userid).events.where("fromTime > ?", from).limit(5)
     events.order(:fromTime).to_json(include: {participants: {only: :id}})  
   end
 
   get '/events/before/:fromTime' do
     from = DateTime.parse(params[:fromTime])
     logger.info from
-    events = Event.where("creator_id = ? AND fromTime < ?", @userid, from).limit(5)
+    events = User.find(@userid).events.where("fromTime < ?", from).limit(5)
     events.order(:fromTime).to_json(include: {participants: {only: :id}})
   end
 
@@ -382,7 +382,12 @@ class App < Sinatra::Base
 
     @body['participants'].each { |p|
       user = User.find(p)
-      user.dashboard_records.create!({content: 'Invited you to the event <a href="#/calendar/' + event.id.to_s + '">' + event.title + '</a>', from_user_id: uid})
+      user.dashboard_records.create!({
+        content: 'Invited you to the event', 
+        from_user_id: uid,
+        has_link: true,
+        link_url: '#/calendar/' + event.id.to_s,
+        link_title: event.title})
 
       notification = user.notifications.create!({content: 'Invited you to the event ' + event.title, from_user_id: uid})
       notify = notification.to_json(:except => [:user_id])
