@@ -72,7 +72,8 @@
                                            url="/platform/teams/{{team.id}}/users"
                                            method="post"
                                            contentType="application/json"
-                                           body="{{newMember}}"></core-ajax>
+                                           body="{{newMember}}"
+                                           on-core-response="{{newMemberResponse}}"></core-ajax>
                                 <member-select id="memberSelectTeam" teamsUrl="/platform/teams_users"></member-select>
                                 <paper-button raised on-tap="{{addMemberToTeam}}">Add to team</paper-button>
                             </div>
@@ -96,7 +97,7 @@
             },
 
             addMemberToTeam: function() {
-                this.selectedUser = this.$.memberSelectTeam.selected;
+                this.selectedUser = this.$.memberSelectTeam.allUserSelected;
                 this.newMember = JSON.stringify(this.selectedUser);
                 var ajax = this.$.addMember;
                 ajax.go();
