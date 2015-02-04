@@ -339,23 +339,23 @@ class App < Sinatra::Base
 
   get '/events' do
     today = Date.today
-    events = User.find(@userid).events.where("fromTime >= ?", today).limit(5)
-    events.order(:fromTime).to_json(include: {participants: {only: :id}})
+    events = User.find(@userid).events.where("from_time >= ?", today).limit(5)
+    events.order(:from_time).to_json(include: {participants: {only: :id}})
   end
 
-  get '/events/after/:fromTime' do
-    from = DateTime.parse(params[:fromTime])
+  get '/events/after/:from_time' do
+    from = DateTime.parse(params[:from_time])
     logger.info from
 
-    events = User.find(@userid).events.where("fromTime > ?", from).limit(5)
-    events.order(:fromTime).to_json(include: {participants: {only: :id}})  
+    events = User.find(@userid).events.where("from_time > ?", from).limit(5)
+    events.order(:from_time).to_json(include: {participants: {only: :id}})  
   end
 
-  get '/events/before/:fromTime' do
-    from = DateTime.parse(params[:fromTime])
+  get '/events/before/:from_time' do
+    from = DateTime.parse(params[:from_time])
     logger.info from
-    events = User.find(@userid).events.where("fromTime < ?", from).limit(5)
-    events.order(:fromTime).to_json(include: {participants: {only: :id}})
+    events = User.find(@userid).events.where("from_time < ?", from).limit(5)
+    events.order(:from_time).to_json(include: {participants: {only: :id}})
   end
 
   get '/events/:eventId' do
