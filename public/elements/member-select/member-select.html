@@ -299,7 +299,6 @@
                 var wrapperHeight = this.$.wrapper.offsetHeight;
                 var menuHeight = this.height + 20;
 
-                console.log(this.$.menu.offsetWidth);
                 if (offsetTop - scrollTop + wrapperHeight + menuHeight <= parentHeight) {
                     // show menu at bottom
                     this.$.menu.style.bottom = '-' + menuHeight + 'px';
@@ -353,8 +352,7 @@
                         this.allUserSelected.push(user.id);
                     }
                 }, this);
-
-                console.log(this.allUserSelected);
+                
                 if (this.selected.teams.indexOf(team.id) == -1) {
                     if (this.maxLen && this.selected.teams.length == this.maxLen) {
                         this.selected.teams.shift();
