@@ -12,7 +12,7 @@
 <link rel="import" href="../../bower_components/core-icons/social-icons.html">
 <link rel="import" href="member-element.html">
 
-<polymer-element name="member-select" attributes="selected allUserSelected disabled label adaptive width height">
+<polymer-element name="member-select" attributes="selected allUserSelected disabled label type maxLen adaptive width height">
     <template>
         <core-ajax url="/platform/teams_users" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>
         <core-ajax url="/platform/users" auto handleAs="json" on-core-response="{{handleUsersResponse}}"></core-ajax>
@@ -65,7 +65,6 @@
                 border: 1px solid #C5CAE9;
                 margin: 2px;
                 margin-right: 4px;
-                margin-top: 4px;
             }
 
             .block {
@@ -300,7 +299,6 @@
                 var wrapperHeight = this.$.wrapper.offsetHeight;
                 var menuHeight = this.height + 20;
 
-                console.log(this.$.menu.offsetWidth);
                 if (offsetTop - scrollTop + wrapperHeight + menuHeight <= parentHeight) {
                     // show menu at bottom
                     this.$.menu.style.bottom = '-' + menuHeight + 'px';
@@ -354,8 +352,7 @@
                         this.allUserSelected.push(user.id);
                     }
                 }, this);
-
-                console.log(this.allUserSelected);
+                
                 if (this.selected.teams.indexOf(team.id) == -1) {
                     if (this.maxLen && this.selected.teams.length == this.maxLen) {
                         this.selected.teams.shift();

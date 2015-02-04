@@ -77,7 +77,8 @@
                                 contentType="application/json"
                                 body="{{userJson}}"
                                 url="/platform/users"
-                                on-core-response="{{signUpResponse}}"></core-ajax>
+                                on-core-response="{{signUpResponse}}"
+                                on-core-error="{{signUpError}}"></core-ajax>
                         <paper-shadow class="container" layout vertical hero hero-id="1">
                             <h1 hero hero-id="2">Sign up</h1>
                             <paper-input label="Email" value="{{userInfo.email}}" hero hero-id="email"></paper-input>
@@ -102,7 +103,7 @@
                                      tabindex="-1"
                                      class="core-transition core-transition-bottom"
                                      style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
-                        <paper-toast id="toastSignUpFail" text="{{errMsg}}" role="status" touch-action="none"
+                        <paper-toast id="toastSignUpFail" text="{{errMsg}}" duration="10000" role="status" touch-action="none"
                                      tabindex="-1"
                                      class="core-transition core-transition-bottom"
                                      style="position: fixed; outline: none; z-index: 12; box-sizing: border-box; display: none;"></paper-toast>
@@ -178,6 +179,11 @@
                 this.$.pages.selected = 0;
             }
             ,
+
+            signUpError: function(event, detail) {
+                this.errMsg = detail.response;
+                this.$.toastSignUpFail.show();
+            },
             switch: function () {
                 this.$.pages.selected = this.$.pages.selected == "0" ? 1 : 0;
             }
