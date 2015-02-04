@@ -15,7 +15,11 @@
                 <div horizontal layout center>
                     <member-element view="custom" userid="{{record.from_user_id}}" menu="true">
                         <div class="title">{{record.created_at | date('yyyy-MM-dd HH:mm')}}</div>
-                        <div class="content">{{record.content}}</div>
+                        <div class="content">{{record.content}} 
+                            <template if="{{record.has_link}}">
+                                <a href="{{record.link_url}}">{{record.link_title}}</a>
+                            </template>
+                        </div>
                     </member-element>
                 </div>
             </div>

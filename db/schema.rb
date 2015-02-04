@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150203040157) do
+ActiveRecord::Schema.define(version: 20150204022929) do
 
   create_table "appointments", force: :cascade do |t|
     t.integer "event_id"
@@ -27,6 +27,9 @@ ActiveRecord::Schema.define(version: 20150203040157) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "from_user_id"
+    t.boolean  "has_link"
+    t.string   "link_url"
+    t.string   "link_title"
   end
 
   add_index "dashboard_records", ["user_id"], name: "index_dashboard_records_on_user_id"

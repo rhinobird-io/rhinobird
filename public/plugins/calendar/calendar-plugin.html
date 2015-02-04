@@ -48,7 +48,7 @@
         padding: 10px 16px;
         *margin-top: 2em;
         *margin-bottom: 2em;
-        height: 100%;
+        height: 120%;
     }
     
     .loading {
@@ -356,9 +356,9 @@
                     <section>
                         <core-scroll-threshold id="threshold" 
                             scrolltarget="{{$.container}}" 
-                            lowerthreshold="40" 
+                            lowerthreshold="30" 
                             on-lower-trigger="{{ loadMoreNewerEvents }}"
-                            upperThreshold="40" 
+                            upperThreshold="30" 
                             on-upper-trigger="{{ loadMoreOlderEvents }}">
                         </core-scroll-threshold>
                         <template if="{{loadingMoreOlderEvents}}">
@@ -412,7 +412,7 @@
                                     <paper-input-decorator label="Title" floatingLabel id="title"
                                                            disabled="{{modeDisabled}}" placeholder="">
                                         <template if="{{!modeDisabled}}">
-                                            <input is="core-input" value="{{selected.title}}">
+                                            <input is="core-input" id="titleInput" value="{{selected.title}}">
                                         </template>
                                         <template if="{{modeDisabled}}">
                                             <span>{{selected.title}}</span>
@@ -639,8 +639,8 @@
                 newEvent.fromTime = event.fromTime.toISOString();
                 newEvent.toTime = event.toTime.toISOString();
                 newEvent.participants = [];
-                for (participant in event.participants)
-                    newEvent.participants.push(participant);
+                for (var i = 0; i < event.participants.length; i++)
+                    newEvent.participants.push(event.participants[i]);
                 newEvent.full_day = event.full_day;
                 newEvent.period = event.period;
                 newEvent.title = event.title;
@@ -690,10 +690,11 @@
             saveEvent: function(){
                 if (this.selected.title == null || this.selected.title.length == 0) {
                     this.$.titleCannotBeEmpty.show();
-                    
+                    var self = this;
+                    setTimeout(function() {self.$.titleInput.focus();}, 100);
                     return;
                 }
-                this.eventBody = JSON.stringify(this.selected);
+                this.eventBody = JSON.stringify(this.copyEvent(this.selected));
                 this.$.postEvent.go();
             },
             eventSaved: function(event, detail) {
