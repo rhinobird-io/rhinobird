@@ -15,7 +15,8 @@ require 'gravatar-ultimate'
 require 'sinatra-websocket'
 require 'rest_client'
 require 'pony'
-require "bcrypt"
+require 'bcrypt'
+require 'date'
 
 class App < Sinatra::Base
 
@@ -35,6 +36,11 @@ class App < Sinatra::Base
 
   error ActiveRecord::RecordInvalid do
     status 400
+    body env['sinatra.error'].message
+  end
+
+  error ActiveRecord::RecordNotFound do
+    status 404
     body env['sinatra.error'].message
   end
 
@@ -84,6 +90,7 @@ class App < Sinatra::Base
     end
 
     login_required! unless ( ['/users', '/login', '/'].include?(request.path_info) || request.path_info =~ /\/user\/invitation.*/)
+
     content_type 'application/json'
     if request.media_type == 'application/json'
       body = request.body.read
@@ -330,8 +337,30 @@ class App < Sinatra::Base
 
   end
 
-  get '/users/:userId/events' do
-    User.find(params[:userId]).events.order(:from).to_json(include: {participants: {only: :id}})
+  get '/events' do
+    today = Date.today
+    events = User.find(@userid).events.where("fromTime >= ?", today).limit(5)
+    events.order(:fromTime).to_json(include: {participants: {only: :id}})
+  end
+
+  get '/events/after/:fromTime' do
+    from = DateTime.parse(params[:fromTime])
+    logger.info from
+
+    events = User.find(@userid).events.where("fromTime > ?", from).limit(5)
+    events.order(:fromTime).to_json(include: {participants: {only: :id}})  
+  end
+
+  get '/events/before/:fromTime' do
+    from = DateTime.parse(params[:fromTime])
+    logger.info from
+    events = User.find(@userid).events.where("fromTime < ?", from).limit(5)
+    events.order(:fromTime).to_json(include: {participants: {only: :id}})
+  end
+
+  get '/events/:eventId' do
+      event = Event.find(params[:eventId])
+      event.to_json(include: {participants: {only: :id}})
   end
 
   post '/events' do
@@ -340,7 +369,26 @@ class App < Sinatra::Base
     @body['participants'].each { |p|
       user = User.find(p)
       event.participants << user
-      user.dashboard_records.create!({content: 'Invited you to the event ' + event.title, from_user_id: uid})
+    }
+    
+    # Whether the event creator is also a participant by default?
+    user_self = User.find(uid)
+    if !event.participants.include? user_self 
+      event.participants << user_self
+    end
+    event.creator_id = uid
+
+    event.save!
+
+    @body['participants'].each { |p|
+      user = User.find(p)
+      user.dashboard_records.create!({
+        content: 'Invited you to the event', 
+        from_user_id: uid,
+        has_link: true,
+        link_url: '#/calendar/' + event.id.to_s,
+        link_title: event.title})
+
       notification = user.notifications.create!({content: 'Invited you to the event ' + event.title, from_user_id: uid})
       notify = notification.to_json(:except => [:user_id])
       socket_id = p
@@ -348,16 +396,35 @@ class App < Sinatra::Base
         EM.next_tick { settings.sockets[socket_id].send(notify) }
       end
     }
-    # Whether the event creator is also a participant by default?
-    event.participants << User.find(uid);
-    event.save!
+    
     event.to_json(include: {participants: {only: :id}})
   end
 
   delete '/events/:eventId' do
     event = Event.find(params[:eventId])
-    event.destroy
-    200
+    if @userid == event.creator_id
+      uid = @userid
+
+      content = 'Has canceled the event ' + event.title
+
+      event.participants.each { |p|
+        user = User.find(p.id)
+        next if p.id == uid 
+        
+        user.dashboard_records.create!({content: content, from_user_id: uid})
+        notification = user.notifications.create!({content: content, from_user_id: uid})
+        notify = notification.to_json(:except => uid)
+        socket_id = p.id
+        unless settings.sockets[socket_id].nil?
+          EM.next_tick { settings.sockets[socket_id].send(notify) }
+        end
+      }
+      
+      event.destroy
+      200
+    else
+      403
+    end
   end
 
   get '/users' do

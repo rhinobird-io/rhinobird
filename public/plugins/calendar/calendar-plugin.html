@@ -10,12 +10,15 @@
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../../bower_components/core-pages/core-pages.html">
 <link rel="import" href="../../bower_components/core-style/core-style.html">
+<link rel="import" href="../../bower_components/core-scroll-threshold/core-scroll-threshold.html">
 <link rel="import" href="../../bower_components/core-animated-pages/transitions/slide-up.html">
 <link rel="import" href="../../elements/smart-time-display/smart-time-display.html">
 <link rel="import" href="../../bower_components/core-list/core-list.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
 <core-style id="calendar">
     paper-tabs::shadow #selectionBar{
         background-color: {{g.theme.accentBgColor}};
@@ -35,19 +38,38 @@
 
 
     div.container {
-        padding: 40px 16px;
+        padding: 40px 0;        
         overflow-y: auto;
         overflow-x: hidden;
     }
 
     div.timeline {
         position: relative;
-        padding: 0;
+        padding: 10px 16px;
         *margin-top: 2em;
         *margin-bottom: 2em;
-        height:100%;
+        height: 120%;
     }
-   
+    
+    .loading {
+        position: absolute;
+        text-align: center;
+        padding: 10px 0px;
+        font-family: 'Open Sans', san-serif;
+        font-size: 16px;
+        color: #333;
+        left: 0;
+        right: 0;
+    }
+
+    .top-loading {
+        top: 0;
+    }
+
+    .bottom-loading {
+        bottom: 0;
+    }
+
     core-list {
         overflow-y: visible;
     }
@@ -64,7 +86,10 @@
     .listitem {
         *position: relative !important;
         padding: 2em 0;
+    }
 
+    .listitem:last-child {
+        margin-bottom: 40px;
     }
     
 
@@ -119,7 +144,7 @@
         position: absolute;
         left: 16px;
         top: -20px;
-        z-index: 1000000000;
+        z-index: 1;
     }
 
     .list {
@@ -177,6 +202,10 @@
         display: inline-block;
     }
 
+    .dayDivider .dayDividerLabel.today {
+        color: rgba(240, 10, 10, .8);
+    }
+
     .dayDivider .dayDividerLabel hr {
         position: absolute;
         *top: 2px;   
@@ -221,7 +250,6 @@
         padding-bottom: 6px;
     }
 
-
     .block:hover .time,
     .block:hover .event-title {
         padding-left: 6px;
@@ -230,7 +258,17 @@
         *transition: opacity ease-in 0.2s
     }
 
-    @media screen and (min-width: 1170px) {
+    .message {
+        text-align: center;
+        color: rgba(0, 0, 0, .8);
+        font-size: 24px;
+        font-weight: 600;
+        margin-top: 10%;
+
+        font-family: 'Open Sans';
+    }
+
+    @media screen and (min-width: 960px) {
         .event {
             position: absolute;
             left: 50%;
@@ -293,24 +331,22 @@
             border-right: 4px solid {{g.theme.mainBgColor}};
             *background-color: {{g.theme.thirdBgColor}};
         }
-
-
     }
 </core-style>
 
-<polymer-element name="schedule-list">
+<polymer-element name="schedule-list" attributes="eventId">
     <template>
         <core-style ref="theme"></core-style>
         <core-style ref="calendar"></core-style>
         <div layout vertical fit>
             <div class="mainColor wrapper">
-                <template if="{{mode=='list'}}">
+                <template if="{{mode=='list' && eventId == null}}">
                     <paper-fab mini icon="add" class="accentColor" on-tap="{{jumpToAdd}}"></paper-fab>
                 </template>
                 <template if="{{mode=='edit'}}">
                     <paper-fab mini icon="done" class="accentColor" on-tap="{{saveEvent}}"></paper-fab>
                 </template>
-                <template if="{{mode=='view'}}">
+                <template if="{{mode=='view' && selected.creator_id == $.globals.values.currentUser.id}}">
                     <paper-fab mini icon="remove" class="accentColor" on-tap="{{deleteEvent}}"></paper-fab>
                 </template>
                 <span class="subTitle">Schedule</span>
@@ -318,49 +354,22 @@
             <div flex vertical layout class="list">
                 <core-animated-pages selected="0" transitions="cross-fade-all" id="pages" flex>
                     <section>
-                        <div class="container" fit>
+                        <core-scroll-threshold id="threshold" 
+                            scrolltarget="{{$.container}}" 
+                            lowerthreshold="30" 
+                            on-lower-trigger="{{ loadMoreNewerEvents }}"
+                            upperThreshold="30" 
+                            on-upper-trigger="{{ loadMoreOlderEvents }}">
+                        </core-scroll-threshold>
+                        <template if="{{loadingMoreOlderEvents}}">
+                            <div class="loading top-loading">{{loadingOlderText}}</div>
+                        </template>
+                        <div class="container" id="container" fit>
                             <div class="timeline" vertical layout>
-                                <!--
-                                <core-list data="{{eventsByDays}}" flex>
-                                    <template>
-                                        <div class="listitem">
-                                        <div class="dayDivider">
-                                            <hr />
-                                            <div class="dayDividerLabel">{{model.date}}</div>
-                                        </div>
-                                        <core-list data="{{model.events}}">
-                                            <template>
-                                                <div class="listitem">
-                                                    <div layout horizontal class="block" center on-tap="{{select}}">
-                                                        <div class="event mainColor">
-                                                            <core-icon icon="event"></core-icon>
-                                                        </div>
-                                                        <div hero hero-id="{{event.id}}" vertical layout flex class="content">
-                                                            <div>{{model.title}}</div>
-                                                            <div class="time iconColor">
-                                                                <smart-time-display from="{{model.from}}" to="{{model.to}}"
-                                                                                    period="{{model.period}}"
-                                                                                    full_day="{{model.full_day}}"></smart-time-display>
-                                                            </div>
-                                                        </div>
-                                                        <div class="info">
-                                                        <core-icon icon="info" class="iconColor"></core-icon>
-                                                        </div>
-                                                        <paper-ripple fit></paper-ripple>
-                                                    </div>
-                                                </div>
-                                            </template>
-                                        </core-list>
-                                        </div>
-                                    </template>
-                                </core-list>
-                                -->
-
-                                
                                 <core-list data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;">
                                     <template>
                                         <div divider class="dayDivider">
-                                            <div class="dayDividerLabel {{model.position}}">
+                                            <div class="dayDividerLabel {{model.position}} {{model.today}}">
                                                 <hr/>
                                                 <div class="dayDividerLabelContent">{{groupModel.date}}</div>
                                             </div>
@@ -373,7 +382,7 @@
                                                 <div hero hero-id="{{event.id}}" vertical layout class="content {{model.position}}">
                                                     <div class="event-title">{{model.title}}</div>
                                                     <div class="time iconColor">
-                                                        <smart-time-display from="{{model.from}}" to="{{model.to}}"
+                                                        <smart-time-display from="{{model.fromTime}}" to="{{model.toTime}}"
                                                                             period="{{model.period}}"
                                                                             full_day="{{model.full_day}}"></smart-time-display>
                                                     </div>
@@ -388,10 +397,11 @@
                                         </div>
                                     </template>
                                 </core-list>
-                                
-
                             </div>
                         </div>
+                        <template if="{{loadingMoreNewerEvents}}">
+                                <div class="loading bottom-loading">{{loadingNewerText}}</div>
+                        </template>
                     </section>
                     <section>
                         <div hero hero-id="{{selected.id}}" class="detail" vertical layout fit center slide-up>
@@ -402,7 +412,7 @@
                                     <paper-input-decorator label="Title" floatingLabel id="title"
                                                            disabled="{{modeDisabled}}" placeholder="">
                                         <template if="{{!modeDisabled}}">
-                                            <input is="core-input" value="{{selected.title}}">
+                                            <input is="core-input" id="titleInput" value="{{selected.title}}">
                                         </template>
                                         <template if="{{modeDisabled}}">
                                             <span>{{selected.title}}</span>
@@ -432,20 +442,20 @@
                                             <div layout horizontal justified end>
                                                 <div layout vertical>
                                                     <date-input label="From" disabled="{{modeDisabled}}"
-                                                                date="{{selected.from}}"></date-input>
+                                                                date="{{selected.fromTime}}"></date-input>
                                                     <template if="{{!selected.full_day}}">
                                                         <time-input class="upper"
                                                                     disabled="{{modeDisabled}}"
-                                                                    time="{{selected.from}}"></time-input>
+                                                                    time="{{selected.fromTime}}"></time-input>
                                                     </template>
                                                 </div>
                                                 <div layout vertical>
                                                     <date-input label="To" disabled="{{modeDisabled}}"
-                                                                date="{{selected.to}}"></date-input>
+                                                                date="{{selected.toTime}}"></date-input>
                                                     <template if="{{!selected.full_day}}">
                                                         <time-input class="upper"
                                                                     disabled="{{modeDisabled}}"
-                                                                    time="{{selected.to}}"></time-input>
+                                                                    time="{{selected.toTime}}"></time-input>
                                                     </template>
                                                 </div>
                                             </div>
@@ -453,33 +463,58 @@
                                         <div class="page">
                                             <div layout horizontal justified end>
                                                 <date-input label="Date" disabled="{{modeDisabled}}"
-                                                            date="{{selected.from}}"></date-input>
+                                                            date="{{selected.fromTime}}"></date-input>
                                                 <template if="{{!selected.full_day}}">
                                                     <time-input label="Time" disabled="{{modeDisabled}}"
-                                                                time="{{selected.from}}"></time-input>
+                                                                time="{{selected.fromTime}}"></time-input>
                                                 </template>
                                             </div>
                                         </div>
                                     </core-pages>
                                     <member-select teamsUrl="/platform/teams_users"
                                                    disabled="{{modeDisabled}}"
-                                                   selected="{{selected.participants}}"
-                                                   label="Participants"></member-select>
+                                                   allUserSelected="{{selected.participants}}"
+                                                   selected="{{selected.selected}}"
+                                                   label="Participants"
+                                                   adaptive></member-select>
                                 </div>
                             </div>
                         </div>
+                    </section>
+                    <section>
+                        <div class="message">Event not found, back to <a href="#/calendar">calendar</a>.</div>
                     </section>
                 </core-animated-pages>
             </div>
         </div>
         <app-globals id="globals"></app-globals>
-        <template if="{{$.globals.values.currentUser}}">
+        <template if="{{$.globals.values.currentUser && eventId == null}}">
+            <core-ajax
+                auto
+                id="getEvents"
+                url="/platform/events"
+                handleAs="json"
+                on-core-response="{{handleEvents}}"></core-ajax>
+        </template>
+        <template if="{{$.globals.values.currentUser && eventId != null}}">
             <core-ajax
                     auto
-                    url="/platform/users/{{$.globals.values.currentUser.id}}/events"
+                    url="/platform/events/{{eventId}}"
                     handleAs="json"
-                    on-core-response="{{handleEvents}}"></core-ajax>
+                    on-core-error="{{handleSingleEventError}}"
+                    on-core-response="{{handleSingleEvent}}"></core-ajax>
         </template>
+        <core-ajax
+                id="getMoreNewerEvents"
+                url="/platform/events/after/{{range.max}}"
+                handleAs="json"
+                on-core-response="{{handleLoadNewerEvents}}"></core-ajax>
+        <core-ajax
+                id="getMoreOlderEvents"
+                url="/platform/events/before/{{range.min}}"
+                handleAs="json"
+                on-core-response="{{handleLoadOlderEvents}}"></core-ajax>
+
         <core-ajax id="postEvent"
                    url="/platform/events"
                    method="POST"
@@ -495,6 +530,7 @@
                 >
         </core-ajax>
 
+        <paper-toast id="titleCannotBeEmpty" text="Please enter the event's title."></paper-toast>
         <paper-toast id="eventSavedToast" text="Event has been saved!"></paper-toast>
         <paper-toast id="eventDeletedToast" text="Event has been deleted!"></paper-toast>
     </template>
@@ -502,6 +538,7 @@
     <script>
         Polymer({
             mode: "list",
+            isListLoaded: false,
             computed:{
                 modeDisabled: 'mode=="view"'
             },
@@ -512,10 +549,20 @@
             observe: {
                 'selected.period': 'changeTab'
             },
+            
+            ready: function() {
+                this.loadingMoreOlderEvents = false;
+                this.loadingMoreNewerEvents = false;
+                this.loadingNewerText = 'Please Wait...';
+                this.loadingOlderText = 'Please Wait...';
+                this.noMoreNewerEvents = false;
+                this.noMoreOlderEvents = false;
+            },
+
             refresh: function() {
                 this.events.sort(function(o1, o2) {
-                    if (o1.from < o2.from) return -1;
-                    else if (o1.from > o2.from) return 1;
+                    if (o1.fromTime < o2.fromTime) return -1;
+                    else if (o1.fromTime > o2.fromTime) return 1;
                     else return 0;
                 });
 
@@ -527,7 +574,7 @@
                 for (var i = 0; i < this.events.length; i++) {
                     var event = this.events[i];
                     var len = this.eventGroups.length;
-                    var fromDate = new Date(event.from);
+                    var fromDate = new Date(event.fromTime);
                     if (len == 0 || this.eventGroups[len - 1].data.date != fromDate.toDateString()) {
                         var newDayGroup = {};
                         newDayGroup.data = {date: fromDate.toDateString()};
@@ -551,11 +598,35 @@
                     });
                 });
                 this.refresh();
+                this.isListLoaded = true;
+                
+                if (this.events.length > 0)
+                    this.range = {min: this.events[0].fromTime, max: this.events[this.events.length - 1].fromTime};
+            },
+            handleSingleEvent: function(event, detail) {
+                this.selected = detail.response;
+                this.parseEvent(this.selected);
+                console.log(this.selected.creator_id)
+                var self = this;
+                setTimeout(function () {
+                    self.$.autogrowArea.update(self.$.textArea);
+                    self.$.decorator.updateLabelVisibility(self.$.textArea.value);
+                    self.$.pages.selected = 1;
+                }, 100);
+                this.mode = 'view';
+            },
+            handleSingleEventError: function(event, detail) {
+                console.log(detail)
+                if (detail.xhr.status == 404) {
+                    console.log('not found');
+                    this.mode = 'view';
+                    this.$.pages.selected = 2;
+                }
             },
             changeTab: function (oldV, newV) {
                 this.tabSelected = newV ? 0 : 1;
-                if (newV && !this.selected.to) {
-                    this.selected.to = new Date();
+                if (newV && !this.selected.toTime) {
+                    this.selected.toTime = new Date();
                 }
             },
             parseEvent: function(event) {
@@ -565,11 +636,11 @@
             },
             copyEvent: function(event) {
                 var newEvent = {};
-                newEvent.from = event.from.toISOString();
-                newEvent.to = event.to.toISOString();
+                newEvent.fromTime = event.fromTime.toISOString();
+                newEvent.toTime = event.toTime.toISOString();
                 newEvent.participants = [];
-                for (participant in event.participants)
-                    newEvent.participants.push(participant);
+                for (var i = 0; i < event.participants.length; i++)
+                    newEvent.participants.push(event.participants[i]);
                 newEvent.full_day = event.full_day;
                 newEvent.period = event.period;
                 newEvent.title = event.title;
@@ -580,7 +651,10 @@
             },
             select: function (event, detail, target) {
                 this.selected = target.templateInstance.model.model;
-                console.log(this.selected);
+                this.selected.selected = {};
+                this.selected.selected.users = this.selected.participants;
+                this.selected.selected.teams = [];
+                //console.log(this.selected);
                 var self = this;
                 setTimeout(function () {
                     self.$.autogrowArea.update(self.$.textArea);
@@ -592,9 +666,19 @@
             main: function () {
                 this.$.pages.selected = 0;
                 this.mode = 'list';
+                if (!this.isListLoaded) {
+                    //console.log("hahah")
+                    //var router = document.querySelector("app-router");
+                    //router.go("/calendar");
+                    this.$.getEvents.go();
+                }
+                this.eventId = null;
             },
             jumpToAdd: function () {
-                this.selected = {from: new Date(), to: new Date(), participants: [], full_day: false, period: true};
+                this.selected = {fromTime: new Date(), toTime: new Date(), participants: [], full_day: false, period: true};
+                this.selected.selected = {};
+                this.selected.selected.teams = [];
+                this.selected.selected.users = [];
                 var self = this;
                 setTimeout(function () {
                     self.$.autogrowArea.update(self.$.textArea);
@@ -604,7 +688,13 @@
                 this.mode = 'edit';
             },
             saveEvent: function(){
-                this.eventBody = JSON.stringify(this.selected);
+                if (this.selected.title == null || this.selected.title.length == 0) {
+                    this.$.titleCannotBeEmpty.show();
+                    var self = this;
+                    setTimeout(function() {self.$.titleInput.focus();}, 100);
+                    return;
+                }
+                this.eventBody = JSON.stringify(this.copyEvent(this.selected));
                 this.$.postEvent.go();
             },
             eventSaved: function(event, detail) {
@@ -635,22 +725,102 @@
                 this.main();
                 this.$.eventDeletedToast.show();
                 this.refresh();
+            },
+            loadMoreNewerEvents: function() {
+                this.loadingMoreNewerEvents = true;
+                this.$.getMoreNewerEvents.go();
+
+                /*
+                if (!this.noMoreNewerEvents) {
+                } else {
+                    var self = this;
+                    setTimeout(function() {
+                        self.loadingMoreNewerEvents = false;
+                    }, 1000);
+                }*/
+            },
+            loadMoreOlderEvents: function() {
+                this.loadingMoreOlderEvents = true;
+                this.$.getMoreOlderEvents.go();
+                /*
+                if (!this.noMoreOlderEvents) {
+                } else {
+                    var self = this;
+                    setTimeout(function() {
+                        self.loadingMoreOlderEvents = false;
+                    }, 1000);
+                }*/
+            },
+            handleLoadEvents: function(type, event, detail) {
+
+                var events = detail.response;
+                console.log(events.length);
+                if (events.length > 0) {
+                    events.forEach(function (event) {
+                        event.participants = event.participants.map(function (p) {
+                            return p.id;
+                        });
+                    });
+                    for (var i = 0; i < events.length; i++) {
+                        var contain = false;
+                        for (var j = 0; j < this.events.length; j++) {
+                            if (events[i].id == this.events[j].id) {
+                                contain = true;
+                                break;
+                            }
+                        }
+                        if (!contain)
+                           this.events.push(events[i]);
+                    }
+
+                    if (type == 1)
+                        this.range.max = events[events.length - 1].fromTime;
+                    else if (type == 2)
+                        this.range.min = events[0].fromTime;
+                    this.refresh();
+                } else {
+                    /*if (type == 1) {
+                        this.noMoreNewerEvents = true;
+                        this.loadingNewerText = 'No more newer events.';
+                    } else if (type == 2) {
+                        this.noMoreOlderEvents = true;
+                        this.loadingOlderText = 'No more older events.';
+                    }*/
+                }
+
+                if (type == 1)
+                    this.loadingMoreNewerEvents = false;
+                else if (type == 2)
+                    this.loadingMoreOlderEvents = false;
+
+                if (type == 1)
+                    this.$.threshold.clearLower();
+                else if (type == 2)
+                    this.$.threshold.clearUpper();
+                    
+            },
+            handleLoadNewerEvents: function(event, detail) {
+                this.handleLoadEvents(1, event, detail);
+            },
+            handleLoadOlderEvents: function(event, detail) {
+                this.handleLoadEvents(2, event, detail);
             }
         });
     </script>
 </polymer-element>
 
-<polymer-element name="calendar-plugin">
+<polymer-element name="calendar-plugin" attributes="eventId">
     <template>
         <core-style ref="theme"></core-style>
         <style>
 
         </style>
         <home-container>
-            <schedule-list></schedule-list>
+            <schedule-list eventId="{{eventId}}"></schedule-list>
         </home-container>
     </template>
     <script>
-        Polymer({});
+        Polymer({
+        });
     </script>
 </polymer-element>

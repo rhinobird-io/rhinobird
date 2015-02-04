@@ -29,6 +29,9 @@
     :host /deep/ #headerPanel {
         background-color: white;
     }
+    :host /deep/ #drawer {
+        z-index: 10;
+    }
 </core-style>
 <polymer-element name="home-container" attributes="selected">
     <template>
@@ -66,7 +69,6 @@
                 color:inherit;
                 text-decoration: none;
             }
-
 
         </style>
         <core-scaffold responsiveWidth="1024px">

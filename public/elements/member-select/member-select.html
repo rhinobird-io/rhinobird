@@ -12,7 +12,7 @@
 <link rel="import" href="../../bower_components/core-icons/social-icons.html">
 <link rel="import" href="member-element.html">
 
-<polymer-element name="member-select" attributes="selected disabled label type maxLen">
+<polymer-element name="member-select" attributes="selected allUserSelected disabled label adaptive width height">
     <template>
         <core-ajax url="/platform/teams_users" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>
         <core-ajax url="/platform/users" auto handleAs="json" on-core-response="{{handleUsersResponse}}"></core-ajax>
@@ -26,14 +26,14 @@
                 *-webkit-border-radius: 5px;
                 position: absolute;
                 padding: 0;
-                width: 300px;
+                width: {{widthInString}};
                 z-index: 10;
                 box-shadow: 0 0 6px #555;
                 box-sizing: border-box;
             }
 
             #menu > div {
-                height: 200px;
+                height: {{height}}px;
                 padding: 10px 14px;
                 background-color: #C5CAE9;
                 overflow-y: auto;
@@ -60,9 +60,10 @@
 
             .badge {
                 background-color: #C5CAE9;
-                padding: 2px;
+                padding: 2px 4px;
                 border-radius: 0.25em;
                 border: 1px solid #C5CAE9;
+                margin: 2px;
                 margin-right: 4px;
                 margin-top: 4px;
             }
@@ -220,12 +221,22 @@
                 this.teams = this.teams || [];
                 this.searchText = '';
                 this.isShowMenu = false;
-                this.allUserSelected = [];
+                
+                if (this.adaptive) {
+                    this.widthInString = '100%';
+                } else {
+                    this.width = this.width || 300;
+                    this.widthInString = this.width + 'px';
+                }
+                this.height = this.height || 200;
+
+                this.allUserSelected = this.allUserSelected || [];
                 if (!this.selected) {
                     this.selected = {};
                     this.selected.teams = [];
                     this.selected.users = [];
                 }
+                //if (this.users) this.selected.users = this.users;
             },
 
             doFilter: function (event, detail, sender) {
@@ -287,7 +298,7 @@
                 var parentHeight = this.$.wrapper.offsetParent.offsetHeight;
                 var offsetTop = this.$.wrapper.offsetTop;
                 var wrapperHeight = this.$.wrapper.offsetHeight;
-                var menuHeight = 200;
+                var menuHeight = this.height + 20;
 
                 console.log(this.$.menu.offsetWidth);
                 if (offsetTop - scrollTop + wrapperHeight + menuHeight <= parentHeight) {
@@ -344,6 +355,7 @@
                     }
                 }, this);
 
+                console.log(this.allUserSelected);
                 if (this.selected.teams.indexOf(team.id) == -1) {
                     if (this.maxLen && this.selected.teams.length == this.maxLen) {
                         this.selected.teams.shift();
