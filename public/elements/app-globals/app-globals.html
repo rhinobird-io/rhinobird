@@ -1,4 +1,5 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 
 <polymer-element name="app-globals" attributes="values">
     <template>
@@ -9,11 +10,23 @@
                 url="/platform/loggedOnUser"
                 handleAs="json"
                 on-core-response="{{currentUserCallback}}"></core-ajax>
+
+        <core-ajax
+                id="getAllGravatarAjax"
+                url="/platform/gravatars/all"
+                handleAs="json"
+                on-core-response="{{allGravatarCallback}}"></core-ajax>
+
+        <core-ajax id="getGravatar"
+                   url="/platform/gravatar/{{keyType}}/{{keyValue}}"
+                   handleAs="json"
+                   on-core-response="{{handleResponse}}"></core-ajax>
     </template>
     <script>
         (function() {
             var values = {};
             var getUserInProgress = false;
+            var getAvatarInProgress = false;
 
             Polymer({
                 ready: function() {
@@ -23,20 +36,52 @@
                         values[attr.nodeName] = attr.value;
                     }
 
-                    if (!this.values["currentUser"]) {
-                        if (!getUserInProgress) {
-                            getUserInProgress = true;
-                            this.$.getCurrentUserAjax.go();
-                        }
-                    } else {
-                        this.fire("current-user-ready");
+                    if (!this.values["currentUser"] && !getUserInProgress) {
+                        getUserInProgress = true;
+                        this.$.getCurrentUserAjax.go();
+                    }
+
+                    if (!this.values["memberCache"] && !getAvatarInProgress) {
+                        getAvatarInProgress = true;
+                        this.$.getAllGravatarAjax.go();
                     }
                 },
 
                 currentUserCallback: function(event, response) {
                     this.values["currentUser"] = response.response;
                     getUserInProgress = false;
-                    this.fire("current-user-ready");
+                },
+
+                allGravatarCallback: function(event, response) {
+                    var result = response.response;
+                    this.values["memberCache"] = {};
+                    for(var i=0; i<result.length; i++) {
+                        this.values["memberCache"][result[i].id] = result[i];
+                        this.values["memberCache"][result[i].name] = result[i];
+                    }
+                    getAvatarInProgress = false;
+                },
+
+                getGravatarById: function(userid) {
+                    if (!this.values["memberCache"][userid]) {
+                        this.keyType = "id";
+                        this.keyValue = this.userid;
+                        this.$.getGravatar.go();
+                    }
+                },
+
+                getGravatarByName: function(username) {
+                    if (!this.values["memberCache"][username]) {
+                        this.keyType = "name";
+                        this.keyValue = this.username;
+                        this.$.getGravatar.go();
+                    }
+                },
+
+                handleResponse: function (event, detail, target) {
+                    var gravatar = detail.response;
+                    this.values["memberCache"][gravatar.userid] = gravatar;
+                    this.values["memberCache"][gravatar.username] = gravatar;
                 }
             });
         })();
