@@ -26,7 +26,7 @@
                                        contentType="application/json"
                                        body="{{newUserJson}}"></core-ajax>
                             <paper-input label="Email" floatinglabel value="{{userEmail}}"></paper-input>
-                            <member-select id="initialTeam" type="team" maxLen="1" ></member-select>
+                            <member-select id="initialTeam" label="Into Team" type="team" maxLen="1" ></member-select>
                             <paper-button raised on-tap="{{inviteNewMember}}">Invite New Member</paper-button>
                             <paper-toast id="toastInviteSuccess" text="Invitation has been sent to {{userEmail}}" role="status" touch-action="none"
                                          tabindex="-1"

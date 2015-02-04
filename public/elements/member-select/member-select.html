@@ -12,7 +12,7 @@
 <link rel="import" href="../../bower_components/core-icons/social-icons.html">
 <link rel="import" href="member-element.html">
 
-<polymer-element name="member-select" attributes="selected allUserSelected disabled label adaptive width height">
+<polymer-element name="member-select" attributes="selected allUserSelected disabled label type maxLen adaptive width height">
     <template>
         <core-ajax url="/platform/teams_users" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>
         <core-ajax url="/platform/users" auto handleAs="json" on-core-response="{{handleUsersResponse}}"></core-ajax>
@@ -65,7 +65,6 @@
                 border: 1px solid #C5CAE9;
                 margin: 2px;
                 margin-right: 4px;
-                margin-top: 4px;
             }
 
             .block {
