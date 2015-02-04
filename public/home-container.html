@@ -70,6 +70,16 @@
                 text-decoration: none;
             }
 
+            .title {
+                position: absolute;
+                top: 0;
+                left: 64px;
+                height: 64px;
+                line-height: 64px;
+            }
+
+
+
         </style>
         <core-scaffold responsiveWidth="1024px">
             <core-header-panel navigation flex mode="seamed">
@@ -105,7 +115,9 @@
             </core-header-panel>
             <div tool flex horizontal layout center>
                 <div flex>
-                    <content select=".title"></content>
+                    <div class="title">
+                        <content select=".title"></content>
+                    </div>
                 </div>
                 <div horizontal end-justified layout>
                     <core-ajax
