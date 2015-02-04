@@ -557,6 +557,10 @@
                 this.loadingOlderText = 'Please Wait...';
                 this.noMoreNewerEvents = false;
                 this.noMoreOlderEvents = false;
+                var self = this;
+                window.onresize = function(event) {
+                    self.refresh();
+                }
             },
 
             refresh: function() {

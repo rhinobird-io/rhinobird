@@ -29,7 +29,7 @@ namespace :db do
                         description: Faker::Lorem.paragraph,
                         full_day: true,
                         period: false,
-                        from: Faker::Date.between(2.days.ago, 2.days.from_now)})
+                        fromTime: Faker::Date.between(2.days.ago, 2.days.from_now)})
     end
     5.times do
       Event.create!({
@@ -37,7 +37,7 @@ namespace :db do
                         description: Faker::Lorem.paragraph,
                         full_day: false,
                         period: false,
-                        from: Faker::Time.between(2.days.ago, 2.days.from_now)})
+                        fromTime: Faker::Time.between(2.days.ago, 2.days.from_now)})
     end
     5.times do
       Event.create!({
@@ -45,8 +45,8 @@ namespace :db do
                         description: Faker::Lorem.paragraph,
                         full_day: false,
                         period: true,
-                        from: Faker::Time.between(1.hours.from_now, 2.hours.from_now),
-                        to: Faker::Time.between(3.hours.from_now, 4.hours.from_now)
+                        fromTime: Faker::Time.between(1.hours.from_now, 2.hours.from_now),
+                        toTime: Faker::Time.between(3.hours.from_now, 4.hours.from_now)
                     })
     end
     for idx in 1..15
