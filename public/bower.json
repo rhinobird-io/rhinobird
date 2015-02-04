@@ -21,7 +21,7 @@
     "flatiron-director": "PolymerLabs/flatiron-director#~0.5.0",
     "lodash": "~2.4.1",
     "app-router": "~2.3.2",
-    "paper-date-picker": "~0.1.4",
+    "paper-date-picker": "https://github.com/liuyang1204/paper-date-picker.git#master",
     "md-timepicker": "https://github.com/uqlibrary/md-timepicker.git#master",
     "textarea-caret-position": "https://github.com/component/textarea-caret-position.git#master"
   },
