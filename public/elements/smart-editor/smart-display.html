@@ -9,6 +9,7 @@
         </div>
         <app-globals id="globals"></app-globals>
     </template>
+
     <script>
         function stripTags(value) {
             return value.replace(/&/g, "&amp;")
@@ -24,11 +25,10 @@
 
             slashTrigger: function(text, plugin, args) {
                 if (args == undefined) args = "";
-                if (plugin == "vity") {
+                if (plugin.toLowerCase() == "vity") {
                     var link = document.createElement("a");
-                    //var user = this.$.globals.values.currentUser;
-                    //link.href = "https://46.137.243.49:5151/index.html#" + args + "@" + user.realname;
-                    link.href = "https://46.137.243.49:5151/index.html#" + args;
+                    var user = this.$.globals.values.currentUser;
+                    link.href = "https://46.137.243.49:5151/index.html#" + args + "@" + user.name;
                     link.target = "_blank";
                     link.innerHTML = text;
                     return link;
@@ -60,9 +60,14 @@
                     for (var i = 0; i < list.length; i++) {
                         var name = list[i].innerHTML;
                         var profile = document.createElement("span");
+                        // Find userid from memberCache
+                        var memberCache = this.$.globals.values.memberCache;
+                        var userid = Object.keys(memberCache).filter(function(id) {
+                            return memberCache[id].name == name.substr(1);
+                        })[0];
                         profile.innerHTML =
-                                "<member-profile userid=31>" +  // TODO Replace userid
-                                "<a class='trigger' href='#'>" + name + "</a>" +
+                                "<member-profile userid=" + userid +
+                                "><a class='trigger' href='#'>" + name + "</a>" +
                                 "</member-profile>";
                         root.replaceChild(profile, list[i]);
                     }
