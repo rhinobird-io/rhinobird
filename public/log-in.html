@@ -54,7 +54,7 @@
                         <paper-shadow class="container" layout vertical hero hero-id="1">
                             <h1 hero hero-id="2">Sign in</h1>
                             <paper-input-decorator id="loginEmail" label="Email" value="{{userInfo.email}}" error="Email is not an email" hero hero-id="email">
-                                <input is="core-input" value="{{userInfo.email}}">
+                                <input is="core-input" value="{{userInfo.email}}" pattern="^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$" required>
                             </paper-input-decorator>
                             <paper-input-decorator id="passwordIn" label="Password" value="{{userInfo.password}}" hero hero-id="password">
                                 <input is="core-input" id="signInPassword" on-keypress="{{keyPressInPassword}}" value="{{userInfo.password}}" type="password">
@@ -84,10 +84,10 @@
                         <paper-shadow class="container" layout vertical hero hero-id="1">
                             <h1 hero hero-id="2">Sign up</h1>
                             <paper-input-decorator id="email" label="Email" value="{{userInfo.email}}" error="Email is not an email" hero hero-id="email">
-                                <input is="core-input" value="{{userInfo.email}}">
+                                <input is="core-input" value="{{userInfo.email}}" pattern="^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$" required>
                             </paper-input-decorator>
                             <paper-input-decorator id="name" label="User name" value="{{userInfo.name}}" error="Name should start with a character and only contain character, number and underline" hero hero-id="name">
-                                <input is="core-input" value="{{userInfo.name}}">
+                                <input is="core-input" value="{{userInfo.name}}" pattern="^[a-zA-z]\w*$" required>
                             </paper-input-decorator>
                             <paper-input id="realname" label="Real name (nick name)" value="{{userInfo.realname}}" hero
                                          hero-id="realname"></paper-input>
@@ -143,7 +143,7 @@
                         clearTimeout(emailValidateTimeout);
                     }
                     emailValidateTimeout = setTimeout(function() {
-                        that.isInvalid = !new RegExp("^([^@\\s]+)@((?:[-a-z0-9]+\\.)+[a-z]{2,})$").test(that.input.value);
+                        that.isInvalid = !that.input.checkValidity();
                     }, 500);
                 });
 
@@ -154,7 +154,7 @@
                         clearTimeout(nameValidateTimeout);
                     }
                     nameValidateTimeout = setTimeout(function() {
-                        that.isInvalid = !new RegExp("^[a-zA-z]\\w*$").test(that.input.value);
+                        that.isInvalid = !that.input.checkValidity();
                     }, 500);
                 });
 
@@ -165,7 +165,7 @@
                         clearTimeout(emailValidateTimeout);
                     }
                     emailValidateTimeout = setTimeout(function() {
-                        that.isInvalid = !new RegExp("^([^@\\s]+)@((?:[-a-z0-9]+\\.)+[a-z]{2,})$").test(that.input.value);
+                        that.isInvalid = !that.input.checkValidity();
                     }, 500);
                 });
             },
@@ -185,7 +185,7 @@
                 }
             },
             signIn: function () {
-                if (new RegExp("^([^@\\s]+)@((?:[-a-z0-9]+\\.)+[a-z]{2,})$").test(this.$.loginEmail.input.value)) {
+                if (this.$.loginEmail.input.checkValidity()) {
                     this.userJson = JSON.stringify(this.userInfo);
                     this.$.signInAjax.go();
                 }
@@ -205,8 +205,7 @@
             ,
             signUp: function () {
 
-                if (new RegExp("([^@\\s]+)@((?:[-a-z0-9]+\\.)+[a-z]{2,})$").test(this.$.email.input.value) &&
-                        new RegExp("[a-zA-z]\\w*$").test(this.$.name.input.value)) {
+                if (this.$.email.input.checkValidity() && this.$.name.input.checkValidity()) {
                     if (this.confirmPassword != this.userInfo.password) {
                         this.errMsg = "Password does not match";
                         this.$.toastSignUpFail.show();
