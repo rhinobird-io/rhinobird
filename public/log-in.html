@@ -53,7 +53,9 @@
                                 on-core-error="{{showError}}"></core-ajax>
                         <paper-shadow class="container" layout vertical hero hero-id="1">
                             <h1 hero hero-id="2">Sign in</h1>
-                            <paper-input label="Email" value="{{userInfo.email}}" hero hero-id="email"></paper-input>
+                            <paper-input-decorator id="loginEmail" label="Email" value="{{userInfo.email}}" error="Email is not an email" hero hero-id="email">
+                                <input is="core-input" value="{{userInfo.email}}">
+                            </paper-input-decorator>
                             <paper-input-decorator id="passwordIn" label="Password" value="{{userInfo.password}}" hero hero-id="password">
                                 <input is="core-input" id="signInPassword" on-keypress="{{keyPressInPassword}}" value="{{userInfo.password}}" type="password">
                             </paper-input-decorator>
@@ -157,6 +159,17 @@
                         that.isInvalid = !new RegExp("^[a-zA-z]\\w*$").test(that.input.value);
                     }, 500);
                 });
+
+                var loginEmailValidateTimeout = null;
+                this.$.loginEmail.addEventListener("keyup", function() {
+                    that = this;
+                    if (emailValidateTimeout) {
+                        clearTimeout(emailValidateTimeout);
+                    }
+                    emailValidateTimeout = setTimeout(function() {
+                        that.isInvalid = !new RegExp("^([^@\\s]+)@((?:[-a-z0-9]+\\.)+[a-z]{2,})$").test(that.input.value);
+                    }, 500);
+                });
             },
 
             getInvitationResponse: function(event, response) {
@@ -174,8 +187,10 @@
                 }
             },
             signIn: function () {
-                this.userJson = JSON.stringify(this.userInfo);
-                this.$.signInAjax.go();
+                if (new RegExp("^([^@\\s]+)@((?:[-a-z0-9]+\\.)+[a-z]{2,})$").test(this.$.loginEmail.input.value)) {
+                    this.userJson = JSON.stringify(this.userInfo);
+                    this.$.signInAjax.go();
+                }
             }
             ,
 
