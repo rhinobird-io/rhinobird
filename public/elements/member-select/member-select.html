@@ -52,9 +52,6 @@
 
             .item {
                 cursor: pointer;
-            }
-
-            .item.team {
                 margin-left: 18px;
             }
 
@@ -115,7 +112,7 @@
                         <template if="{{type != 'user'}}">
                             <label class="block">Teams</label>
                             <template repeat="{{ t in filterTeam(teams, selected, searchText, changeFlag)}}">
-                                <div class="item team" on-tap="{{addTeamHandler}}">
+                                <div class="item" on-tap="{{addTeamHandler}}">
                                     <div horizontal layout center>
                                         <core-icon icon="social:people" width="15" height="15"></core-icon>
                                         <span style="margin: 5px">{{t.name}}</span>
