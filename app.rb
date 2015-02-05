@@ -492,6 +492,12 @@ class App < Sinatra::Base
     end
   end
 
+  #update user realname
+  post '/user/realname/:new_name' do
+    User.update(@userid, :realname => params[:new_name])
+    200
+  end
+
   # post '/user/:userId' do
   #   User.update(params[:userId], @body)
   # end
