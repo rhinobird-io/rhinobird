@@ -151,11 +151,9 @@
                 this.$.name.addEventListener("keyup", function() {
                     that = this;
                     if (nameValidateTimeout) {
-                        console.log("clear");
                         clearTimeout(nameValidateTimeout);
                     }
                     nameValidateTimeout = setTimeout(function() {
-                        console.log("settimeout");
                         that.isInvalid = !new RegExp("^[a-zA-z]\\w*$").test(that.input.value);
                     }, 500);
                 });
