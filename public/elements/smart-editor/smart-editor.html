@@ -8,7 +8,7 @@
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
 <link rel="import" href="../../bower_components/core-selector/core-selector.html">
 
-<polymer-element name="smart-editor" attributes="label value maxRows">
+<polymer-element name="smart-editor" attributes="label value rows maxRows">
     <template>
         <style>
             #menu {
@@ -27,7 +27,7 @@
             }
         </style>
         <paper-input-decorator label="{{label}}" floatingLabel>
-            <paper-autogrow-textarea id="autogrow" maxRows={{maxRows}}>
+        <paper-autogrow-textarea id="autogrow" rows={{rows}} maxRows={{maxRows}}>
                 <textarea on-input="{{textInputted}}" on-keydown="{{doFilter}}" id="textarea"
                           value="{{value}}"></textarea>
             </paper-autogrow-textarea>
@@ -49,7 +49,19 @@
     </template>
     <script src="../../lib/textarea-caret-position.js"></script>
     <script>
-        var getCaretCoordinates = require('textarea-caret-position');
+        function getCaretCoordinates(textArea, textPos) {
+            var getCaretPosition = require('textarea-caret-position');
+            var caretPosition = getCaretPosition(textArea, textPos);
+            var coord = {};
+            coord.textTop = caretPosition.top;
+            coord.textLeft = caretPosition.left;
+            coord.top = coord.textTop - textArea.scrollTop;
+            coord.left = coord.textLeft - textArea.scrollLeft;
+            coord.bottom = textArea.offsetHeight - coord.top;
+            coord.right = textArea.offsetWidth - coord.left;
+            return coord;
+        }
+
         Polymer({
             showMenu: false,
             label: 'Text',
@@ -61,29 +73,27 @@
                 }
                 if (lastWord.charAt(0) == '@') {
                     var menu = this.$.menu;
-                    // If 'rows' (attribute) of the target is not 1, textAreaHeight would be false.
-                    var textAreaHeight = getCaretCoordinates(target, target.value.length).top;
-                    var coordinates = getCaretCoordinates(target, target.selectionEnd - lastWord.length);
-                    menu.style.top = coordinates.top - textAreaHeight + "px";
-                    menu.style.left = coordinates.left + "px";
+                    var coord = getCaretCoordinates(target, target.selectionEnd - lastWord.length);
+                    menu.style.top = - coord.bottom + "px";
+                    menu.style.left = coord.left + "px";
                     menu.style.right = "";
-                    menu.style.marginTop = "-0.5em";
+                    menu.style.marginTop = "0.5em";
                     this.showMenu = true;
                     var text = lastWord.substring(1);
                     this.filteredUsers = this.filterUser(text);
 
                     setTimeout(function() {
                         // Right-align the menu if needed.
-                        if (menu.offsetWidth + coordinates.left >= target.offsetWidth) {
+                        if (menu.offsetWidth >= coord.right) {
                             menu.style.left = "";
                             menu.style.right = 0;
                         }
                         // Show menu above the text if needed.
                         if (menu.getBoundingClientRect().bottom >= window.innerHeight) {
                             var menuHeight = menu.offsetHeight;
-                            if (target.getBoundingClientRect().top + coordinates.top > menuHeight) {
-                                menu.style.top = coordinates.top - target.offsetHeight - menuHeight + "px";
-                                menu.style.marginTop = "-1.25em";
+                            if (target.getBoundingClientRect().top + coord.top > menuHeight) {
+                                menu.style.top = - coord.bottom - menuHeight + "px";
+                                menu.style.marginTop = "-1em";
                             }
                         }
                     }, 0);
