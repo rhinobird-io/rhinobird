@@ -134,12 +134,28 @@
                     this.$.getInvitationAjax.go();
                 }
 
-                this.$.email.addEventListener("change", function() {
-                    this.isInvalid = !new RegExp("([^@\\s]+)@((?:[-a-z0-9]+\\.)+[a-z]{2,})$").test(this.input.value);
+                var emailValidateTimeout = null;
+                this.$.email.addEventListener("keyup", function() {
+                    that = this;
+                    if (emailValidateTimeout) {
+                        clearTimeout(emailValidateTimeout);
+                    }
+                    emailValidateTimeout = setTimeout(function() {
+                        that.isInvalid = !new RegExp("^([^@\\s]+)@((?:[-a-z0-9]+\\.)+[a-z]{2,})$").test(that.input.value);
+                    }, 500);
                 });
 
-                this.$.name.addEventListener("change", function() {
-                    this.isInvalid = !new RegExp("[a-zA-z]\\w*$").test(this.input.value);
+                var nameValidateTimeout = null;
+                this.$.name.addEventListener("keyup", function() {
+                    that = this;
+                    if (nameValidateTimeout) {
+                        console.log("clear");
+                        clearTimeout(nameValidateTimeout);
+                    }
+                    nameValidateTimeout = setTimeout(function() {
+                        console.log("settimeout");
+                        that.isInvalid = !new RegExp("^[a-zA-z]\\w*$").test(that.input.value);
+                    }, 500);
                 });
             },
 
@@ -176,16 +192,15 @@
             ,
             signUp: function () {
 
-                if (this.$.email.isInvalid || this.$.name.isInvalid) {
-                    return;
-                }
-                
-                if (this.confirmPassword != this.userInfo.password) {
-                    this.errMsg = "Password does not match";
-                    this.$.toastSignUpFail.show();
-                } else {
-                    this.userJson = JSON.stringify(this.userInfo);
-                    this.$.signUpAjax.go();
+                if (new RegExp("([^@\\s]+)@((?:[-a-z0-9]+\\.)+[a-z]{2,})$").test(this.$.email.input.value) &&
+                        new RegExp("[a-zA-z]\\w*$").test(this.$.name.input.value)) {
+                    if (this.confirmPassword != this.userInfo.password) {
+                        this.errMsg = "Password does not match";
+                        this.$.toastSignUpFail.show();
+                    } else {
+                        this.userJson = JSON.stringify(this.userInfo);
+                        this.$.signUpAjax.go();
+                    }
                 }
             }
             ,
