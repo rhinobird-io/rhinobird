@@ -79,13 +79,27 @@
             }
 
             .dropdown {
-                right: -20px;
+                right: 0px;
                 bottom: 40px;
             }
 
             .dropdown /deep/ #scroller {
                 height: auto !important;
                 width: auto !important;
+            }
+
+            #userBar {
+                cursor: pointer;
+            }
+
+            #userBar /deep/ span {
+                font-size: 1rem !important;
+            }
+
+            #userMenu {
+                position: absolute;
+                right: 8px;
+                top: 20px;
             }
 
         </style>
@@ -105,18 +119,18 @@
                     </div>
 
                     <div>
-                        <core-toolbar class="toolbar">
-                            <member-element userid="{{$.globals.values.currentUser.id}}"></member-element>
-                            <paper-menu-button>
-                                <paper-icon-button icon="expand-less" noink></paper-icon-button>
-                                <paper-dropdown class="dropdown" halign="right" valign="bottom">
+                        <core-toolbar id="userBar" class="toolbar" on-click="{{toggleUserMenu}}">
+                            <member-element userid="{{$.globals.values.currentUser.id}}" imagesize="36"></member-element>
+                            <div id="userMenu">
+                                <core-icon icon="expand-less" noink></core-icon>
+                                <paper-dropdown id="userDropdownMenu" class="dropdown" halign="right" valign="bottom">
                                     <core-menu class="menu">
                                         <paper-item noink><a class="nostyle" href="./#/profile">Profile</a></paper-item>
                                         <paper-item noink><a class="nostyle" href="./#/team">Team</a></paper-item>
                                         <paper-item noink on-tap="{{logoutFunc}}">Logout</paper-item>
                                     </core-menu>
                                 </paper-dropdown>
-                            </paper-menu-button>
+                            </div>
                         </core-toolbar>
                     </div>
                 </div>
@@ -196,6 +210,13 @@
             jumpToDashboard: function() {
                 this.$.globals.values.showSetting = false;
                 document.querySelector('app-router').go('/dashboard');
+            },
+
+            toggleUserMenu: function() {
+                if (!this.userMenu) {
+                    this.userMenu = this.shadowRoot.querySelector('#userDropdownMenu');
+                }
+                this.userMenu && this.userMenu.toggle();
             }
         });
     </script>
