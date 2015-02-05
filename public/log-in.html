@@ -81,9 +81,12 @@
                                 on-core-error="{{signUpError}}"></core-ajax>
                         <paper-shadow class="container" layout vertical hero hero-id="1">
                             <h1 hero hero-id="2">Sign up</h1>
-                            <paper-input label="Email" value="{{userInfo.email}}" hero hero-id="email"></paper-input>
-                            <paper-input id="name" label="User name" value="{{userInfo.name}}" hero
-                                         hero-id="name"></paper-input>
+                            <paper-input-decorator id="email" label="Email" value="{{userInfo.email}}" error="Email is not an email" hero hero-id="email">
+                                <input is="core-input" value="{{userInfo.email}}">
+                            </paper-input-decorator>
+                            <paper-input-decorator id="name" label="User name" value="{{userInfo.name}}" error="Name should start with a character and only contain character, number and underline" hero hero-id="name">
+                                <input is="core-input" value="{{userInfo.name}}">
+                            </paper-input-decorator>
                             <paper-input id="realname" label="Real name (nick name)" value="{{userInfo.realname}}" hero
                                          hero-id="realname"></paper-input>
                             <paper-input-decorator label="Password" value="{{userInfo.password}}" hero hero-id="password">
@@ -131,7 +134,15 @@
                     this.$.getInvitationAjax.go();
                 }
 
+                this.$.email.addEventListener("change", function() {
+                    this.isInvalid = !new RegExp("([^@\\s]+)@((?:[-a-z0-9]+\\.)+[a-z]{2,})$").test(this.input.value);
+                });
+
+                this.$.name.addEventListener("change", function() {
+                    this.isInvalid = !new RegExp("[a-zA-z]\\w*$").test(this.input.value);
+                });
             },
+
             getInvitationResponse: function(event, response) {
                 invitationData = JSON.parse(response.response);
                 this.userInfo.email = invitationData.email;
@@ -164,6 +175,11 @@
             }
             ,
             signUp: function () {
+
+                if (this.$.email.isInvalid || this.$.name.isInvalid) {
+                    return;
+                }
+                
                 if (this.confirmPassword != this.userInfo.password) {
                     this.errMsg = "Password does not match";
                     this.$.toastSignUpFail.show();
