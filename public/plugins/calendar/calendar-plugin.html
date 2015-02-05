@@ -407,10 +407,10 @@
                         </template>
                     </section>
                     <section>
-                        <div hero hero-id="{{selected.id}}" class="detail" vertical layout fit center slide-up>
+                        <div hero hero-id="{{selected.id}}" class="detail" vertical layout fit slide-up>
                             <paper-icon-button icon="arrow-back" class="main-button"
                                                on-tap="{{main}}"></paper-icon-button>
-                            <div class="detail-content" vertical layout center>
+                            <div class="detail-content" vertical layout>
                                 <div>
                                     <paper-input-decorator label="Title" floatingLabel id="title"
                                                            disabled="{{modeDisabled}}" placeholder="">
@@ -425,7 +425,7 @@
                                     <paper-input-decorator label="Description" floatingLabel id="decorator"
                                                            disabled="{{modeDisabled}}" placeholder="">
                                         <paper-autogrow-textarea id="autogrowArea">
-                                        <textarea id="textArea" wrap="virtual" value="{{selected.description}}"
+                                        <textarea id="textArea"  value="{{selected.description}}"
                                                   disabled?="{{modeDisabled}}"></textarea>
                                         </paper-autogrow-textarea>
                                     </paper-input-decorator>
@@ -553,7 +553,6 @@
             observe: {
                 'selected.period': 'changeTab'
             },
-            
             ready: function() {
                 this.loadingMoreOlderEvents = false;
                 this.loadingMoreNewerEvents = false;
