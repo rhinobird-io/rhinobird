@@ -8,6 +8,8 @@
 <link rel="import" href="bower_components/paper-shadow/paper-shadow.html">
 <link rel="import" href="bower_components/core-animated-pages/core-animated-pages.html">
 <link rel="import" href="bower_components/core-pages/core-pages.html">
+<script src="bower_components/zxcvbn/zxcvbn-async.js"></script>
+
 <core-style id="login">
     .container {
     padding: 1.5em;
@@ -104,6 +106,9 @@
                             <paper-input-decorator id="password" label="Password" value="{{userInfo.password}}" hero hero-id="password">
                                 <input is="core-input" value="{{userInfo.password}}" type="password">
                             </paper-input-decorator>
+                            <div block>
+                                Password Strength :  {{passwordScore[passwordStrength]}}
+                            </div>
                             <paper-input-decorator id="confirmPassword" label="Confirm password" value="{{confirmPassword}}" error="Confirm password does not match" hero hero-id="confirmPassword">
                                 <input is="core-input" id="signUpPassword" on-keypress="{{keyPressInPassword}}" value="{{confirmPassword}}" type="password">
                             </paper-input-decorator>
@@ -134,6 +139,12 @@
                 index = paramStr.indexOf("invitation=");
 
                 this.userInfo = {};
+                this.passwordScore = [];
+                this.passwordScore.push("Weak");
+                this.passwordScore.push("So-so");
+                this.passwordScore.push("Medium");
+                this.passwordScore.push("Strong");
+                this.passwordScore.push("Perfect");
                 if (index == -1) {
 
                 } else {
@@ -195,6 +206,10 @@
                     emailValidateTimeout = setTimeout(function() {
                         that.isInvalid = !that.input.checkValidity();
                     }, 500);
+                });
+
+                this.$.password.addEventListener("keyup", function() {
+                    thisElement.passwordStrength = zxcvbn(thisElement.userInfo.password).score;
                 });
 
                 var confirmPasswordValidateTimeout = null;
