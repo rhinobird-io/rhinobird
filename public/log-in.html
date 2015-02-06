@@ -107,7 +107,7 @@
                                 <input is="core-input" value="{{userInfo.password}}" type="password">
                             </paper-input-decorator>
                             <div block>
-                                Password Strength :  {{passwordScore[passwordStrength]}}
+                                Password Strength :  <span id="passwordScore" style="color: #FF0000">{{passwordScore[passwordStrength].strength}}</span>
                             </div>
                             <paper-input-decorator id="confirmPassword" label="Confirm password" value="{{confirmPassword}}" error="Confirm password does not match" hero hero-id="confirmPassword">
                                 <input is="core-input" id="signUpPassword" on-keypress="{{keyPressInPassword}}" value="{{confirmPassword}}" type="password">
@@ -140,11 +140,13 @@
 
                 this.userInfo = {};
                 this.passwordScore = [];
-                this.passwordScore.push("Weak");
-                this.passwordScore.push("So-so");
-                this.passwordScore.push("Medium");
-                this.passwordScore.push("Strong");
-                this.passwordScore.push("Perfect");
+                this.passwordScore.push({"strength":"Weak", "color":"#FF0000"});
+                this.passwordScore.push({"strength":"So-so", "color":"#880000"});
+                this.passwordScore.push({"strength":"Medium", "color":"#888800"});
+                this.passwordScore.push({"strength":"Strong", "color":"#008800"});
+                this.passwordScore.push({"strength":"Perfect", "color":"#00FF00"});
+                this.passwordStrength = 0;
+
                 if (index == -1) {
 
                 } else {
@@ -210,6 +212,7 @@
 
                 this.$.password.addEventListener("keyup", function() {
                     thisElement.passwordStrength = zxcvbn(thisElement.userInfo.password).score;
+                    thisElement.$.passwordScore.style.color = thisElement.passwordScore[thisElement.passwordStrength].color;
                 });
 
                 var confirmPasswordValidateTimeout = null;
