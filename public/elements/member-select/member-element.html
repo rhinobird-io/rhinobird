@@ -17,6 +17,7 @@
 
             ::content .content {
                 word-wrap: break-word;
+                padding-left: 5px;
                 /*width: 300px;*/
             }
 
@@ -46,10 +47,11 @@
                     </div>
                 </template>
                 <template if="{{view && view != 'default'}}">
-                    <div class="element pointer" horizontal layout>
-                        <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-click="{{toggle}}"></avatar-image>
+                    <div class="element" horizontal layout>
+                        <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-click="{{toggle}}"
+                                      class="pointer" style="margin-top: 5px"></avatar-image>
                         <div vertical layout style="margin-left: 5px">
-                            <div horizontal layout center on-click="{{toggle}}">
+                            <div horizontal layout center on-click="{{toggle}}" class="pointer">
                                 <template if="{{userid}}">
                                     <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
                                 </template>
@@ -64,11 +66,11 @@
                         </div>
                     </div>
                 </template>
-                <paper-dropdown class="dropdown" style="color:#000">
-                <core-menu class="menu">
-                    <core-item>Direct Message</core-item>
-                    <core-item>View Profile</core-item>
-                </core-menu>
+                <paper-dropdown class="dropdown member-element-dropdown" style="color:#000" layered>
+                    <core-menu class="menu">
+                        <core-item>Direct Message</core-item>
+                        <core-item>View Profile</core-item>
+                    </core-menu>
                 </paper-dropdown>
             </div>
         </template>
@@ -128,7 +130,17 @@
                 if (!this.dropdown) {
                     this.dropdown = this.shadowRoot.querySelector('paper-dropdown');
                 }
-                this.dropdown && this.dropdown.toggle();
+
+                var dropdownMenus = document.querySelectorAll('body /deep/ .member-element-dropdown');
+                for (var i = 0; i < dropdownMenus.length; i++) {
+                    if (dropdownMenus[i] != this.dropdown) {
+                        dropdownMenus[i].close();
+                    }
+                }
+
+                if (this.dropdown) {
+                    this.dropdown.toggle();
+                }
             }
         });
     </script>
