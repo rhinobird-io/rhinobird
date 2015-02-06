@@ -68,8 +68,10 @@ class App < Sinatra::Base
           settings.sockets[@userid] = ws
         end
         ws.onmessage do |msg|
-          @received_msg = JSON.parse(msg)
-          mark_notification_as_read!
+          if msg != "keep alive"
+            @received_msg = JSON.parse(msg)
+            mark_notification_as_read!
+          end
         end
         ws.onclose do
           settings.sockets.delete(ws)
