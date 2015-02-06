@@ -467,6 +467,23 @@ class App < Sinatra::Base
     user.dashboard_records.create!(:content => "You have sent an invitation to " + email + " with initial team : " + initial_team, :from_user_id => user.id)
   end
 
+  get '/user/valid_name/:name' do
+    if User.where(name: params[:name]).take.nil?
+      "valid"
+    else
+      "inValid"
+    end
+  end
+
+  get '/user/valid_email/:email' do
+    p User.where(email: params[:email])
+    if User.where(email: params[:email]).take.nil?
+      "valid"
+    else
+      "inValid"
+    end
+  end
+
   post '/users' do
     if @body["initial_team_id"].nil?
       User.create!(@body)

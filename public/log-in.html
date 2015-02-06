@@ -81,20 +81,30 @@
                                 url="/platform/users"
                                 on-core-response="{{signUpResponse}}"
                                 on-core-error="{{signUpError}}"></core-ajax>
+                        <core-ajax
+                                id="validEmailAjax"
+                                method="get"
+                                url="/platform/user/valid_email/{{userInfo.email}}"
+                                on-core-response="{{validEmailResponse}}"></core-ajax>
+                        <core-ajax
+                                id="validNameAjax"
+                                method="get"
+                                url="/platform/user/valid_name/{{userInfo.name}}"
+                                on-core-response="{{validNameResponse}}"></core-ajax>
                         <paper-shadow class="container" layout vertical hero hero-id="1">
                             <h1 hero hero-id="2">Sign up</h1>
-                            <paper-input-decorator id="email" label="Email" value="{{userInfo.email}}" error="Email is not an email" hero hero-id="email">
+                            <paper-input-decorator id="email" label="Email" value="{{userInfo.email}}" hero hero-id="email">
                                 <input is="core-input" value="{{userInfo.email}}" pattern="^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$" required>
                             </paper-input-decorator>
-                            <paper-input-decorator id="name" label="User name" value="{{userInfo.name}}" error="Name should start with a alphabet and only contain alphabet, number and underline" hero hero-id="name">
+                            <paper-input-decorator id="name" label="User name" value="{{userInfo.name}}" hero hero-id="name">
                                 <input is="core-input" value="{{userInfo.name}}" pattern="^[a-zA-z]\w*$" required>
                             </paper-input-decorator>
                             <paper-input id="realname" label="Real name (nick name)" value="{{userInfo.realname}}" hero
                                          hero-id="realname"></paper-input>
-                            <paper-input-decorator label="Password" value="{{userInfo.password}}" hero hero-id="password">
+                            <paper-input-decorator id="password" label="Password" value="{{userInfo.password}}" hero hero-id="password">
                                 <input is="core-input" value="{{userInfo.password}}" type="password">
                             </paper-input-decorator>
-                            <paper-input-decorator label="Confirm password" value="{{confirmPassword}}" hero hero-id="confirmPassword">
+                            <paper-input-decorator id="confirmPassword" label="Confirm password" value="{{confirmPassword}}" error="Confirm password does not match" hero hero-id="confirmPassword">
                                 <input is="core-input" id="signUpPassword" on-keypress="{{keyPressInPassword}}" value="{{confirmPassword}}" type="password">
                             </paper-input-decorator>
                             <div horizontal layout justified center>
@@ -136,25 +146,43 @@
                     this.$.getInvitationAjax.go();
                 }
 
+                this.emailTaken = false;
+                this.nameTaken = false;
+                thisElement = this;
+
                 var emailValidateTimeout = null;
                 this.$.email.addEventListener("keyup", function() {
                     that = this;
+                    if (that.error == "Email address already taken") {
+                        that.isInvalid = false;
+                    }
                     if (emailValidateTimeout) {
                         clearTimeout(emailValidateTimeout);
                     }
                     emailValidateTimeout = setTimeout(function() {
+                        that.error = "Email is not an email";
                         that.isInvalid = !that.input.checkValidity();
+                        if (!that.isInvalid) {
+                            thisElement.$.validEmailAjax.go();
+                        }
                     }, 500);
                 });
 
                 var nameValidateTimeout = null;
                 this.$.name.addEventListener("keyup", function() {
                     that = this;
+                    if (that.error == "Username already taken") {
+                        that.isInvalid = false;
+                    }
                     if (nameValidateTimeout) {
                         clearTimeout(nameValidateTimeout);
                     }
                     nameValidateTimeout = setTimeout(function() {
+                        that.error = "Name should start with a alphabet and only contain alphabet, number and underline";
                         that.isInvalid = !that.input.checkValidity();
+                        if (!that.isInvalid) {
+                            thisElement.$.validNameAjax.go();
+                        }
                     }, 500);
                 });
 
@@ -168,6 +196,33 @@
                         that.isInvalid = !that.input.checkValidity();
                     }, 500);
                 });
+
+                var confirmPasswordValidateTimeout = null;
+                this.$.confirmPassword.addEventListener("keyup", function() {
+                    that = this;
+                    if (confirmPasswordValidateTimeout) {
+                        clearTimeout(confirmPasswordValidateTimeout);
+                    }
+                    confirmPasswordValidateTimeout = setTimeout(function() {
+                        that.isInvalid = that.input.value != thisElement.$.password.input.value;
+                    }, 500);
+                });
+            },
+
+            validEmailResponse: function(event, response) {
+                  if (response.response == "inValid") {
+                      this.$.email.error = "Email address already taken";
+                      this.$.email.isInvalid = true;
+                      this.emailTaken = true;
+                  }
+            },
+
+            validNameResponse: function(event, response) {
+                if (response.response == "inValid") {
+                    this.$.name.error = "Username already taken";
+                    this.$.name.isInvalid = true;
+                    this.nameTaken = true;
+                }
             },
 
             getInvitationResponse: function(event, response) {
@@ -205,11 +260,9 @@
             ,
             signUp: function () {
 
-                if (this.$.email.input.checkValidity() && this.$.name.input.checkValidity()) {
-                    if (this.confirmPassword != this.userInfo.password) {
-                        this.errMsg = "Password does not match";
-                        this.$.toastSignUpFail.show();
-                    } else {
+                if (!this.emailTaken && this.$.email.input.checkValidity()
+                        && !this.nameTaken && this.$.name.input.checkValidity()) {
+                    if (this.confirmPassword == this.userInfo.password) {
                         this.userJson = JSON.stringify(this.userInfo);
                         this.$.signUpAjax.go();
                     }
