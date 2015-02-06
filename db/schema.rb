@@ -42,8 +42,8 @@ ActiveRecord::Schema.define(version: 20150204022929) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "creator_id"
-    t.datetime "fromTime"
-    t.datetime "toTime"
+    t.datetime "from_time"
+    t.datetime "to_time"
   end
 
   add_index "events", ["creator_id"], name: "index_events_on_creator_id"
