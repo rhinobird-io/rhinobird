@@ -102,9 +102,13 @@
                 top: 20px;
             }
 
+            #sidebar {
+                background-color: #FBFBFB;
+            }
+
         </style>
         <core-scaffold responsiveWidth="1024px">
-            <core-header-panel navigation flex mode="seamed">
+            <core-header-panel id="sidebar" navigation flex mode="seamed">
                 <div vertical layout fit justified>
                     <div flex>
                         <core-toolbar class="toolbar"><paper-button on-tap="{{jumpToDashboard}}">Team Work</paper-button></core-toolbar>
