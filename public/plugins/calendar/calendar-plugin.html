@@ -382,7 +382,7 @@
                                                 <div hero hero-id="{{event.id}}" vertical layout class="content {{model.position}}">
                                                     <div class="event-title">{{model.title}}</div>
                                                     <div class="time iconColor">
-                                                        <smart-time-display from="{{model.fromTime}}" to="{{model.toTime}}"
+                                                        <smart-time-display from="{{model.from_time}}" to="{{model.to_time}}"
                                                                             period="{{model.period}}"
                                                                             full_day="{{model.full_day}}"></smart-time-display>
                                                     </div>
@@ -442,20 +442,20 @@
                                             <div layout horizontal justified end>
                                                 <div layout vertical>
                                                     <date-input label="From" disabled="{{modeDisabled}}"
-                                                                date="{{selected.fromTime}}"></date-input>
+                                                                date="{{selected.from_time}}"></date-input>
                                                     <template if="{{!selected.full_day}}">
                                                         <time-input class="upper"
                                                                     disabled="{{modeDisabled}}"
-                                                                    time="{{selected.fromTime}}"></time-input>
+                                                                    time="{{selected.from_time}}"></time-input>
                                                     </template>
                                                 </div>
                                                 <div layout vertical>
                                                     <date-input label="To" disabled="{{modeDisabled}}"
-                                                                date="{{selected.toTime}}"></date-input>
+                                                                date="{{selected.to_time}}"></date-input>
                                                     <template if="{{!selected.full_day}}">
                                                         <time-input class="upper"
                                                                     disabled="{{modeDisabled}}"
-                                                                    time="{{selected.toTime}}"></time-input>
+                                                                    time="{{selected.to_time}}"></time-input>
                                                     </template>
                                                 </div>
                                             </div>
@@ -463,10 +463,10 @@
                                         <div class="page">
                                             <div layout horizontal justified end>
                                                 <date-input label="Date" disabled="{{modeDisabled}}"
-                                                            date="{{selected.fromTime}}"></date-input>
+                                                            date="{{selected.from_time}}"></date-input>
                                                 <template if="{{!selected.full_day}}">
                                                     <time-input label="Time" disabled="{{modeDisabled}}"
-                                                                time="{{selected.fromTime}}"></time-input>
+                                                                time="{{selected.from_time}}"></time-input>
                                                 </template>
                                             </div>
                                         </div>
@@ -573,8 +573,8 @@
 
             refresh: function() {
                 this.events.sort(function(o1, o2) {
-                    if (o1.fromTime < o2.fromTime) return -1;
-                    else if (o1.fromTime > o2.fromTime) return 1;
+                    if (o1.from_time < o2.from_time) return -1;
+                    else if (o1.from_time > o2.from_time) return 1;
                     else return 0;
                 });
 
@@ -586,7 +586,7 @@
                 for (var i = 0; i < this.events.length; i++) {
                     var event = this.events[i];
                     var len = this.eventGroups.length;
-                    var fromDate = new Date(event.fromTime);
+                    var fromDate = new Date(event.from_time);
                     if (len == 0 || this.eventGroups[len - 1].data.date != fromDate.toDateString()) {
                         var newDayGroup = {};
                         newDayGroup.data = {date: fromDate.toDateString()};
@@ -613,7 +613,7 @@
                 this.isListLoaded = true;
                 
                 if (this.events.length > 0)
-                    this.range = {min: this.events[0].fromTime, max: this.events[this.events.length - 1].fromTime};
+                    this.range = {min: this.events[0].from_time, max: this.events[this.events.length - 1].from_time};
             },
             handleSingleEvent: function(event, detail) {
                 this.selected = detail.response;
@@ -639,8 +639,8 @@
             },
             changeTab: function (oldV, newV) {
                 this.tabSelected = newV ? 0 : 1;
-                if (newV && !this.selected.toTime) {
-                    this.selected.toTime = new Date();
+                if (newV && !this.selected.to_time) {
+                    this.selected.to_time = new Date();
                 }
             },
             parseEvent: function(event) {
@@ -650,8 +650,8 @@
             },
             copyEvent: function(event) {
                 var newEvent = {};
-                newEvent.fromTime = event.fromTime.toISOString();
-                newEvent.toTime = event.toTime.toISOString();
+                newEvent.from_time = event.from_time.toISOString();
+                newEvent.to_time = event.to_time.toISOString();
                 newEvent.participants = [];
                 for (var i = 0; i < event.participants.length; i++)
                     newEvent.participants.push(event.participants[i]);
@@ -690,7 +690,7 @@
                 this.eventId = null;
             },
             jumpToAdd: function () {
-                this.selected = {fromTime: new Date(), toTime: new Date(), participants: [], full_day: false, period: true};
+                this.selected = {from_time: new Date(), to_time: new Date(), participants: [], full_day: false, period: true};
                 this.selected.selected = {};
                 this.selected.selected.teams = [];
                 this.selected.selected.users = [];
@@ -789,9 +789,9 @@
                     }
 
                     if (type == 1)
-                        this.range.max = events[events.length - 1].fromTime;
+                        this.range.max = events[events.length - 1].from_time;
                     else if (type == 2)
-                        this.range.min = events[0].fromTime;
+                        this.range.min = events[0].from_time;
                     this.refresh();
                 } else {
                     /*if (type == 1) {
