@@ -65,10 +65,14 @@
                         var userid = Object.keys(memberCache).filter(function(id) {
                             return memberCache[id].name == name.substr(1);
                         })[0];
-                        profile.innerHTML =
-                                "<member-profile userid=" + userid +
-                                "><a class='trigger' href='#'>" + name + "</a>" +
-                                "</member-profile>";
+                        if (userid) {
+                            profile.innerHTML =
+                                    "<member-profile userid=" + userid +
+                                    "><a class='trigger' href='#'>" + name + "</a>" +
+                                    "</member-profile>";
+                        } else {
+                            profile.innerHTML = name;
+                        }
                         root.replaceChild(profile, list[i]);
                     }
                     value = root.innerHTML;

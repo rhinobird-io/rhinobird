@@ -80,9 +80,9 @@
                     menu.style.left = coord.left + "px";
                     menu.style.right = "";
                     menu.style.marginTop = "0.5em";
-                    this.showMenu = true;
                     var text = lastWord.substring(1);
                     this.filteredUsers = this.filterUser(text);
+                    this.showMenu = this.filteredUsers.length ? true : false;
 
                     setTimeout(function() {
                         // Right-align the menu if needed.
