@@ -8,7 +8,7 @@
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
 <link rel="import" href="../../bower_components/core-selector/core-selector.html">
 
-<polymer-element name="smart-editor" attributes="label value rows maxRows">
+<polymer-element name="smart-editor" attributes="label value rows maxRows flush ctrlEnter">
     <template>
         <style>
             #menu {
@@ -131,6 +131,16 @@
                         this.replaceText(user);
                         this.showMenu = false;
                         event.preventDefault();
+                    } else if (this.flush == undefined) {
+                        return;
+                    } else if ((this.ctrlEnter && event.ctrlKey && !event.shiftKey && !event.altKey) ||
+                            (!this.ctrlEnter && !event.ctrlKey && !event.shiftKey && !event.altKey)) {
+                        // Trigger flush function
+                        event.preventDefault();
+                        if (this.flush(this.$.textarea.value) != false) {
+                            this.$.textarea.value = "";
+                            this.$.autogrow.update();
+                        }
                     }
                 } else {
                     this.$.selector.selected = 0;
