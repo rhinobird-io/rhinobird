@@ -29,6 +29,9 @@
     :host /deep/ #headerPanel {
         background-color: white;
     }
+    :host /deep/ #headerPanel core-toolbar {
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
     :host /deep/ #drawer {
         z-index: 10;
     }
@@ -70,9 +73,45 @@
                 text-decoration: none;
             }
 
+            .title {
+                position: absolute;
+                top: 0;
+                left: 64px;
+                height: 64px;
+                line-height: 64px;
+            }
+
+            .dropdown {
+                right: 0px;
+                bottom: 40px;
+            }
+
+            .dropdown /deep/ #scroller {
+                height: auto !important;
+                width: auto !important;
+            }
+
+            #userBar {
+                cursor: pointer;
+            }
+
+            #userBar /deep/ span {
+                font-size: 1rem !important;
+            }
+
+            #userMenu {
+                position: absolute;
+                right: 8px;
+                top: 20px;
+            }
+
+            #sidebar {
+                background-color: #FBFBFB;
+            }
+
         </style>
         <core-scaffold responsiveWidth="1024px">
-            <core-header-panel navigation flex mode="seamed">
+            <core-header-panel id="sidebar" navigation flex mode="seamed">
                 <div vertical layout fit justified>
                     <div flex>
                         <core-toolbar class="toolbar"><paper-button on-tap="{{jumpToDashboard}}">Team Work</paper-button></core-toolbar>
@@ -87,25 +126,27 @@
                     </div>
 
                     <div>
-                        <core-toolbar class="toolbar">
-                            <member-element userid="{{$.globals.values.currentUser.id}}"></member-element>
-                            <paper-menu-button>
-                                <paper-icon-button icon="expand-less" noink></paper-icon-button>
-                                <paper-dropdown class="dropdown" halign="right" valign="bottom">
+                        <core-toolbar id="userBar" class="toolbar" on-click="{{toggleUserMenu}}">
+                            <member-element userid="{{$.globals.values.currentUser.id}}" imagesize="36"></member-element>
+                            <div id="userMenu">
+                                <core-icon icon="expand-less" noink></core-icon>
+                                <paper-dropdown id="userDropdownMenu" class="dropdown" halign="right" valign="bottom">
                                     <core-menu class="menu">
                                         <paper-item noink><a class="nostyle" href="./#/profile">Profile</a></paper-item>
                                         <paper-item noink><a class="nostyle" href="./#/team">Team</a></paper-item>
                                         <paper-item noink on-tap="{{logoutFunc}}">Logout</paper-item>
                                     </core-menu>
                                 </paper-dropdown>
-                            </paper-menu-button>
+                            </div>
                         </core-toolbar>
                     </div>
                 </div>
             </core-header-panel>
             <div tool flex horizontal layout center>
                 <div flex>
-                    <content select=".title"></content>
+                    <div class="title">
+                        <content select=".title"></content>
+                    </div>
                 </div>
                 <div horizontal end-justified layout>
                     <core-ajax
@@ -176,6 +217,13 @@
             jumpToDashboard: function() {
                 this.$.globals.values.showSetting = false;
                 document.querySelector('app-router').go('/dashboard');
+            },
+
+            toggleUserMenu: function() {
+                if (!this.userMenu) {
+                    this.userMenu = this.shadowRoot.querySelector('#userDropdownMenu');
+                }
+                this.userMenu && this.userMenu.toggle();
             }
         });
     </script>
