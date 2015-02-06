@@ -33,7 +33,7 @@
             }
 
             #menu > div {
-                height: {{height}}px;
+                height: {{heightInString}};
                 padding: 10px 14px;
                 background-color: #C5CAE9;
                 overflow-y: auto;
@@ -105,7 +105,7 @@
                                 </template>
                             </div>
                         </template>
-                        <input is="core-input" value="{{searchText}}" on-keydown="{{ doFilter }}"
+                        <input id="searchInput" is="core-input" value="{{searchText}}" on-keydown="{{ doFilter }}"
                                on-focus="{{ showMenu }}" on-blur="{{ hideMenu }}" disabled?="{{disabled}}">
                     </div>
                 </paper-input-decorator>
@@ -168,6 +168,10 @@
             computed: {
                 _labelVisible: 'allUserSelected.length === 0 && !isShowMenu'
             },
+            constants: {
+                DEFAULT_WIDTH: '300px',
+                DEFAULT_HEIGHT: '200px'
+            },
             preventFocus: function (event) {
                 event.stopPropagation();
             },
@@ -222,13 +226,32 @@
                 this.searchText = '';
                 this.isShowMenu = false;
                 
-                if (this.adaptive) {
+                console.log(this.adaptive)
+                if (typeof this.adaptive !== 'undefined') {
                     this.widthInString = '100%';
                 } else {
                     this.width = this.width || 300;
-                    this.widthInString = this.width + 'px';
+                    if (isNaN(this.width)) {
+                        if (this.width.indexOf('px') || this.width.indexOf('em') || this.width.indexOf('%')
+                            || this.width.indexOf('pt'))
+                            this.widthInString = this.width;
+                        else
+                            this.widthInString = this.constants.DEFAULT_WIDTH;
+                    } else {
+                        this.widthInString = this.width + 'px';
+                    }
+
                 }
                 this.height = this.height || 200;
+                if (isNaN(this.height)) {
+                    if (this.height.indexOf('px') || this.height.indexOf('em') || this.height.indexOf('%')
+                        || this.height.indexOf('pt'))
+                        this.heightInString = this.height;
+                    else
+                        this.heightInString = this.constants.DEFAULT_HEIGHT;
+                } else {
+                    this.heightInString = this.height + 'px';
+                }
 
                 this.allUserSelected = this.allUserSelected || [];
                 if (!this.selected) {
@@ -267,6 +290,9 @@
                             this.removeOneTeam(teamId);
                         }
                     }
+                } else if (event.keyCode === 27) { // escape
+                    this.hideMenu();
+                    this.$.searchInput.blur();
                 } else {
                     this.$.selector.selected = 0;
                     this.$.selector.parentElement.scrollTop = 0;
