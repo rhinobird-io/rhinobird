@@ -145,7 +145,9 @@ class App < Sinatra::Base
           id: u.id,
           url: get_image_url(u.id, u),
           name: u.name,
-          username: u.realname
+          realname: u.realname,
+          email: u.email,
+          local: !u.local_avatar.nil?
       }
     }.to_json
   end
@@ -157,14 +159,12 @@ class App < Sinatra::Base
       user = User.where(name: params[:value]).take
     end
     gravatar = {}
-    gravatar["username"] = user.realname
-    gravatar["userid"] = user.id
+    gravatar["id"] = user.id
     gravatar["url"] = get_image_url(user.id, user)
-    if user.local_avatar.nil?
-      gravatar["local"] = false
-    else
-      gravatar["local"] = true
-    end
+    gravatar["name"] = user.name
+    gravatar["realname"] = user.realname
+    gravatar["email"] = user.email
+    gravatar["local"] = !user.local_avatar.nil?
     gravatar.to_json
   end
 
@@ -174,8 +174,12 @@ class App < Sinatra::Base
     @params.each do |param|
       user = User.find(param[1])
       gravatar = {}
-      gravatar["url"] = get_image_url(param[1], user)
-      gravatar["username"] = user.realname
+      gravatar["id"] = user.id
+      gravatar["url"] = get_image_url(user.id, user)
+      gravatar["name"] = user.name
+      gravatar["realname"] = user.realname
+      gravatar["email"] = user.email
+      gravatar["local"] = !user.local_avatar.nil?
       gravatars << gravatar
     end
     gravatars.to_json
