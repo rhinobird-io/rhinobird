@@ -69,7 +69,6 @@
                             <div id="avatarAjaxDiv">
                                 <template if="{{$.globals.values.currentUser}}">
                                     <core-ajax id="getGravatar"
-                                               auto
                                                url="/platform/gravatar/id/{{$.globals.values.currentUser.id}}"
                                                handleAs="json"
                                                method="get"
@@ -116,13 +115,19 @@
 
             ready: function() {
                 this.currentUser = JSON.parse(JSON.stringify(this.$.globals.values.currentUser));
+
+                if (!this.$.globals.values.memberCache[this.currentUser.id]) {
+                    this.$.avatarAjaxDiv.querySelector("#getGravatar").go();
+                } else {
+                    this.gravatar = this.$.globals.values.memberCache[this.currentUser.id];
+                }
             },
 
             changeRealName: function() {
                 this.$.updateRealNameAjax.go();
                 this.$.globals.values.currentUser = this.currentUser;
-                this.$.globals.values.memberCache[this.currentUser.id].username = this.currentUser.realname;
-                this.$.globals.values.memberCache[this.currentUser.name].username = this.currentUser.realname;
+                this.$.globals.values.memberCache[this.currentUser.id].realname = this.currentUser.realname;
+                this.$.globals.values.memberCache[this.currentUser.name].realname = this.currentUser.realname;
             },
 
             avatarUpload: function() {
@@ -139,8 +144,8 @@
             },
 
             gravatarResponse: function() {
-                this.$.globals.values.memberCache[this.gravatar.userid] = this.gravatar;
-                this.$.globals.values.memberCache[this.gravatar.username] = this.gravatar;
+                this.$.globals.values.memberCache[this.gravatar.id] = this.gravatar;
+                this.$.globals.values.memberCache[this.gravatar.name] = this.gravatar;
             },
 
             changePassword: function() {

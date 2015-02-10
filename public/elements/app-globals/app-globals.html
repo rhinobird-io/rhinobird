@@ -59,8 +59,8 @@
 
                 handleResponse: function (event, detail, target) {
                     var gravatar = detail.response;
-                    this.values["memberCache"][gravatar.userid] = gravatar;
-                    this.values["memberCache"][gravatar.username] = gravatar;
+                    this.values["memberCache"][gravatar.id] = gravatar;
+                    this.values["memberCache"][gravatar.name] = gravatar;
                 }
             });
         })();

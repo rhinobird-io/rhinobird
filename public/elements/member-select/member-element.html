@@ -25,30 +25,36 @@
                 -moz-border-radius: 4px;
                 border-radius: 4px;
             }
+
+            .pointer {
+                cursor: pointer;
+            }
         </style>
         <template if="{{menu}}">
             <div>
                 <template if="{{!view || view == 'default'}}">
-                    <div class="element" horizontal layout center>
-                        <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}"></avatar-image>
-                        <template if="{{userid}}">
-                            <span style="margin: 5px">{{$.globals.values.memberCache[userid].username}}</span>
-                        </template>
-                        <template if="{{username}}">
-                            <span style="margin: 5px">{{username}}</span>
-                        </template>
+                    <div class="element pointer" horizontal layout center>
+                        <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-click="{{toggle}}"></avatar-image>
+                        <div on-click="{{toggle}}">
+                            <template if="{{userid}}">
+                                <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
+                            </template>
+                            <template if="{{username}}">
+                                <span style="margin: 5px">{{$.globals.values.memberCache[username].realname}}</span>
+                            </template>
+                        </div>
                     </div>
                 </template>
                 <template if="{{view && view != 'default'}}">
-                    <div class="element" horizontal layout>
+                    <div class="element pointer" horizontal layout>
                         <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-click="{{toggle}}"></avatar-image>
                         <div vertical layout style="margin-left: 5px">
                             <div horizontal layout center on-click="{{toggle}}">
                                 <template if="{{userid}}">
-                                    <span style="margin: 5px">{{$.globals.values.memberCache[userid].username}}</span>
+                                    <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
                                 </template>
                                 <template if="{{username}}">
-                                    <span style="margin: 5px">{{username}}</span>
+                                    <span style="margin: 5px">{{$.globals.values.memberCache[username].realname}}</span>
                                 </template>
                                 <div class="title" flex>
                                     <content select=".title"></content>
@@ -72,10 +78,10 @@
                 <div class="element" horizontal layout center>
                     <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}"></avatar-image>
                     <template if="{{userid}}">
-                        <span style="margin: 5px">{{$.globals.values.memberCache[userid].username}}</span>
+                        <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
                     </template>
                     <template if="{{username}}">
-                        <span style="margin: 5px">{{username}}</span>
+                        <span style="margin: 5px">{{$.globals.values.memberCache[username].realname}}</span>
                     </template>
                 </div>
             </template>
@@ -85,10 +91,10 @@
                     <div vertical layout style="margin: 5px">
                         <div horizontal layout center>
                             <template if="{{userid}}">
-                                <span style="margin: 5px">{{$.globals.values.memberCache[userid].username}}</span>
+                                <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
                             </template>
                             <template if="{{username}}">
-                                <span style="margin: 5px">{{username}}</span>
+                                <span style="margin: 5px">{{$.globals.values.memberCache[username].realname}}</span>
                             </template>
                             <div class="title">
                                 <content select=".title"></content>
