@@ -26,7 +26,7 @@
             }
         </style>
         <paper-input-decorator label="{{label}}" floatingLabel>
-        <paper-autogrow-textarea id="autogrow" rows={{rows}} maxRows={{maxRows}}>
+            <paper-autogrow-textarea id="autogrow" rows={{rows}} maxRows={{maxRows}}>
                 <textarea on-input="{{textInputted}}" on-keydown="{{doFilter}}" id="textarea"
                           value="{{value}}"></textarea>
             </paper-autogrow-textarea>
@@ -136,10 +136,7 @@
                             (!this.ctrlEnter && !event.ctrlKey && !event.shiftKey && !event.altKey)) {
                         // Trigger flush function
                         event.preventDefault();
-                        if (this.flush(this.$.textarea.value) != false) {
-                            this.$.textarea.value = "";
-                            this.$.autogrow.update();
-                        }
+                        this.flush();
                     }
                 } else {
                     this.$.selector.selected = 0;
@@ -164,6 +161,11 @@
                 setTimeout(function(){
                     self.$.textarea.selectionEnd = left.length+1;
                 }, 0);
+            },
+
+            clearText: function() {
+                this.$.textarea.value = "";
+                this.$.autogrow.update();
             }
         });
     </script>
