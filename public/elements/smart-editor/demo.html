@@ -6,18 +6,13 @@
 
     <link rel="import" href="smart-editor.html">
     <link rel="import" href="smart-display.html">
-    <style>
-        smart-editor {
-            width: 600px;
-        }
-    </style>
 </head>
 
 <body>
     <template is="auto-binding">
-        <div layout vertical fit style="width:640px; left:50%; margin-left:-320px">
+        <div layout vertical fit style="width:640px; left:50%; margin: 25px 0 0 -320px">
             <smart-display value="{{value}}"></smart-display>
-            <smart-editor value="{{value}}" rows=2 maxRows=5></smart-editor>
+            <smart-editor value="{{value}}" rows=2 maxRows=5 underline label="Text" floatingLabel></smart-editor>
         </div>
     </template>
 </body>
