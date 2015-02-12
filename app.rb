@@ -68,8 +68,10 @@ class App < Sinatra::Base
           settings.sockets[@userid] = ws
         end
         ws.onmessage do |msg|
-          @received_msg = JSON.parse(msg)
-          mark_notification_as_read!
+          if msg != "keep alive"
+            @received_msg = JSON.parse(msg)
+            mark_notification_as_read!
+          end
         end
         ws.onclose do
           settings.sockets.delete(ws)
@@ -143,7 +145,9 @@ class App < Sinatra::Base
           id: u.id,
           url: get_image_url(u.id, u),
           name: u.name,
-          username: u.realname
+          realname: u.realname,
+          email: u.email,
+          local: !u.local_avatar.nil?
       }
     }.to_json
   end
@@ -155,14 +159,12 @@ class App < Sinatra::Base
       user = User.where(name: params[:value]).take
     end
     gravatar = {}
-    gravatar["username"] = user.realname
-    gravatar["userid"] = user.id
+    gravatar["id"] = user.id
     gravatar["url"] = get_image_url(user.id, user)
-    if user.local_avatar.nil?
-      gravatar["local"] = false
-    else
-      gravatar["local"] = true
-    end
+    gravatar["name"] = user.name
+    gravatar["realname"] = user.realname
+    gravatar["email"] = user.email
+    gravatar["local"] = !user.local_avatar.nil?
     gravatar.to_json
   end
 
@@ -172,8 +174,12 @@ class App < Sinatra::Base
     @params.each do |param|
       user = User.find(param[1])
       gravatar = {}
-      gravatar["url"] = get_image_url(param[1], user)
-      gravatar["username"] = user.realname
+      gravatar["id"] = user.id
+      gravatar["url"] = get_image_url(user.id, user)
+      gravatar["name"] = user.name
+      gravatar["realname"] = user.realname
+      gravatar["email"] = user.email
+      gravatar["local"] = !user.local_avatar.nil?
       gravatars << gravatar
     end
     gravatars.to_json
@@ -467,6 +473,23 @@ class App < Sinatra::Base
     user.dashboard_records.create!(:content => "You have sent an invitation to " + email + " with initial team : " + initial_team, :from_user_id => user.id)
   end
 
+  get '/user/valid_name/:name' do
+    if User.where(name: params[:name]).take.nil?
+      "valid"
+    else
+      "inValid"
+    end
+  end
+
+  get '/user/valid_email/:email' do
+    p User.where(email: params[:email])
+    if User.where(email: params[:email]).take.nil?
+      "valid"
+    else
+      "inValid"
+    end
+  end
+
   post '/users' do
     if @body["initial_team_id"].nil?
       User.create!(@body)
@@ -490,6 +513,12 @@ class App < Sinatra::Base
     else
       401
     end
+  end
+
+  #update user realname
+  post '/user/realname/:new_name' do
+    User.update(@userid, :realname => params[:new_name])
+    200
   end
 
   # post '/user/:userId' do
