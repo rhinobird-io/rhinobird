@@ -371,6 +371,7 @@
 
             addTeamHandler: function (event, detail, target) {
                 var team = target.templateInstance.model.t;
+                target.templateInstance.model.t.selected = true;
                 this.addOneTeam(team);
             },
 
@@ -379,9 +380,9 @@
                     if (this.allUserSelected.indexOf(user.id) == -1) {
                         this.allUserSelected.push(user.id);
                     }
+                    user.selected = true;
                 }, this);
 
-                console.log(this.allUserSelected);
                 if (this.selected.teams.indexOf(team.id) == -1) {
                     if (this.maxLen && this.selected.teams.length == this.maxLen) {
                         this.selected.teams.shift();
@@ -394,6 +395,7 @@
 
             removeTeamHandler: function (event, detail, target) {
                 var teamId = target.templateInstance.model.tid;
+                target.templateInstance.model.t.selected = false;
                 this.removeOneTeam(teamId);
                 event.stopPropagation();
             },
@@ -433,6 +435,7 @@
             addUserHandler: function (event, detail, sender) {
                 var userId = event.target.templateInstance.model.u.id;
                 this.addOneUser(userId);
+                event.target.templateInstance.model.u.selected = true;
             },
 
             addOneUser: function (userId) {
@@ -453,6 +456,7 @@
             removeUserHandler: function (event, detail, target) {
                 var userId = target.templateInstance.model.uid;
                 this.removeOneUser(userId);
+                target.templateInstance.model.u.selected = false;
                 event.stopPropagation();
             },
 
