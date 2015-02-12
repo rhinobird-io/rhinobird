@@ -10,6 +10,7 @@ require './models/notification'
 require './models/local_avatar'
 require './models/event'
 require './models/appointment'
+require './models/team_appointment'
 require './models/invitation'
 require 'gravatar-ultimate'
 require 'sinatra-websocket'
@@ -346,7 +347,7 @@ class App < Sinatra::Base
   get '/events' do
     today = Date.today
     events = User.find(@userid).events.where("from_time >= ?", today).limit(5)
-    events.order(:from_time).to_json(include: {participants: {only: :id}})
+    events.order(:from_time).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
   end
 
   get '/events/after/:from_time' do
@@ -354,14 +355,14 @@ class App < Sinatra::Base
     logger.info from
 
     events = User.find(@userid).events.where("from_time > ?", from).limit(5)
-    events.order(:from_time).to_json(include: {participants: {only: :id}})  
+    events.order(:from_time).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
   end
 
   get '/events/before/:from_time' do
     from = DateTime.parse(params[:from_time])
     logger.info from
     events = User.find(@userid).events.where("from_time < ?", from).limit(5)
-    events.order(:from_time).to_json(include: {participants: {only: :id}})
+    events.order(:from_time).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
   end
 
   get '/events/:eventId' do
@@ -372,11 +373,15 @@ class App < Sinatra::Base
   post '/events' do
     uid = @userid
     event = Event.new(@body.except('participants'))
-    @body['participants'].each { |p|
+    @body['participants']['users'].each { |p|
       user = User.find(p)
       event.participants << user
     }
     
+    @body['participants']['teams'].each { |p|
+      team = Team.find(p)
+      event.team_participants << team
+    }
     # Whether the event creator is also a participant by default?
     user_self = User.find(uid)
     if !event.participants.include? user_self 
@@ -386,7 +391,7 @@ class App < Sinatra::Base
 
     event.save!
 
-    @body['participants'].each { |p|
+    @body['participants']['users'].each { |p|
       user = User.find(p)
       user.dashboard_records.create!({
         content: 'Invited you to the event', 
