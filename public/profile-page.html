@@ -16,8 +16,13 @@
                 <div vertical layout>
                     <div horizontal layout>
                         <div style="width:400px" vertical layout>
-                            <paper-input label="name" floatinglabel disabled value="{{$.globals.values.currentUser.realname}}"></paper-input>
-                            <paper-input label="email" floatinglabel disabled value="{{$.globals.values.currentUser.email}}"></paper-input>
+                            <core-ajax id="updateRealNameAjax"
+                                       url="/platform/user/realname/{{currentUser.realname}}"
+                                       method="post"></core-ajax>
+                            <paper-input label="name" floatinglabel disabled value="{{currentUser.name}}"></paper-input>
+                            <paper-input label="email" floatinglabel disabled value="{{currentUser.email}}"></paper-input>
+                            <paper-input label="real name(nick name)" floatinglabel value="{{currentUser.realname}}"></paper-input>
+                            <paper-button raised on-tap="{{changeRealName}}">Update</paper-button>
                         </div>
                         <div vertical layout style="width: 400px;margin-left: 100px">
                             <core-ajax id="inviteUserAjax"
@@ -26,7 +31,7 @@
                                        contentType="application/json"
                                        body="{{newUserJson}}"></core-ajax>
                             <paper-input label="Email" floatinglabel value="{{userEmail}}"></paper-input>
-                            <member-select id="initialTeam" type="team" maxLen="1" ></member-select>
+                            <member-select id="initialTeam" label="Into Team" type="team" maxLen="1" ></member-select>
                             <paper-button raised on-tap="{{inviteNewMember}}">Invite New Member</paper-button>
                             <paper-toast id="toastInviteSuccess" text="Invitation has been sent to {{userEmail}}" role="status" touch-action="none"
                                          tabindex="-1"
@@ -36,7 +41,7 @@
                     </div>
 
                     <div horizontal layout center style="margin-top: 100px">
-                        <div>
+                        <div vertical layout>
                             <label>Change Password</label>
                             <paper-input-decorator label="Password" floatinglabel value="{{originalPassword}}">
                                 <input is="core-input" value="{{originalPassword}}" type="password">
@@ -54,7 +59,7 @@
                                        body="{{newPasswordData}}"
                                        on-core-response="{{changePasswordSuccess}}"
                                        on-core-error="{{passwordErrorResponse}}"></core-ajax>
-                            <paper-button raised on-tap="{{changePassword}}">Save</paper-button>
+                            <paper-button raised on-tap="{{changePassword}}">Change</paper-button>
                             <paper-toast id="toastChangePassword" text="{{passwordMsg}}" role="status" touch-action="none"
                                          tabindex="-1"
                                          class="core-transition core-transition-bottom"
@@ -64,7 +69,6 @@
                             <div id="avatarAjaxDiv">
                                 <template if="{{$.globals.values.currentUser}}">
                                     <core-ajax id="getGravatar"
-                                               auto
                                                url="/platform/gravatar/id/{{$.globals.values.currentUser.id}}"
                                                handleAs="json"
                                                method="get"
@@ -108,6 +112,24 @@
     </template>
     <script>
         Polymer("profile-page", {
+
+            ready: function() {
+                this.currentUser = JSON.parse(JSON.stringify(this.$.globals.values.currentUser));
+
+                if (!this.$.globals.values.memberCache[this.currentUser.id]) {
+                    this.$.avatarAjaxDiv.querySelector("#getGravatar").go();
+                } else {
+                    this.gravatar = this.$.globals.values.memberCache[this.currentUser.id];
+                }
+            },
+
+            changeRealName: function() {
+                this.$.updateRealNameAjax.go();
+                this.$.globals.values.currentUser = this.currentUser;
+                this.$.globals.values.memberCache[this.currentUser.id].realname = this.currentUser.realname;
+                this.$.globals.values.memberCache[this.currentUser.name].realname = this.currentUser.realname;
+            },
+
             avatarUpload: function() {
                 this.$.uploader.shadowRoot.querySelector("core-label").parentElement.parentElement.hidden = true;
                 this.$.avatarAjaxDiv.querySelector("#getGravatar").go();
@@ -122,8 +144,8 @@
             },
 
             gravatarResponse: function() {
-                this.$.globals.values.memberCache[this.gravatar.userid] = this.gravatar;
-                this.$.globals.values.memberCache[this.gravatar.username] = this.gravatar;
+                this.$.globals.values.memberCache[this.gravatar.id] = this.gravatar;
+                this.$.globals.values.memberCache[this.gravatar.name] = this.gravatar;
             },
 
             changePassword: function() {

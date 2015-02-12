@@ -12,7 +12,7 @@
 <link rel="import" href="../../bower_components/core-icons/social-icons.html">
 <link rel="import" href="member-element.html">
 
-<polymer-element name="member-select" attributes="selected allUserSelected disabled label adaptive width height">
+<polymer-element name="member-select" attributes="selected allUserSelected disabled label type maxLen adaptive width height">
     <template>
         <core-ajax url="/platform/teams_users" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>
         <core-ajax url="/platform/users" auto handleAs="json" on-core-response="{{handleUsersResponse}}"></core-ajax>
@@ -52,9 +52,6 @@
 
             .item {
                 cursor: pointer;
-            }
-
-            .item.team {
                 margin-left: 18px;
             }
 
@@ -65,7 +62,6 @@
                 border: 1px solid #C5CAE9;
                 margin: 2px;
                 margin-right: 4px;
-                margin-top: 4px;
             }
 
             .block {
@@ -116,7 +112,7 @@
                         <template if="{{type != 'user'}}">
                             <label class="block">Teams</label>
                             <template repeat="{{ t in filterTeam(teams, selected, searchText, changeFlag)}}">
-                                <div class="item team" on-tap="{{addTeamHandler}}">
+                                <div class="item" on-tap="{{addTeamHandler}}">
                                     <div horizontal layout center>
                                         <core-icon icon="social:people" width="15" height="15"></core-icon>
                                         <span style="margin: 5px">{{t.name}}</span>
@@ -326,7 +322,6 @@
                 var wrapperHeight = this.$.wrapper.offsetHeight;
                 var menuHeight = this.height + 20;
 
-                console.log(this.$.menu.offsetWidth);
                 if (offsetTop - scrollTop + wrapperHeight + menuHeight <= parentHeight) {
                     // show menu at bottom
                     this.$.menu.style.bottom = '-' + menuHeight + 'px';

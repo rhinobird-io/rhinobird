@@ -49,6 +49,8 @@
         <app-globals id="globals"></app-globals>
     </template>
     <script>
+        var keepAliveInterval = null;
+
         Polymer("notification-element", {
 
             created: function() {
@@ -61,7 +63,7 @@
 
                     notification.onclick = function() {
                         window.focus();
-                        if (this.url) {
+                        if (url) {
                             window.location.href = url;
                         }
                     };
@@ -140,12 +142,18 @@
 
                     socket.onopen = function () {
                         console.log("Socket Status: " + socket.readyState + " (open)");
+                        if (keepAliveInterval) {
+                            clearInterval(keepAliveInterval);
+                        }
+                        keepAliveInterval = setInterval(function() {
+                            socket.send("keep alive");
+                        }, 5000);
                     };
 
                     socket.onclose = function () {
                         console.log("Socket Status: " + socket.readyState + " (closed)");
                         console.log("Reconnecting ...");
-                        this.connect();
+                        that.$.globals.values.websocket = that.connect(that);
                     };
 
                     socket.onmessage = function (msg) {
@@ -212,7 +220,7 @@
             },
 
             markAsChecked: function() {
-                if (!this.maxCheckedNotificationIndex || this.maxCheckedNotificationIndex == -1) {
+                if (this.maxCheckedNotificationIndex == undefined || this.maxCheckedNotificationIndex == -1) {
                     return;
                 }
 

@@ -6,7 +6,7 @@
 <link rel="import" href="../../bower_components/core-icons/social-icons.html">
 <link rel="import" href="../member-select/member-element.html">
 
-<polymer-element name="member-profile" attributes="userid">
+<polymer-element name="member-profile" attributes="username">
     <template>
         <style>
             .container {
@@ -20,8 +20,7 @@
         <paper-dropdown id="dropdown">
             <div layout vertical>
                 <div class="container">
-                    <member-element view="custom" userid="{{userid}}">
-                    </member-element>
+                    <member-element view="custom" username="{{username}}"></member-element>
                 </div>
                 <paper-item>
                     <core-icon icon="social:person"></core-icon>
@@ -35,7 +34,6 @@
             toggle: function () {
                 this.$.dropdown.toggle();
             },
-            userid: ''
         });
     </script>
 </polymer-element>

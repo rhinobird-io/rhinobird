@@ -1,4 +1,5 @@
 <html>
+
 <head>
     <!-- 1. Load platform support before any code that touches the DOM. -->
     <script src="../../bower_components/webcomponentsjs/webcomponents.min.js"></script>
@@ -11,13 +12,14 @@
         }
     </style>
 </head>
-<body>
-<template is="auto-binding">
-    <div layout vertical center fit>
-        <smart-display value="{{value}}"></smart-display>
-        <smart-editor value="{{value}}"></smart-editor>
-    </div>
-</template>
 
+<body>
+    <template is="auto-binding">
+        <div layout vertical fit style="width:640px; left:50%; margin-left:-320px">
+            <smart-display value="{{value}}"></smart-display>
+            <smart-editor value="{{value}}" rows=2 maxRows=5></smart-editor>
+        </div>
+    </template>
 </body>
+
 </html>

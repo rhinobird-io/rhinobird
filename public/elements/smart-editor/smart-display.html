@@ -1,3 +1,5 @@
+<link rel="import" href="../app-globals/app-globals.html">
+<link rel="import" href="../html-echo/html-echo.html">
 <script src="../../bower_components/highlightjs/highlight.pack.js"></script>
 
 <polymer-element name="smart-display" attributes="value">
@@ -6,8 +8,16 @@
         <div>
             <html-echo html="{{wrap(value)}}"></html-echo>
         </div>
+        <app-globals id="globals"></app-globals>
     </template>
+
     <script>
+        function stripTags(value) {
+            return value.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        }
+
         Polymer({
             enableAt: true,
             enableSlash: true,
@@ -16,9 +26,10 @@
 
             slashTrigger: function(text, plugin, args) {
                 if (args == undefined) args = "";
-                if (plugin == "vity") {
+                if (plugin.toLowerCase() == "vity") {
                     var link = document.createElement("a");
-                    link.href = "https://46.137.243.49:5151/index.html#" + args;
+                    var user = this.$.globals.values.currentUser;
+                    link.href = "https://46.137.243.49:5151/index.html#" + args + "@" + user.name;
                     link.target = "_blank";
                     link.innerHTML = text;
                     return link;
@@ -31,31 +42,33 @@
                 }
             },
 
-            wrap: function (value) {
+            wrap: function(value) {
                 if (!value) return "";
+                value = stripTags(value);
                 var root = document.createElement("span");
                 if (this.enableCode) {
                     // Preserve and remove code blocks
-                    root.innerHTML = value.replace(/```(.*)\n(((?!```\n)[\s\S])*)```/g,
-                            "<pre><code class='$1'>$2</code></pre>");
-                    var codeBlocks = [];
-                    var list = root.querySelectorAll("pre code");
-                    for (var i = 0; i < list.length; i++) {
-                        codeBlocks.push(list[i].innerHTML);
-                        list[i].innerHTML = "";
-                    }
-                    value = root.innerHTML;
+                    var regex = /```(.*)\n(((?!```\n)[\s\S])*)```/g;
+                    var codeBlocks = value.match(regex);
+                    value = value.replace(regex, "<pre><code class='$1'></code></pre>");
                 }
+                // Replace newline with <br>
+                value = value.replace(/(<\/(div|pre)>)\n/g, "$1")
+                    .replace(/\n/g, "\n<br>\n").replace(/(<\/(div|pre)>)/g, "$1\n");
                 if (this.enableAt) {
                     root.innerHTML = value.replace(/(^|\s)(@[\w\.-]+)/g, "$1<at>$2</at>");
                     var list = root.querySelectorAll("at");
                     for (var i = 0; i < list.length; i++) {
                         var name = list[i].innerHTML;
                         var profile = document.createElement("span");
-                        profile.innerHTML =
-                                "<member-profile userid=31>" +  // TODO Replace userid
-                                "<a class='trigger' href='#'>" + name + "</a>" +
+                        if (this.$.globals.values.memberCache[name.substr(1)]) {
+                            profile.innerHTML =
+                                "<member-profile username='" + name.substr(1) +
+                                "'><a class='trigger' href='#'>" + name + "</a>" +
                                 "</member-profile>";
+                        } else {
+                            profile.innerHTML = name;
+                        }
                         root.replaceChild(profile, list[i]);
                     }
                     value = root.innerHTML;
@@ -75,9 +88,8 @@
                 if (this.enableLink) {
                     // Replace links and emails
                     value = value.replace(/(^|\s)((http|ftp)s?:\/\/\S+)/gi,
-                            "$1<a href='$2' target='_blank'>$2</a>");
-                    value = value.replace(/((?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\]))/g,
-                            "<a href='mailto:$1'>$1</a>");
+                        "$1<a href='$2' target='_blank'>$2</a>");
+                    value = value.replace(EMAIL_REGEX, "<a href='mailto:$1'>$1</a>");
                 }
                 if (this.enableCode) {
                     // Re-insert code blocks
@@ -85,13 +97,16 @@
                     var list = root.querySelectorAll("pre code");
                     for (var i = 0; i < list.length; i++) {
                         var code = codeBlocks[i];
-                        list[i].innerHTML = code;
-				        hljs.highlightBlock(list[i]);
+                        list[i].innerHTML = code.substring(code.indexOf("\n") + 1, code.length - 3);
+                        hljs.highlightBlock(list[i]);
                     }
                     value = root.innerHTML;
                 }
                 return value;
             }
         });
+
+        var EMAIL_REGEX = /((?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\]))/g;
+
     </script>
 </polymer-element>

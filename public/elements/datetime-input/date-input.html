@@ -34,8 +34,7 @@
             innerDateChanged: function (oldV, newV) {
                 var m = moment(this.date), d = moment(newV);
                 m.year(d.year());
-                m.month(d.month());
-                m.day(d.day());
+                m.dayOfYear(d.dayOfYear());
                 //avoid infinite loop
                 var tmp = this.dateChanged;
                 this.dateChanged = undefined;
