@@ -346,61 +346,96 @@ class App < Sinatra::Base
 
   get '/events' do
     today = Date.today
-    events = User.find(@userid).events.where("from_time >= ?", today).limit(5)
-    events.order(:from_time).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+
+    events = Array.new
+    events.concat User.find(@userid).events.where("from_time >= ?", today)
+
+    User.find(@userid).teams.each { |t|
+      events.concat t.events.where("from_time >= ?", today)
+    }
+
+    events.sort!{ |a,b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
   end
 
   get '/events/after/:from_time' do
     from = DateTime.parse(params[:from_time])
-    logger.info from
 
-    events = User.find(@userid).events.where("from_time > ?", from).limit(5)
-    events.order(:from_time).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+    events = Array.new
+    events.concat User.find(@userid).events.where("from_time >= ?", from)
+
+    User.find(@userid).teams.each { |t|
+      events.concat t.events.where("from_time >= ?", from)
+    }
+
+    events.sort!{ |a,b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
   end
 
   get '/events/before/:from_time' do
     from = DateTime.parse(params[:from_time])
-    logger.info from
-    events = User.find(@userid).events.where("from_time < ?", from).limit(5)
-    events.order(:from_time).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+
+    events = Array.new
+    events.concat User.find(@userid).events.where("from_time < ?", from)
+
+    User.find(@userid).teams.each { |t|
+      events.concat t.events.where("from_time < ?", from)
+    }
+
+    events.sort!{ |a,b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
   end
 
   get '/events/:eventId' do
       event = Event.find(params[:eventId])
-      event.to_json(include: {participants: {only: :id}})
+      event.to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
   end
 
   post '/events' do
     uid = @userid
     event = Event.new(@body.except('participants'))
+
+    notified_users = Array.new
+    
     @body['participants']['users'].each { |p|
       user = User.find(p)
       event.participants << user
+      notified_users << p
     }
     
     @body['participants']['teams'].each { |p|
       team = Team.find(p)
       event.team_participants << team
+      team.users.each { |u|
+        notified_users << u.id
+      }
     }
+
     # Whether the event creator is also a participant by default?
     user_self = User.find(uid)
-    if !event.participants.include? user_self 
+    if !notified_users.include? uid 
       event.participants << user_self
+      notified_users << uid
     end
     event.creator_id = uid
 
     event.save!
 
-    @body['participants']['users'].each { |p|
+    notified_users.each { |p|
       user = User.find(p)
+
+      message = ''
+      if event.creator_id == p
+        message = 'Have created an event '
+      else
+        message = 'Invited you to the event '
+      end
       user.dashboard_records.create!({
-        content: 'Invited you to the event', 
+        content: message, 
         from_user_id: uid,
         has_link: true,
         link_url: '#/calendar/' + event.id.to_s,
         link_title: event.title})
 
-      notification = user.notifications.create!({content: 'Invited you to the event ' + event.title, from_user_id: uid})
+      notification = user.notifications.create!({content: message + event.title, from_user_id: uid})
+      
       notify = notification.to_json(:except => [:user_id])
       socket_id = p
       unless settings.sockets[socket_id].nil?
@@ -408,7 +443,7 @@ class App < Sinatra::Base
       end
     }
     
-    event.to_json(include: {participants: {only: :id}})
+    event.to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
   end
 
   delete '/events/:eventId' do
