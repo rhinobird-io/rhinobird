@@ -7,6 +7,23 @@
 <link rel="import" href="../member-profile/member-profile.html">
 <link rel="import" href="../member-select/member-element.html">
 
+<!--
+    Attributes:
+
+    label, floatingLabel, underline:
+        Applied to paper-input-decorator.
+
+    value, rows, maxRows:
+        Applied to (paper-autogrow-)textarea.
+
+    ctrlEnter:
+        If true, Ctrl+Enter will trigger flush. Otherwise, Enter will trigger flush.
+
+    flush:
+        In most occasions, you might need a function to handle the text value (such
+        as send the text to server and clear it in the editor) after finish typing.
+-->
+
 <polymer-element name="smart-editor" attributes="label value rows maxRows flush ctrlEnter floatingLabel underline">
     <template>
         <style>
