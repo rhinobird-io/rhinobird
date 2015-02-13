@@ -81,13 +81,13 @@
                         console.error("app globals is not used, avatar cache can not be used");
                     } else {
                         if (that.$.globals.values.memberCache[userId]) {
-                            document.createNotification(that.$.globals.values.memberCache[userId].username, that.$.globals.values.memberCache[userId].url + "?d=identicon", body, url);
+                            document.createNotification(that.$.globals.values.memberCache[userId].realname, that.$.globals.values.memberCache[userId].url + "?d=identicon", body, url);
                         } else {
                             xhr = new XMLHttpRequest();
                             xhr.onload = function () {
                                 that.gravatars = JSON.parse(this.responseText);
                                 that.$.globals.values.memberCache[userId] = that.gravatars[0];
-                                document.createNotification(that.gravatars[0].username, that.gravatars[0].url + "?d=identicon", body, url);
+                                document.createNotification(that.gravatars[0].realname, that.gravatars[0].url + "?d=identicon", body, url);
                             };
                             xhr.open("GET", "/platform/gravatars?0=" + encodeURIComponent(that.notificationData.from_user_id), true);
                             xhr.send();
@@ -170,7 +170,7 @@
 
             handleNotification: function () {
                 this.notifications.unshift(this.notificationData);
-                document.showNotification(this.notificationData.from_user_id, this.notificationData.content);
+                document.showNotification(this.notificationData.from_user_id, this.notificationData.content, this.notificationData.url);
             },
 
             orderNotification: function(notifications) {
