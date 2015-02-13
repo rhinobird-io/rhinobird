@@ -7,7 +7,24 @@
 <link rel="import" href="../member-profile/member-profile.html">
 <link rel="import" href="../member-select/member-element.html">
 
-<polymer-element name="smart-editor" attributes="label value rows maxRows flush ctrlEnter">
+<!--
+    Attributes:
+
+    label, floatingLabel, underline:
+        Applied to paper-input-decorator.
+
+    value, rows, maxRows:
+        Applied to (paper-autogrow-)textarea.
+
+    ctrlEnter:
+        If true, Ctrl+Enter will trigger flush. Otherwise, Enter will trigger flush.
+
+    flush:
+        In most occasions, you might need a function to handle the text value (such
+        as send the text to server and clear it in the editor) after finish typing.
+-->
+
+<polymer-element name="smart-editor" attributes="label value rows maxRows flush ctrlEnter floatingLabel underline">
     <template>
         <style>
             #menu {
@@ -22,14 +39,17 @@
             .wrapper {
                 position: relative;
             }
+            paper-autogrow-textarea {
+                width: 100%;
+            }
         </style>
 
-        <paper-input-decorator label="{{label}}" floatingLabel>
+        <paper-input-decorator label="{{label}}" id="decorator">
             <paper-autogrow-textarea id="autogrow" rows={{rows}} maxRows={{maxRows}}>
                 <textarea on-input="{{textInputted}}" on-keydown="{{doFilter}}" id="textarea" value="{{value}}"></textarea>
             </paper-autogrow-textarea>
         </paper-input-decorator>
-        <core-ajax url="/platform/users" auto handleAs="json" response="{{users}}"></core-ajax>
+
         <div class="wrapper">
             <paper-shadow z="1" id="menu" hidden?="{{!showMenu}}">
                 <div>
@@ -43,6 +63,8 @@
                 </div>
             </paper-shadow>
         </div>
+
+        <core-ajax url="/platform/users" auto handleAs="json" response="{{users}}"></core-ajax>
     </template>
 
     <script src="../../lib/textarea-caret-position.js"></script>
@@ -62,7 +84,18 @@
 
         Polymer({
             showMenu: false,
-            label: 'Text',
+            publish: {
+                floatingLabel: false,
+                underline: false,
+                ctrlEnter: false
+            },
+
+            ready: function() {
+                this.$.decorator.floatingLabel = this.floatingLabel;
+                if (this.underline == false) {
+                    this.$.decorator.$.underline.style.display = "none";
+                }
+            },
 
             textInputted: function(event, detail, target) {
                 this.showMenu = false;
@@ -154,16 +187,18 @@
                 right = this.value.substring(this.$.textarea.selectionEnd);
                 left = left.replace(/[^\s]*$/, "@" + user.name + " ");
                 this.value = left + right;
-                this.$.autogrow.update(this.$.textarea);
                 var self = this;
                 setTimeout(function() {
                     self.$.textarea.selectionEnd = left.length + 1;
                 }, 0);
             },
 
+            valueChanged: function() {
+                this.$.autogrow.update(this.$.textarea);
+            },
+
             clearText: function() {
                 this.$.textarea.value = "";
-                this.$.autogrow.update();
             }
         });
 
