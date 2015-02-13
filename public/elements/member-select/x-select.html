@@ -91,7 +91,7 @@
                                             <avatar-image userid="{{dataIdMap[field.name][selectedId].id}}" size="15"></avatar-image>
                                         </template>
                                         <template if="{{field.icon != 'avatar'}}">
-                                            <core-icon icon="{{field.icon}}" width="15" height="15"></core-icon>
+                                            <core-icon icon="{{field.icon}}" style="width:15px; height:15px"></core-icon>
                                         </template>
                                         <span style="margin: 5px">{{ dataIdMap[field.name][selectedId][field.nameKey] }}</span>
                                     </div>
@@ -119,7 +119,7 @@
                                             <avatar-image userid="{{t.id}}" size="15"></avatar-image>
                                         </template>
                                         <template if="{{field.icon != 'avatar'}}">
-                                            <core-icon icon="{{field.icon}}" width="15" height="15"></core-icon>
+                                            <core-icon icon="{{field.icon}}" style="width:15px; height:15px"></core-icon>
                                         </template>
                                         <span style="margin: 5px">{{ t[field.nameKey] }}</span>
                                     </div>
