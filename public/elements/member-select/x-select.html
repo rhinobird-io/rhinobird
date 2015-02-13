@@ -16,7 +16,9 @@
         <!--<core-ajax url="/platform/users" auto handleAs="json" on-core-response="{{handleUsersResponse}}"></core-ajax>-->
 
         <template repeat="{{field in fields}}">
-            <core-ajax url="{{field.url}}" auto handleAs="json" on-core-response="{{handleFieldResponse}}"></core-ajax>
+            <template if="{{!field.data}}">
+                <core-ajax url="{{field.url}}" auto handleAs="json" on-core-response="{{handleFieldResponse}}"></core-ajax>
+            </template>
         </template>
 
         <style>
@@ -164,12 +166,35 @@
             },
             selectedChanged: function (oldV) {
 //                this.changeFlag = !this.changeFlag;
+                var keys = null;
+                if (this.selected != null) {
+                    keys = Object.keys(this.selected);
+                }
+
+                var that = this;
+                that.selectedCount = 0;
+
+                if (keys != null) {
+                    keys.forEach(function(key) {
+                        that.selectedCount += that.selected[key].length;
+                    });
+                }
             },
             fieldsChanged: function() {
                 this.fieldNameList = [];
                 var that = this;
                 this.fields.forEach(function(field) {
                     that.fieldNameList.push(field.name);
+
+                    if (field.data != null) {
+                        that.dataMap[field.name] = field.data;
+                        that.dataIdMap[field.name] = {};
+
+                        field.data.forEach(function(element) {
+                            element.fieldName = field.name;
+                            that.dataIdMap[field.name][element.id] = element;
+                        });
+                    }
                 });
             },
 
