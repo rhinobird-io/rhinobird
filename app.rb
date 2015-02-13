@@ -589,12 +589,18 @@ class App < Sinatra::Base
   post '/users/notifications' do
     users = @body["users"]
     content =@body["content"]
+    p content
     content["from_user_id"] = @userid
+
+    unless @body["url"].nil?
+      content["url"] = @body["url"]
+    end
+
     users.each do |user|
-      notification = User.find(user).notifications.create!(content)
+      notification = User.find(user.to_i).notifications.create!(content)
       notify = notification.to_json(:except => [:user_id])
-      unless settings.sockets[user].nil?
-        EM.next_tick { settings.sockets[user].send(notify) }
+      unless settings.sockets[user.to_i].nil?
+        EM.next_tick { settings.sockets[user.to_i].send(notify) }
       end
     end
     200
