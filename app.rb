@@ -394,12 +394,6 @@ class App < Sinatra::Base
 
     notified_users = Array.new
     
-    @body['participants']['users'].each { |p|
-      user = User.find(p)
-      event.participants << user
-      notified_users << p
-    }
-    
     @body['participants']['teams'].each { |p|
       team = Team.find(p)
       event.team_participants << team
@@ -409,6 +403,15 @@ class App < Sinatra::Base
         end
       }
     }
+
+    @body['participants']['users'].each { |p|
+      user = User.find(p)
+      if !notified_users.include? user.id
+        notified_users << user.id
+        event.participants << user
+      end
+    }
+    
 
     # Whether the event creator is also a participant by default?
     user_self = User.find(uid)
