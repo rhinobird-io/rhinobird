@@ -4,11 +4,11 @@
 
 <polymer-element name="smart-display" attributes="value">
     <template>
+        <app-globals id="globals"></app-globals>
         <link rel="stylesheet" href="../../bower_components/highlightjs/styles/default.css">
         <div>
             <html-echo html="{{wrap(value)}}"></html-echo>
         </div>
-        <app-globals id="globals"></app-globals>
     </template>
 
     <script>
@@ -18,7 +18,7 @@
                 .replace(/>/g, "&gt;");
         }
 
-        Polymer({
+        Polymer('smart-display', {
             enableAt: true,
             enableSlash: true,
             enableCode: true,
