@@ -168,6 +168,7 @@
                 DEFAULT_WIDTH: '300px',
                 DEFAULT_HEIGHT: '200px'
             },
+            userSelectedMap: {},
             preventFocus: function (event) {
                 event.stopPropagation();
             },
@@ -207,9 +208,10 @@
                 }
                 if (users && selected) {
                     searchText = searchText.toLowerCase();
-
+                    var self = this;
                     //filter selected
                     users.forEach(function (u) {
+                        if (self.userSelectedMap[u.id + ""] > 0) return;
                         if (selected.users && selected.users.indexOf(u.id) == -1 && (u.realname.toLowerCase().indexOf(searchText) != -1)) {
                             result.push(u);
                         }
@@ -340,8 +342,6 @@
                     self.$.selector.selected = 0;
                 }, 100);
             },
-
-
             handleTeamsResponse: function (event) {
                 this.teams = event.detail.response;
 
@@ -352,6 +352,7 @@
                     this.teamIdMap[t.id] = t;
                     t.users.forEach(function(u) {
                         this.userTeamMap[u.id + "_" + t.id] = true;
+                        this.userSelectedMap[u.id + ""] = 0;
                     }, this);
                 }, this);
             },
@@ -361,6 +362,7 @@
                 this.usersNameMap = {};
                 this.users.forEach(function (u) {
                         this.usersNameMap[u.realname] = u;
+                        this.userSelectedMap[u.id + ""] = 0;
                 }, this);
             },
 
@@ -376,6 +378,7 @@
                         this.allUserSelected.push(user.id);
                     }
                     user.selected = true;
+                    this.userSelectedMap[user.id + ""]++;
                 }, this);
 
                 if (this.selected.teams.indexOf(team.id) == -1) {
@@ -390,7 +393,6 @@
 
             removeTeamHandler: function (event, detail, target) {
                 var teamId = target.templateInstance.model.tid;
-                target.templateInstance.model.t.selected = false;
                 this.removeOneTeam(teamId);
                 event.stopPropagation();
             },
@@ -403,6 +405,8 @@
                     if (!this.isSelectedDuplicate(u.id)) {
                         this.allUserSelected.splice(this.allUserSelected.indexOf(u.id), 1);
                     }
+
+                    this.userSelectedMap[u.id + ""]--;
                 }, this);
                 this.changeFlag = !this.changeFlag;
             },
@@ -445,13 +449,14 @@
                     this.selected.users.push(userId);
                     this.searchText = '';
                 }
+
+                this.userSelectedMap[userId + ""]++;
                 this.changeFlag = !this.changeFlag;
             },
 
             removeUserHandler: function (event, detail, target) {
                 var userId = target.templateInstance.model.uid;
                 this.removeOneUser(userId);
-                target.templateInstance.model.u.selected = false;
                 event.stopPropagation();
             },
 
@@ -459,6 +464,8 @@
                 this.allUserSelected.splice(this.allUserSelected.indexOf(userId), 1);
                 this.selected.users.splice(this.selected.users.indexOf(userId));
                 this.changeFlag = !this.changeFlag;
+
+                this.userSelectedMap[userId + ""]--;
             },
 
             // public attributes
