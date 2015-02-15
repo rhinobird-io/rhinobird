@@ -2,7 +2,7 @@
 <link rel="import" href="../app-globals/app-globals.html">
 <link rel="import" href="avatar-image.html">
 
-<polymer-element name="member-element" attributes="userid username menu imagesize view">
+<polymer-element name="member-element" attributes="userid username menu imagesize view borderRadius">
     <template>
         <style>
 
@@ -17,13 +17,8 @@
 
             ::content .content {
                 word-wrap: break-word;
+                padding-left: 5px;
                 /*width: 300px;*/
-            }
-
-            avatar-image /deep/ img {
-                -webkit-border-radius: 4px;
-                -moz-border-radius: 4px;
-                border-radius: 4px;
             }
 
             .pointer {
@@ -34,7 +29,8 @@
             <div>
                 <template if="{{!view || view == 'default'}}">
                     <div class="element pointer" horizontal layout center>
-                        <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-click="{{toggle}}"></avatar-image>
+                        <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-click="{{toggle}}"
+                                      borderRadius="{{borderRadius}}"></avatar-image>
                         <div on-click="{{toggle}}">
                             <template if="{{userid}}">
                                 <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
@@ -46,10 +42,11 @@
                     </div>
                 </template>
                 <template if="{{view && view != 'default'}}">
-                    <div class="element pointer" horizontal layout>
-                        <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-click="{{toggle}}"></avatar-image>
+                    <div class="element" horizontal layout>
+                        <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-click="{{toggle}}"
+                                      class="pointer" style="margin-top: 5px" borderRadius="{{borderRadius}}"></avatar-image>
                         <div vertical layout style="margin-left: 5px">
-                            <div horizontal layout center on-click="{{toggle}}">
+                            <div horizontal layout center on-click="{{toggle}}" class="pointer">
                                 <template if="{{userid}}">
                                     <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
                                 </template>
@@ -64,11 +61,11 @@
                         </div>
                     </div>
                 </template>
-                <paper-dropdown class="dropdown" style="color:#000">
-                <core-menu class="menu">
-                    <core-item>Direct Message</core-item>
-                    <core-item>View Profile</core-item>
-                </core-menu>
+                <paper-dropdown class="dropdown member-element-dropdown" style="color:#000" layered>
+                    <core-menu class="menu">
+                        <core-item>Direct Message</core-item>
+                        <core-item>View Profile</core-item>
+                    </core-menu>
                 </paper-dropdown>
             </div>
         </template>
@@ -76,7 +73,8 @@
         <template if="{{!menu}}">
             <template if="{{!view || view == 'default'}}">
                 <div class="element" horizontal layout center>
-                    <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}"></avatar-image>
+                    <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}"
+                                  borderRadius="{{borderRadius}}"></avatar-image>
                     <template if="{{userid}}">
                         <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
                     </template>
@@ -87,7 +85,8 @@
             </template>
             <template if="{{view && view != 'default'}}">
                 <div class="element" horizontal layout>
-                    <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}"></avatar-image>
+                    <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}"
+                                  borderRadius="{{borderRadius}}"></avatar-image>
                     <div vertical layout style="margin: 5px">
                         <div horizontal layout center>
                             <template if="{{userid}}">
@@ -109,7 +108,6 @@
     </template>
     <script>
         Polymer("member-element", {
-
             domReady: function() {
                 if (this.view && this.view != 'default' && !this.imagesize) {
                     this.imagesize = 36;
@@ -128,7 +126,17 @@
                 if (!this.dropdown) {
                     this.dropdown = this.shadowRoot.querySelector('paper-dropdown');
                 }
-                this.dropdown && this.dropdown.toggle();
+
+                var dropdownMenus = document.querySelectorAll('body /deep/ .member-element-dropdown');
+                for (var i = 0; i < dropdownMenus.length; i++) {
+                    if (dropdownMenus[i] != this.dropdown) {
+                        dropdownMenus[i].close();
+                    }
+                }
+
+                if (this.dropdown) {
+                    this.dropdown.toggle();
+                }
             }
         });
     </script>

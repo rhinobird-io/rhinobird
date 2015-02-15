@@ -97,7 +97,7 @@
             },
 
             addMemberToTeam: function() {
-                this.selectedUser = this.$.memberSelectTeam.allUserSelected;
+                this.selectedUser = this.$.memberSelectTeam.getAllUserInvolved();
                 this.newMember = JSON.stringify(this.selectedUser);
                 var ajax = this.$.addMember;
                 ajax.go();
@@ -193,7 +193,7 @@
             newTeam: function() {
                 var newTeamData = {};
                 newTeamData.team = {"name": this.teamName};
-                newTeamData.user = JSON.parse(JSON.stringify(this.$.memberSelect.allUserSelected));
+                newTeamData.user = JSON.parse(JSON.stringify(this.$.memberSelect.getAllUserInvolved()));
                 console.log(newTeamData.user);
                 if (newTeamData.user.indexOf(this.$.globals.values.currentUser.id) == -1) {
                     console.log(this.$.globals.values.currentUser.id);

@@ -20,7 +20,11 @@
             secondColor: 'white',
             thirdColor: '#000',
             accentColor: 'white',
-            iconColor: 'rgba(0,0,0,0.54)'
+            iconColor: 'rgba(0,0,0,0.54)',
+            mainText: 'rgba(0,0,0,0.87)',
+            secondText: 'rgba(0,0,0,0.54)',
+            disabledText: 'rgba(0,0,0,0.26)',
+            divider: 'rgba(0,0,0,0.12)'
         };
     </script>
     <style>
@@ -50,6 +54,18 @@
 
         .iconColor {
             color: {{g.theme.iconColor}};
+        }
+        .mainText {
+            color: {{g.theme.mainText}};
+        }
+        .secondText {
+            color: {{g.theme.secondText}};
+        }
+        .disabledText {
+            color: {{g.theme.disabledText}};
+        }
+        .divider {
+            border-color: {{g.theme.divider}};
         }
     </core-style>
 </head>

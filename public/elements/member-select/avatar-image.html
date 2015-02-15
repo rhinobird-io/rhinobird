@@ -1,10 +1,9 @@
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="../app-globals/app-globals.html">
 
-<polymer-element name="avatar-image" attributes="userid username size default">
+<polymer-element name="avatar-image" attributes="userid username size default borderRadius">
     <template>
         <style>
-
             :host.small {
                 font-size: small;
             }
@@ -12,14 +11,22 @@
             img {
                 display: block;
             }
+
+            .borderRadius {
+                -webkit-border-radius: {{borderRadius}};
+                -moz-border-radius: {{borderRadius}};
+                border-radius: {{borderRadius}};
+            }
         </style>
 
         <template if="{{userid && $.globals.values.memberCache[userid] && default && size}}">
-            <img src="{{$.globals.values.memberCache[userid].url}}?d={{default}}&s={{size}}" width="{{size}}" height="{{size}}"/>
+            <img src="{{$.globals.values.memberCache[userid].url}}?d={{default}}&s={{size}}" width="{{size}}" height="{{size}}"
+                 class="{{borderRadius ? 'borderRadius' : ''}}"/>
         </template>
 
         <template if="{{username && $.globals.values.memberCache[username] && default && size}}">
-            <img src="{{$.globals.values.memberCache[username].url}}?d={{default}}&s={{size}}" width="{{size}}" height="{{size}}"/>
+            <img src="{{$.globals.values.memberCache[username].url}}?d={{default}}&s={{size}}" width="{{size}}" height="{{size}}"
+                 class="{{borderRadius ? 'borderRadius' : ''}}"/>
         </template>
         <app-globals id="globals"></app-globals>
     </template>

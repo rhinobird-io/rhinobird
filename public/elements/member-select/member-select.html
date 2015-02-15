@@ -11,467 +11,98 @@
 <link rel="import" href="../../bower_components/core-selector/core-selector.html">
 <link rel="import" href="../../bower_components/core-icons/social-icons.html">
 <link rel="import" href="member-element.html">
+<link rel="import" href="x-select.html">
 
-<polymer-element name="member-select" attributes="selected allUserSelected disabled label type maxLen adaptive width height">
+<polymer-element name="member-select" attributes="selected disabled label type maxLen adaptive width height">
     <template>
         <core-ajax url="/platform/teams_users" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>
-        <core-ajax url="/platform/users" auto handleAs="json" on-core-response="{{handleUsersResponse}}"></core-ajax>
-
-        <style>
-            div.wrapper {
-                position: relative;
-            }
-            #menu {
-                *-moz-border-radius: 5px;
-                *-webkit-border-radius: 5px;
-                position: absolute;
-                padding: 0;
-                width: {{widthInString}};
-                z-index: 10;
-                box-shadow: 0 0 6px #555;
-                box-sizing: border-box;
-            }
-
-            #menu > div {
-                height: {{heightInString}};
-                padding: 10px 14px;
-                background-color: #C5CAE9;
-                overflow-y: auto;
-            }
-
-            core-icon.small {
-                height: 1em;
-                width: 1em;
-                cursor: pointer;
-            }
-
-            .item.core-selected {
-                background-color: #FF4081;
-                color: white;
-            }
-
-            .item {
-                cursor: pointer;
-                margin-left: 18px;
-            }
-
-            .badge {
-                background-color: #C5CAE9;
-                padding: 2px 4px;
-                border-radius: 0.25em;
-                border: 1px solid #C5CAE9;
-                margin: 2px;
-                margin-right: 4px;
-            }
-
-            .block {
-                display: block;
-                font-weight: bold;
-                padding: 0.5em 0;
-            }
-            input{
-                min-width: 3em;
-                width: 6em !important;
-            }
-        </style>
-
-        <div vertical layout class="wrapper" id="wrapper">
-            <div>
-                <paper-input-decorator label="{{label}}" floatingLabel labelVisible="{{_labelVisible}}" disabled="{{disabled}}">
-                    <div horizontal layout center wrap>
-                        <template repeat="{{ tid in selected.teams}}">
-                            <div horizontal layout center class="badge">
-                                <div horizontal layout center>
-                                    <core-icon icon="social:people" width="15" height="15"></core-icon>
-                                    <span style="margin: 5px">{{teamIdMap[tid].name}}</span>
-                                </div>
-
-                                <template if="{{!disabled}}">
-                                    <core-icon class="small" icon="clear" on-click="{{ removeTeamHandler }}"
-                                               on-mousedown="{{preventFocus}}"></core-icon>
-                                </template>
-                            </div>
-                        </template>
-                        <template repeat="{{ uid in selected.users}}">
-                            <div horizontal layout center class="badge">
-                                <member-element userid="{{uid}}"></member-element>
-                                <template if="{{!disabled}}">
-                                    <core-icon class="small" icon="clear" on-click="{{ removeUserHandler }}"
-                                           on-mousedown="{{preventFocus}}"></core-icon>
-                                </template>
-                            </div>
-                        </template>
-                        <input id="searchInput" is="core-input" value="{{searchText}}" on-keydown="{{ doFilter }}"
-                               on-focus="{{ showMenu }}" on-blur="{{ hideMenu }}" disabled?="{{disabled}}">
-                    </div>
-                </paper-input-decorator>
-            </div>
-            <paper-shadow z="1" id="menu" hidden?="{{ !isShowMenu }}">
-                <div>
-                    <core-selector id="selector" selected="0" excludedLocalNames="label">
-                        <template if="{{type != 'user'}}">
-                            <label class="block">Teams</label>
-                            <template repeat="{{ t in filterTeam(teams, selected, searchText, changeFlag)}}">
-                                <div class="item" on-tap="{{addTeamHandler}}">
-                                    <div horizontal layout center>
-                                        <core-icon icon="social:people" width="15" height="15"></core-icon>
-                                        <span style="margin: 5px">{{t.name}}</span>
-                                    </div>
-                                </div>
-                            </template>
-                        </template>
-
-                        <template if="{{type != 'team'}}">
-                            <label class="block">Members</label>
-                            <template repeat="{{ u in filterUser(users, selected, searchText, changeFlag)}}">
-                                <div on-tap="{{addUserHandler}}" class="item">
-                                    <member-element userid="{{u.id}}"></member-element>
-                                </div>
-                            </template>
-                        </template>
-                    </core-selector>
-                </div>
-            </paper-shadow>
-        </div>
-
-
+        <x-select id="xSelect" selected="{{selected}}" disabled="{{disabled}}" label="{{label}}" maxLen="{{maxLen}}" adaptive="{{adaptive}}" width="{{width}}" height="{{height}}" fields="{{fields}}"></x-select>
     </template>
     <script>
 
-        function getElementLeft(element){
-        　　　　var actualLeft = element.offsetLeft;
-        　　　　var current = element.offsetParent;
-        　　　　while (current !== null){
-        　　　　　　actualLeft += current.offsetLeft;
-        　　　　　　current = current.offsetParent;
-        　　　　}
-        　　　　return actualLeft;
-    　　  }
-
-
-        function getElementTop(element){
-　　　　        var actualTop = element.offsetTop;
-        　　　　var current = element.offsetParent;
-        　　　　while (current !== null){
-        　　　　　　actualTop += current.offsetTop;
-
-        　　　　　　current = current.offsetParent;
-        　　　　}
-        　　　　return actualTop;
-　　      }
         Polymer({
-            label: "Members",
-            computed: {
-                _labelVisible: 'allUserSelected.length === 0 && !isShowMenu'
-            },
-            constants: {
-                DEFAULT_WIDTH: '300px',
-                DEFAULT_HEIGHT: '200px'
-            },
-            userSelectedMap: {},
-            preventFocus: function (event) {
-                event.stopPropagation();
-            },
-            selectedChanged: function (oldV) {
-                this.changeFlag = !this.changeFlag;
-            },
-            filterTeam: function (teams, selected, searchText) {
-                var result = [];
-                if (!searchText) {
-                    searchText = "";
+            typeChanged: function(oldV) {
+                if (this.type == "team") {
+                    this.fields = [{
+                        "name": "teams",
+                        "url": "/platform/teams",
+                        "nameKey": "name",
+                        "icon": "social:people"
+                    }];
+                } else if (this.type == "user") {
+                    this.fields = [{
+                        "name": "users",
+                        "url": "/platform/users",
+                        "nameKey": "realname",
+                        "icon": "avatar"
+                    }];
                 } else {
-                    searchText = searchText.toLowerCase();
+                    this.fields = [{
+                        "name": "teams",
+                        "url": "/platform/teams",
+                        "nameKey": "name",
+                        "icon": "social:people"
+                    }, {
+                        "name": "users",
+                        "url": "/platform/users",
+                        "nameKey": "realname",
+                        "icon": "avatar"
+                    }];
                 }
-                if (teams && selected) {
-                    //filter selected
-                    teams.forEach(function (t) {
-//                        var allUserSelected = true;
-//                        for (var i = 0; i < t.users.length; i++) {
-//                            if (selected.indexOf(t.users[i].id) == -1) {
-//                                allUserSelected = false;
-//                                break;
-//                            }
-//                        }
-                        if (selected.teams && selected.teams.indexOf(t.id) == -1 && t.name.toLowerCase().indexOf(searchText) != -1) {
-                            result.push(t);
-                        }
-                    });
-                }
-                return result;
             },
-            filterUser: function (users, selected, searchText) {
-                var result = [];
-                if (!searchText) {
-                    searchText = "";
-                } else {
-                    searchText = searchText.toLowerCase();
-                }
-                if (users && selected) {
-                    searchText = searchText.toLowerCase();
-                    var self = this;
-                    //filter selected
-                    users.forEach(function (u) {
-                        if (self.userSelectedMap[u.id + ""] > 0) return;
-                        if (selected.users && selected.users.indexOf(u.id) == -1 && (u.realname.toLowerCase().indexOf(searchText) != -1)) {
-                            result.push(u);
-                        }
-                    });
-                }
-                return result;
-            },
+
             ready: function () {
-                this.teams = this.teams || [];
-                this.searchText = '';
-                this.isShowMenu = false;
-                
-                console.log(this.adaptive)
-                if (typeof this.adaptive !== 'undefined') {
-                    this.widthInString = '100%';
-                } else {
-                    this.width = this.width || 300;
-                    if (isNaN(this.width)) {
-                        if (this.width.indexOf('px') || this.width.indexOf('em') || this.width.indexOf('%')
-                            || this.width.indexOf('pt'))
-                            this.widthInString = this.width;
-                        else
-                            this.widthInString = this.constants.DEFAULT_WIDTH;
-                    } else {
-                        this.widthInString = this.width + 'px';
-                    }
-
-                }
-                this.height = this.height || 200;
-                if (isNaN(this.height)) {
-                    if (this.height.indexOf('px') || this.height.indexOf('em') || this.height.indexOf('%')
-                        || this.height.indexOf('pt'))
-                        this.heightInString = this.height;
-                    else
-                        this.heightInString = this.constants.DEFAULT_HEIGHT;
-                } else {
-                    this.heightInString = this.height + 'px';
-                }
-
-                this.allUserSelected = this.allUserSelected || [];
-                if (!this.selected) {
-                    this.selected = {};
-                    this.selected.teams = [];
-                    this.selected.users = [];
-                }
-                //if (this.users) this.selected.users = this.users;
+                this.fields = [{
+                    "name": "teams",
+                    "url": "/platform/teams",
+                    "nameKey": "name",
+                    "icon": "social:people"
+                }, {
+                    "name": "users",
+                    "url": "/platform/users",
+                    "nameKey": "realname",
+                    "icon": "avatar"
+                }];
             },
 
-            doFilter: function (event, detail, sender) {
+            getAllUserInvolved: function() {
 
-                if (event.keyCode === 38 || event.keyCode === 40) { // up down keys
-                    //avoid change cursor on input
-                    event.preventDefault();
-                    if (event.keyCode === 38) {
-                        this.$.selector.selectPrevious(true);
-                        this.fixScroll(true);
-                    } else {
-                        this.$.selector.selectNext(true);
-                        this.fixScroll(false);
-                    }
-                } else if (event.keyCode === 13 && this.$.selector.selectedModel) {
-                    if (this.$.selector.selectedModel.t) {
-                        this.addOneTeam(this.$.selector.selectedModel.t);
-                    } else if (this.$.selector.selectedModel.u) {
-                        this.addOneUser(this.$.selector.selectedModel.u.id);
-                    }
-                } else if (event.keyCode === 8) { // backspace
-                    if (this.searchText.length === 0) {
-                        if (this.selected.users.length > 0) {
-                            var userid = this.selected.users[this.selected.users.length - 1];
-                            this.removeOneUser(userid);
-                        } else if (this.selected.teams.length > 0) {
-                            var teamId = this.selected.teams[this.selected.teams.length - 1];
-                            this.removeOneTeam(teamId);
+                var allUserInvolved = [];
+
+                var that = this;
+                if (this.selected.teams) {
+                    this.selected.teams.forEach(function(tid) {
+                        that.teamIdMap[tid].users.forEach(function(user) {
+                            if (allUserInvolved.indexOf(user.id) == -1) {
+                                allUserInvolved.push(user.id);
+                            }
+                        });
+                    });
+                }
+
+                if (this.selected.users) {
+                    this.selected.users.forEach(function(uid) {
+                        if (allUserInvolved.indexOf(uid) == -1) {
+                            allUserInvolved.push(uid);
                         }
-                    }
-                } else if (event.keyCode === 27) { // escape
-                    this.hideMenu();
-                    this.$.searchInput.blur();
-                } else {
-                    this.$.selector.selected = 0;
-                    this.$.selector.parentElement.scrollTop = 0;
-                }
-            },
-
-            /**
-             * make the selected item can be seen
-             */
-            fixScroll: function (isUp) {
-                var self = this;
-                setTimeout(function () {
-                    var selectedItem = self.$.selector.selectedItem;
-                    if (selectedItem) {
-                        var parent = selectedItem.parentElement.parentElement;
-                        var parentRect = selectedItem.parentElement.parentElement.getBoundingClientRect();
-                        var itemRect = selectedItem.getBoundingClientRect();
-                        var invisible = (parentRect.top + parentRect.height) < itemRect.top + itemRect.height || (parentRect.top > itemRect.top);
-                        if (invisible) {
-                            selectedItem.scrollIntoView(isUp);
-                        }
-                    }
-                }, 0);
-            },
-
-            showMenu: function () {
-                var clientHeight = document.documentElement.clientHeight;
-                var scrollTop = this.$.wrapper.offsetParent.scrollTop;
-                var parentHeight = this.$.wrapper.offsetParent.offsetHeight;
-                var offsetTop = this.$.wrapper.offsetTop;
-                var wrapperHeight = this.$.wrapper.offsetHeight;
-                var menuHeight = this.height + 20;
-
-                if (offsetTop - scrollTop + wrapperHeight + menuHeight <= parentHeight) {
-                    // show menu at bottom
-                    this.$.menu.style.bottom = '-' + menuHeight + 'px';
-                } else {
-                    this.$.menu.style.bottom = wrapperHeight + 'px';
+                    });
                 }
 
-                this.isShowMenu = true;
-
+                return allUserInvolved;
             },
 
-            hideMenu: function (event, detail, sender) {
-                var self = this;
-                setTimeout(function () {
-                    self.isShowMenu = false;
-                    self.$.selector.selected = 0;
-                }, 100);
-            },
             handleTeamsResponse: function (event) {
                 this.teams = event.detail.response;
-
                 this.teamIdMap = {};
-                this.userTeamMap = {};
 
+                var that = this;
                 this.teams.forEach(function(t) {
-                    this.teamIdMap[t.id] = t;
-                    t.users.forEach(function(u) {
-                        this.userTeamMap[u.id + "_" + t.id] = true;
-                        this.userSelectedMap[u.id + ""] = 0;
-                    }, this);
+                    that.teamIdMap[t.id] = t;
                 }, this);
-            },
-            handleUsersResponse: function (event) {
-                this.users = event.detail.response;
-                // extract all users
-                this.usersNameMap = {};
-                this.users.forEach(function (u) {
-                        this.usersNameMap[u.realname] = u;
-                        this.userSelectedMap[u.id + ""] = 0;
-                }, this);
-            },
-
-            addTeamHandler: function (event, detail, target) {
-                var team = target.templateInstance.model.t;
-                target.templateInstance.model.t.selected = true;
-                this.addOneTeam(team);
-            },
-
-            addOneTeam: function (team) {
-                team.users.forEach(function (user) {
-                    if (this.allUserSelected.indexOf(user.id) == -1) {
-                        this.allUserSelected.push(user.id);
-                    }
-                    user.selected = true;
-                    this.userSelectedMap[user.id + ""]++;
-                }, this);
-
-                if (this.selected.teams.indexOf(team.id) == -1) {
-                    if (this.maxLen && this.selected.teams.length == this.maxLen) {
-                        this.selected.teams.shift();
-                    }
-                    this.selected.teams.push(team.id);
-                    this.searchText = '';
-                }
-                this.changeFlag = !this.changeFlag;
-            },
-
-            removeTeamHandler: function (event, detail, target) {
-                var teamId = target.templateInstance.model.tid;
-                this.removeOneTeam(teamId);
-                event.stopPropagation();
-            },
-
-            removeOneTeam: function (teamId) {
-                index = this.selected.teams.indexOf(teamId);
-                this.selected.teams.splice(index, 1);
-
-                this.teamIdMap[teamId].users.forEach(function(u) {
-                    if (!this.isSelectedDuplicate(u.id)) {
-                        this.allUserSelected.splice(this.allUserSelected.indexOf(u.id), 1);
-                    }
-
-                    this.userSelectedMap[u.id + ""]--;
-                }, this);
-                this.changeFlag = !this.changeFlag;
-            },
-
-            /**
-             * When removing a team, if the member of this team has been contained in another selected team or individual select,
-             * then keep this member's selected state.
-             */
-            isSelectedDuplicate: function(uid) {
-                var selected = false;
-
-                if (this.selected.users.indexOf(uid) != -1) {
-                    selected = true;
-                } else {
-                    for (index in this.selected.teams) {
-                        if (this.userTeamMap[uid + "_" + this.selected.teams[index]]) {
-                            selected = true;
-                            break;
-                        }
-                    }
-                }
-                return selected;
-            },
-
-            addUserHandler: function (event, detail, sender) {
-                var userId = event.target.templateInstance.model.u.id;
-                this.addOneUser(userId);
-                event.target.templateInstance.model.u.selected = true;
-            },
-
-            addOneUser: function (userId) {
-                if (this.allUserSelected.indexOf(userId) == -1) {
-                    this.allUserSelected.push(userId);
-                }
-
-                if (this.selected.users.indexOf(userId) == -1) {
-                    if (this.maxLen && this.selected.users.length == this.maxLen) {
-                        this.selected.users.shift();
-                    }
-                    this.selected.users.push(userId);
-                    this.searchText = '';
-                }
-
-                this.userSelectedMap[userId + ""]++;
-                this.changeFlag = !this.changeFlag;
-            },
-
-            removeUserHandler: function (event, detail, target) {
-                var userId = target.templateInstance.model.uid;
-                this.removeOneUser(userId);
-                event.stopPropagation();
-            },
-
-            removeOneUser: function (userId) {
-                this.allUserSelected.splice(this.allUserSelected.indexOf(userId), 1);
-                this.selected.users.splice(this.selected.users.indexOf(userId));
-                this.changeFlag = !this.changeFlag;
-
-                this.userSelectedMap[userId + ""]--;
             },
 
             // public attributes
-            teamsUrl: '',
-            selected: null,
-            allUserSelected: null
+            selected: null
         });
     </script>
 </polymer-element>
