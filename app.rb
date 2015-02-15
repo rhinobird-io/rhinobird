@@ -404,7 +404,9 @@ class App < Sinatra::Base
       team = Team.find(p)
       event.team_participants << team
       team.users.each { |u|
-        notified_users << u.id
+        if !notified_users.include? u.id 
+          notified_users << u.id
+        end
       }
     }
 
@@ -423,7 +425,7 @@ class App < Sinatra::Base
 
       message = ''
       if event.creator_id == p
-        message = 'Have created an event '
+        message = 'You have created an event '
       else
         message = 'Invited you to the event '
       end
@@ -451,12 +453,16 @@ class App < Sinatra::Base
     if @userid == event.creator_id
       uid = @userid
 
-      content = 'Has canceled the event ' + event.title
-
       event.participants.each { |p|
         user = User.find(p.id)
-        next if p.id == uid 
         
+        content = ''
+        if event.creator_id == p.id
+          content = 'You have canceled the event ' + event.title
+        else
+          content = 'Has canceled the event ' + event.title
+        end
+
         user.dashboard_records.create!({content: content, from_user_id: uid})
         notification = user.notifications.create!({content: content, from_user_id: uid})
         notify = notification.to_json(:except => uid)
