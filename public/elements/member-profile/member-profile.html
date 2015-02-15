@@ -17,7 +17,7 @@
             }
         </style>
         <content select=".trigger" on-tap="{{toggle}}"></content>
-        <paper-dropdown id="dropdown">
+        <paper-dropdown id="dropdown" layered>
             <div layout vertical>
                 <div class="container">
                     <member-element view="custom" username="{{username}}"></member-element>
@@ -33,7 +33,7 @@
         Polymer({
             toggle: function () {
                 this.$.dropdown.toggle();
-            },
+            }
         });
     </script>
 </polymer-element>
