@@ -18,15 +18,15 @@ require 'rufus-scheduler'
 scheduler = Rufus::Scheduler.new
 
 # Check events that are not full day.
-scheduler.every '5s' do
+scheduler.every '30s' do
   now = Time.now
-  ten_minutes = 100 * 60
+  ten_minutes = 10 * 60
   ten_minutes_later = now + ten_minutes
 
   events = Event.where('from_time > ? and from_time <= ? and full_day = ?', now, ten_minutes_later, false)
 
   events.each { |e|
-  	#next if e.from_time - now < 570
+  	next if e.from_time - now < 570
   	
   	participants = e.participants
   	team_participants = e.team_participants
