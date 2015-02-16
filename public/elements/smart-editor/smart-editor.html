@@ -24,7 +24,7 @@
         as send the text to server and clear it in the editor) after finish typing.
 -->
 
-<polymer-element name="smart-editor" attributes="label value rows maxRows flush ctrlEnter floatingLabel underline">
+<polymer-element name="smart-editor" attributes="label value rows maxRows ctrlEnter floatingLabel underline">
     <template>
         <style>
             #menu {
@@ -161,13 +161,11 @@
                         this.replaceText(user);
                         this.showMenu = false;
                         event.preventDefault();
-                    } else if (this.flush == undefined) {
-                        return;
                     } else if ((this.ctrlEnter && event.ctrlKey && !event.shiftKey && !event.altKey) ||
                         (!this.ctrlEnter && !event.ctrlKey && !event.shiftKey && !event.altKey)) {
                         // Trigger flush function
                         event.preventDefault();
-                        this.flush();
+                        this.fire('flush', {});
                     }
                 } else {
                     this.$.selector.selected = 0;
@@ -194,7 +192,7 @@
             },
 
             valueChanged: function() {
-                this.$.autogrow.update(this.$.textarea);
+                this.$.autogrow.update();
             },
 
             clearText: function() {
