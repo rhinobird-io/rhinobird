@@ -557,7 +557,9 @@
             },
             selected: {},
             observe: {
-                'selected.period': 'changeTab'
+                'selected.period': 'changeTab',
+                'selected.from_time': 'fromTimeUpdated',
+                'selected.to_time': 'toTimeUpdated',
             },
             ready: function() {
                 this.loadingMoreOlderEvents = false;
@@ -834,6 +836,20 @@
             },
             handleLoadOlderEvents: function(event, detail) {
                 this.handleLoadEvents(2, event, detail);
+            },
+            fromTimeUpdated: function(oldValue, newValue) {
+                if (this.mode == 'edit') {
+                    if (newValue > this.selected.to_time) {
+                        this.selected.to_time = newValue;
+                    }
+                }
+            },
+            toTimeUpdated: function(oldValue, newValue) {
+                if (this.mode == 'edit') {
+                    if (newValue < this.selected.from_time) {
+                        this.selected.from_time = newValue;
+                    }
+                }
             }
         });
     </script>
