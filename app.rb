@@ -18,6 +18,7 @@ require 'rest_client'
 require 'pony'
 require 'bcrypt'
 require 'date'
+require 'rufus-scheduler'
 
 class App < Sinatra::Base
 
@@ -30,7 +31,8 @@ class App < Sinatra::Base
   set :sockets, []
   set :protection, :except => [:json_csrf]
   set :logging, true
-
+  
+  
   I18n.config.enforce_available_locales = true
 
   include BCrypt
@@ -44,6 +46,7 @@ class App < Sinatra::Base
     status 404
     body env['sinatra.error'].message
   end
+
 
   def login_required!
     halt 401 if @userid.nil?
@@ -654,6 +657,7 @@ class App < Sinatra::Base
     end
     200
   end
+
 
   # start the server if ruby file executed directly
   run! if app_file == $0

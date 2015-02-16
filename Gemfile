@@ -15,6 +15,7 @@ gem 'sinatra-websocket'
 gem 'pony'
 gem 'rest-client'
 gem 'pg'
+gem 'rufus-scheduler'
 
 gem 'rake'
 gem 'faker'
