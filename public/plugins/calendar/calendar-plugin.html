@@ -131,6 +131,19 @@
     .event {    
         border-radius: 50%;
         padding:8px;
+        color: {{g.theme.mainColor}};
+    }
+
+    .event.normal {
+        background-color: {{g.theme.mainBgColor}};
+    }
+
+    .event.expired {
+        background-color: grey;
+    }
+
+    .event.active {
+        background-color: {{g.theme.accentBgColor}};
     }
 
     time-input.upper {
@@ -386,7 +399,7 @@
                                         </div>
                                         <div class="listitem">
                                             <div layout horizontal class="block" center on-tap="{{select}}">
-                                                <div class="event mainColor">
+                                                <div class="event {{model.eventStatus}}">
                                                     <core-icon icon="event"></core-icon>
                                                 </div>
                                                 <div hero hero-id="{{event.id}}" vertical layout class="content {{model.position}}">
@@ -589,10 +602,8 @@
                 });
 
                 this.eventGroups = [];
-                
 
                 var position = "right";
-
                 for (var i = 0; i < this.events.length; i++) {
                     var event = this.events[i];
                     var len = this.eventGroups.length;
@@ -610,6 +621,14 @@
                     }
 
                     event.position = position;
+                    
+                    var now = new Date();
+                    var from_time = new Date(event.from_time);
+                    var to_time = new Date(event.to_time)
+
+                    if (now < from_time) event.eventStatus = 'normal';
+                    else if (now >= from_time && now <= to_time) event.eventStatus = 'active';
+                    else if (now > to_time) event.eventStatus = 'expired';
                 }
             },
             handleEvents: function (event, detail) {
