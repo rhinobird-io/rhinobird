@@ -128,6 +128,12 @@
         z-index: 4;
     }
 
+    .event-wrapper {
+        border-radius: 50%;
+        padding: 13px;
+        background-color: {{g.theme.thirdBgColor}};
+    }
+
     .event {    
         border-radius: 50%;
         padding:8px;
@@ -201,7 +207,7 @@
         top: 0;
         left: 18px;
         height: 100%;
-        width: 4px;
+        width: 6px;
         z-index: 3;
         background-color: {{g.theme.thirdBgColor}};
     }
@@ -292,16 +298,23 @@
     }
 
     @media screen and (min-width: 960px) {
+        .event-wrapper {
+            position: absolute;
+            left: 50%;
+            margin-left: -25px;
+            margin-top: -5px;
+        }
+
         .event {
             position: absolute;
             left: 50%;
             margin-left: -20px;
         }
-
+        
         .listitem::before,
         .dayDivider::before {
             left: 50%;
-            margin-left: -2px;
+            margin-left: -3px;
         }
 
           
@@ -399,6 +412,10 @@
                                         </div>
                                         <div class="listitem">
                                             <div layout horizontal class="block" center on-tap="{{select}}">
+                                                
+                                                <div class="event-wrapper">
+                                                    <core-icon icon="event"></core-icon>
+                                                </div>
                                                 <div class="event {{model.eventStatus}}">
                                                     <core-icon icon="event"></core-icon>
                                                 </div>
