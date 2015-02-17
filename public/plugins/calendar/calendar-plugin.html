@@ -143,6 +143,14 @@
         color: {{g.theme.mainColor}};
     }
 
+    .block:hover .event-wrapper {
+        padding: 0px;
+    }
+
+    .block:hover .event {
+        padding: 13px;
+    }
+
     .event.normal {
         background-color: {{g.theme.mainBgColor}};
     }
@@ -285,7 +293,7 @@
 
     .block:hover .time,
     .block:hover .event-title {
-        border-left: 4px solid {{g.theme.mainBgColor}};
+        *border-left: 4px solid {{g.theme.mainBgColor}};
         *background-color: {{g.theme.thirdBgColor}};
         *transition: opacity ease-in 0.2s
     }
@@ -359,12 +367,6 @@
             border-right: 4px solid transparent;
         }
 
-        .block:hover .content.left > .time,
-        .block:hover .content.left > .event-title {
-            padding-right: 6px;
-            border-right: 4px solid {{g.theme.mainBgColor}};
-            *background-color: {{g.theme.thirdBgColor}};
-        }
     }
 </core-style>
 
