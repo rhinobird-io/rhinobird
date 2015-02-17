@@ -129,14 +129,17 @@
     }
 
     .event-wrapper {
+        position: absolute;
         border-radius: 50%;
-        padding: 13px;
+        padding: 5px;
+        margin-top: -5px;
+        margin-left: -5px;
         background-color: {{g.theme.thirdBgColor}};
     }
 
     .event {    
         border-radius: 50%;
-        padding:8px;
+        padding: 8px;
         color: {{g.theme.mainColor}};
     }
 
@@ -270,7 +273,8 @@
     .event-title {
         margin: 0;
         border: 0;
-        padding-left: 6px;
+        margin-left: 22px;
+        padding-left: 16px;
         border-left: 4px solid transparent;
     }
     .event-title {
@@ -281,7 +285,6 @@
 
     .block:hover .time,
     .block:hover .event-title {
-        padding-left: 6px;
         border-left: 4px solid {{g.theme.mainBgColor}};
         *background-color: {{g.theme.thirdBgColor}};
         *transition: opacity ease-in 0.2s
@@ -305,11 +308,6 @@
             margin-top: -5px;
         }
 
-        .event {
-            position: absolute;
-            left: 50%;
-            margin-left: -20px;
-        }
         
         .listitem::before,
         .dayDivider::before {
@@ -414,10 +412,10 @@
                                             <div layout horizontal class="block" center on-tap="{{select}}">
                                                 
                                                 <div class="event-wrapper">
-                                                    <core-icon icon="event"></core-icon>
-                                                </div>
+                                                
                                                 <div class="event {{model.eventStatus}}">
                                                     <core-icon icon="event"></core-icon>
+                                                </div>
                                                 </div>
                                                 <div hero hero-id="{{event.id}}" vertical layout class="content {{model.position}}">
                                                     <div class="event-title">{{model.title}}</div>
