@@ -25,7 +25,7 @@
     "md-timepicker": "https://github.com/uqlibrary/md-timepicker.git#master",
     "textarea-caret-position": "https://github.com/component/textarea-caret-position.git#master",
     "zxcvbn": "*",
-    "event-infinite-scroll": "git@github.com:liuyang1204/event-infinite-scroll.git#simple",
+    "event-infinite-scroll": "git@github.com:liuyang1204/event-infinite-scroll.git#simple-without-core-list",
     "highlightjs": "~8.4.0"
   },
   "resolutions": {
