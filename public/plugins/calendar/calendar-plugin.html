@@ -31,6 +31,7 @@
     paper-toggle-button::shadow [checked] .toggle{
         background-color: {{g.theme.accentBgColor}};
     }
+
     paper-toggle-button::shadow [checked] .toggle-ink {
         color: {{g.theme.accentBgColor}};
     }
@@ -126,23 +127,59 @@
     .block {
         z-index: 4;
     }
+
+    .event-wrapper {
+        position: absolute;
+        border-radius: 50%;
+        padding: 5px;
+        margin-top: -5px;
+        margin-left: -5px;
+        background-color: {{g.theme.thirdBgColor}};
+    }
+
     .event {    
         border-radius: 50%;
-        padding:8px;
+        padding: 8px;
+        color: {{g.theme.mainColor}};
     }
+
+    .block:hover .event-wrapper {
+        padding: 0px;
+    }
+
+    .block:hover .event {
+        padding: 13px;
+    }
+
+    .event.normal {
+        background-color: {{g.theme.mainBgColor}};
+    }
+
+    .event.expired {
+        background-color: grey;
+    }
+
+    .event.active {
+        background-color: {{g.theme.accentBgColor}};
+    }
+
     time-input.upper {
         margin-top: -35px;
     }
+
     date-input {
         z-index: 1;
     }
+
     #title {
         font-size: 25px;
     }
+
     .page.core-selected {
         position: relative;
         display: block;
     }
+
     paper-fab {
         position: absolute;
         left: 16px;
@@ -181,7 +218,7 @@
         top: 0;
         left: 18px;
         height: 100%;
-        width: 4px;
+        width: 6px;
         z-index: 3;
         background-color: {{g.theme.thirdBgColor}};
     }
@@ -244,7 +281,8 @@
     .event-title {
         margin: 0;
         border: 0;
-        padding-left: 6px;
+        margin-left: 22px;
+        padding-left: 16px;
         border-left: 4px solid transparent;
     }
     .event-title {
@@ -255,8 +293,7 @@
 
     .block:hover .time,
     .block:hover .event-title {
-        padding-left: 6px;
-        border-left: 4px solid {{g.theme.mainBgColor}};
+        *border-left: 4px solid {{g.theme.mainBgColor}};
         *background-color: {{g.theme.thirdBgColor}};
         *transition: opacity ease-in 0.2s
     }
@@ -272,16 +309,18 @@
     }
 
     @media screen and (min-width: 960px) {
-        .event {
+        .event-wrapper {
             position: absolute;
             left: 50%;
-            margin-left: -20px;
+            margin-left: -25px;
+            margin-top: -5px;
         }
 
+        
         .listitem::before,
         .dayDivider::before {
             left: 50%;
-            margin-left: -2px;
+            margin-left: -3px;
         }
 
           
@@ -328,12 +367,6 @@
             border-right: 4px solid transparent;
         }
 
-        .block:hover .content.left > .time,
-        .block:hover .content.left > .event-title {
-            padding-right: 6px;
-            border-right: 4px solid {{g.theme.mainBgColor}};
-            *background-color: {{g.theme.thirdBgColor}};
-        }
     }
 </core-style>
 
@@ -379,8 +412,12 @@
                                         </div>
                                         <div class="listitem">
                                             <div layout horizontal class="block" center on-tap="{{select}}">
-                                                <div class="event mainColor">
+                                                
+                                                <div class="event-wrapper">
+                                                
+                                                <div class="event {{model.eventStatus}}">
                                                     <core-icon icon="event"></core-icon>
+                                                </div>
                                                 </div>
                                                 <div hero hero-id="{{event.id}}" vertical layout class="content {{model.position}}">
                                                     <div class="event-title">{{model.title}}</div>
@@ -476,8 +513,7 @@
                                     </core-pages>
                                     <member-select teamsUrl="/platform/teams_users"
                                                    disabled="{{modeDisabled}}"
-                                                   allUserSelected="{{selected.participants}}"
-                                                   selected="{{selected.selected}}"
+                                                   selected="{{selected.participants}}"
                                                    label="Participants"
                                                    adaptive></member-select>
                                 </div>
@@ -551,7 +587,9 @@
             },
             selected: {},
             observe: {
-                'selected.period': 'changeTab'
+                'selected.period': 'changeTab',
+                'selected.from_time': 'fromTimeUpdated',
+                'selected.to_time': 'toTimeUpdated',
             },
             ready: function() {
                 this.loadingMoreOlderEvents = false;
@@ -581,10 +619,8 @@
                 });
 
                 this.eventGroups = [];
-                
 
                 var position = "right";
-
                 for (var i = 0; i < this.events.length; i++) {
                     var event = this.events[i];
                     var len = this.eventGroups.length;
@@ -602,14 +638,21 @@
                     }
 
                     event.position = position;
+                    
+                    var now = new Date();
+                    var from_time = new Date(event.from_time);
+                    var to_time = new Date(event.to_time)
+
+                    if (now < from_time) event.eventStatus = 'normal';
+                    else if (now >= from_time && now <= to_time) event.eventStatus = 'active';
+                    else if (now > to_time) event.eventStatus = 'expired';
                 }
             },
             handleEvents: function (event, detail) {
+                var self = this;
                 this.events = detail.response;
                 this.events.forEach(function (event) {
-                    event.participants = event.participants.map(function (p) {
-                        return p.id;
-                    });
+                    self.parseEvent(event);
                 });
                 this.refresh();
                 this.isListLoaded = true;
@@ -619,10 +662,7 @@
             },
             handleSingleEvent: function(event, detail) {
                 this.selected = detail.response;
-                this.parseEvent(this.selected);                
-                this.selected.selected = {};
-                this.selected.selected.users = this.selected.participants;
-                this.selected.selected.teams = [];
+                this.parseEvent(this.selected);  
                 var self = this;
                 setTimeout(function () {
                     self.$.autogrowArea.update(self.$.textArea);
@@ -646,17 +686,28 @@
                 }
             },
             parseEvent: function(event) {
-                event.participants = event.participants.map(function (p) {
-                    return p.id;
+                var members = {};
+                members.users = [];
+                members.teams = [];
+                event.participants.map(function (p) {
+                    members.users.push(p.id);
                 });
+                event.team_participants.map(function (p) {
+                    members.teams.push(p.id);
+                });
+                event.participants = members;
             },
             copyEvent: function(event) {
                 var newEvent = {};
                 newEvent.from_time = event.from_time.toISOString();
                 newEvent.to_time = event.to_time.toISOString();
-                newEvent.participants = [];
-                for (var i = 0; i < event.participants.length; i++)
-                    newEvent.participants.push(event.participants[i]);
+                newEvent.participants = {};
+                newEvent.participants.teams = [];
+                newEvent.participants.users = [];
+                for (var i = 0; i < event.participants.teams.length; i++)
+                    newEvent.participants.teams.push(event.participants.teams[i]);
+                for (var i = 0; i < event.participants.users.length; i++)
+                    newEvent.participants.users.push(event.participants.users[i]);
                 newEvent.full_day = event.full_day;
                 newEvent.period = event.period;
                 newEvent.title = event.title;
@@ -668,9 +719,9 @@
             },
             select: function (event, detail, target) {
                 this.selected = target.templateInstance.model.model;
-                this.selected.selected = {};
-                this.selected.selected.users = this.selected.participants;
-                this.selected.selected.teams = [];
+                //this.selected.selected = {};
+                //this.selected.selected.users = this.selected.participants;
+                //this.selected.selected.teams = [];
                 //console.log(this.selected);
                 var self = this;
                 setTimeout(function () {
@@ -692,10 +743,12 @@
                 this.eventId = null;
             },
             jumpToAdd: function () {
-                this.selected = {from_time: new Date(), to_time: new Date(), participants: [], full_day: false, period: true};
-                this.selected.selected = {};
-                this.selected.selected.teams = [];
-                this.selected.selected.users = [];
+                this.selected = {from_time: new Date(), to_time: new Date(), participants: {}, full_day: false, period: true};
+                this.selected.participants.teams = [];
+                this.selected.participants.users = [];
+                //this.selected.selected = {};
+                //this.selected.selected.teams = [];
+                //this.selected.selected.users = [];
                 var self = this;
                 setTimeout(function () {
                     self.$.autogrowArea.update(self.$.textArea);
@@ -769,14 +822,12 @@
                 }*/
             },
             handleLoadEvents: function(type, event, detail) {
-
+                var self = this;
                 var events = detail.response;
-                console.log(events.length);
+
                 if (events.length > 0) {
                     events.forEach(function (event) {
-                        event.participants = event.participants.map(function (p) {
-                            return p.id;
-                        });
+                        self.parseEvent(event);
                     });
                     for (var i = 0; i < events.length; i++) {
                         var contain = false;
@@ -821,6 +872,20 @@
             },
             handleLoadOlderEvents: function(event, detail) {
                 this.handleLoadEvents(2, event, detail);
+            },
+            fromTimeUpdated: function(oldValue, newValue) {
+                if (this.mode == 'edit') {
+                    if (newValue > this.selected.to_time) {
+                        this.selected.to_time = newValue;
+                    }
+                }
+            },
+            toTimeUpdated: function(oldValue, newValue) {
+                if (this.mode == 'edit') {
+                    if (newValue < this.selected.from_time) {
+                        this.selected.from_time = newValue;
+                    }
+                }
             }
         });
     </script>
