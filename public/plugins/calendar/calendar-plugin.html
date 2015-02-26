@@ -15,6 +15,8 @@
 <link rel="import" href="../../elements/smart-time-display/smart-time-display.html">
 <link rel="import" href="../../bower_components/core-list/core-list.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
 
 <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
@@ -42,17 +44,21 @@
 
 
     div.container {
-        padding: 40px 0;        
+        display: block;
+        padding: 45px 0;      
+        width: 100%;
+        height: 100%;  
         overflow-y: auto;
         overflow-x: hidden;
     }
 
     div.timeline {
         position: relative;
-        padding: 10px 16px;
+        padding: 10px 0px;
         *margin-top: 2em;
         *margin-bottom: 2em;
-        height: 120%;
+        min-height: 120%;
+        display: block;
     }
     
     .loading {
@@ -93,7 +99,7 @@
     }
 
     .listitem:last-child {
-        margin-bottom: 40px;
+        margin-bottom: 55px;
     }
     
 
@@ -308,7 +314,25 @@
         font-family: 'Open Sans';
     }
 
+    .spinner {
+        z-index: 1;
+        position: absolute;
+        border-radius: 50%;
+        background-color: white;
+        left: 50%;
+        margin-left: -25px;
+        width: 50px;
+        height: 50px;
+    }
+    
+    core-list {
+        padding-left: 16px;
+    }
+
     @media screen and (min-width: 960px) {
+        core-list {
+            padding-left: 0px;
+        }
         .event-wrapper {
             position: absolute;
             left: 50%;
@@ -316,7 +340,6 @@
             margin-top: -5px;
         }
 
-        
         .listitem::before,
         .dayDivider::before {
             left: 50%;
@@ -374,6 +397,20 @@
     <template>
         <core-style ref="theme"></core-style>
         <core-style ref="calendar"></core-style>
+
+        <style>
+            #downSpinner {
+                top: {{downSpinnerTop}}px;
+                -webkit-transition: top 0.3s linear;
+            }
+
+            #upSpinner {
+                top: -45px;
+                -webkit-transition: top 0.3s linear;
+            }
+
+        </style>
+
         <div layout vertical fit>
             <div class="mainColor wrapper">
                 <template if="{{mode=='list' && eventId == null}}">
@@ -397,12 +434,14 @@
                             upperThreshold="30" 
                             on-upper-trigger="{{ loadMoreOlderEvents }}">
                         </core-scroll-threshold>
-                        <template if="{{loadingMoreOlderEvents}}">
-                            <div class="loading top-loading">{{loadingOlderText}}</div>
-                        </template>
-                        <div class="container" id="container" fit>
+                        
+                        <div class="container" id="container">
+                            
                             <div class="timeline" vertical layout>
-                                <core-list data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;">
+                                <paper-shadow layered id="upSpinner" class="spinner" layout center-center horizontal hidden?="{{!loadingMoreOlderEvents}}">
+                                    <paper-spinner active></paper-spinner>
+                                </paper-shadow>
+                                <core-list id="eventList" data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;" >
                                     <template>
                                         <div divider class="dayDivider">
                                             <div class="dayDividerLabel {{model.position}} {{model.today}}">
@@ -437,11 +476,14 @@
                                         </div>
                                     </template>
                                 </core-list>
+
+                                <paper-shadow layered id="downSpinner" class="spinner" layout center-center horizontal hidden?="{{!loadingMoreNewerEvents}}">
+                                    <paper-spinner active></paper-spinner>
+                                </paper-shadow>
+                                
                             </div>
+                            
                         </div>
-                        <template if="{{loadingMoreNewerEvents}}">
-                                <div class="loading bottom-loading">{{loadingNewerText}}</div>
-                        </template>
                     </section>
                     <section>
                         <div hero hero-id="{{selected.id}}" class="detail" vertical layout fit slide-up>
@@ -609,9 +651,11 @@
                     //router.go("/calendar");
                     this.$.getEvents.go();
                 }
+
             },
 
             refresh: function() {
+                this.downSpinnerTop = -45 + this.$.eventList.scrollHeight;
                 this.events.sort(function(o1, o2) {
                     if (o1.from_time < o2.from_time) return -1;
                     else if (o1.from_time > o2.from_time) return 1;
@@ -647,6 +691,12 @@
                     else if (now >= from_time && now <= to_time) event.eventStatus = 'active';
                     else if (now > to_time) event.eventStatus = 'expired';
                 }
+
+                var self = this;
+                setTimeout(function() {
+                    self.downSpinnerTop = -45 + self.$.eventList.scrollHeight;
+                    console.log(self.downSpinnerTop);
+                }, 100);
             },
             handleEvents: function (event, detail) {
                 var self = this;
