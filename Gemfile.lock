@@ -52,6 +52,8 @@ GEM
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
     rubyzip (1.1.6)
+    rufus-scheduler (3.0.9)
+      tzinfo
     shotgun (0.9)
       rack (>= 1.0)
     sinatra (1.4.5)
@@ -99,6 +101,7 @@ DEPENDENCIES
   rake
   rest-client
   rubyzip
+  rufus-scheduler
   shotgun
   sinatra
   sinatra-activerecord

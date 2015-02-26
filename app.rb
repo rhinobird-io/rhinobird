@@ -10,6 +10,7 @@ require './models/notification'
 require './models/local_avatar'
 require './models/event'
 require './models/appointment'
+require './models/team_appointment'
 require './models/invitation'
 require 'gravatar-ultimate'
 require 'sinatra-websocket'
@@ -17,6 +18,7 @@ require 'rest_client'
 require 'pony'
 require 'bcrypt'
 require 'date'
+require 'rufus-scheduler'
 
 class App < Sinatra::Base
 
@@ -29,7 +31,8 @@ class App < Sinatra::Base
   set :sockets, []
   set :protection, :except => [:json_csrf]
   set :logging, true
-
+  
+  
   I18n.config.enforce_available_locales = true
 
   include BCrypt
@@ -43,6 +46,7 @@ class App < Sinatra::Base
     status 404
     body env['sinatra.error'].message
   end
+
 
   def login_required!
     halt 401 if @userid.nil?
@@ -345,57 +349,101 @@ class App < Sinatra::Base
 
   get '/events' do
     today = Date.today
-    events = User.find(@userid).events.where("from_time >= ?", today).limit(5)
-    events.order(:from_time).to_json(include: {participants: {only: :id}})
+
+    events = Array.new
+    events.concat User.find(@userid).events.where("from_time >= ?", today)
+
+    User.find(@userid).teams.each { |t|
+      events.concat t.events.where("from_time >= ?", today)
+    }
+
+    events.sort!{ |a,b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
   end
 
   get '/events/after/:from_time' do
     from = DateTime.parse(params[:from_time])
-    logger.info from
 
-    events = User.find(@userid).events.where("from_time > ?", from).limit(5)
-    events.order(:from_time).to_json(include: {participants: {only: :id}})  
+    events = Array.new
+    events.concat User.find(@userid).events.where("from_time >= ?", from)
+
+    User.find(@userid).teams.each { |t|
+      events.concat t.events.where("from_time >= ?", from)
+    }
+
+    events.sort!{ |a,b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
   end
 
   get '/events/before/:from_time' do
     from = DateTime.parse(params[:from_time])
-    logger.info from
-    events = User.find(@userid).events.where("from_time < ?", from).limit(5)
-    events.order(:from_time).to_json(include: {participants: {only: :id}})
+
+    events = Array.new
+    events.concat User.find(@userid).events.where("from_time < ?", from)
+
+    User.find(@userid).teams.each { |t|
+      events.concat t.events.where("from_time < ?", from)
+    }
+
+    events.sort!{ |a,b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
   end
 
   get '/events/:eventId' do
       event = Event.find(params[:eventId])
-      event.to_json(include: {participants: {only: :id}})
+      event.to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
   end
 
   post '/events' do
     uid = @userid
     event = Event.new(@body.except('participants'))
-    @body['participants'].each { |p|
+
+    notified_users = Array.new
+    
+    @body['participants']['teams'].each { |p|
+      team = Team.find(p)
+      event.team_participants << team
+      team.users.each { |u|
+        if !notified_users.include? u.id 
+          notified_users << u.id
+        end
+      }
+    }
+
+    @body['participants']['users'].each { |p|
       user = User.find(p)
-      event.participants << user
+      if !notified_users.include? user.id
+        notified_users << user.id
+        event.participants << user
+      end
     }
     
+
     # Whether the event creator is also a participant by default?
     user_self = User.find(uid)
-    if !event.participants.include? user_self 
+    if !notified_users.include? uid 
       event.participants << user_self
+      notified_users << uid
     end
     event.creator_id = uid
 
     event.save!
 
-    @body['participants'].each { |p|
+    notified_users.each { |p|
       user = User.find(p)
+
+      message = ''
+      if event.creator_id == p
+        message = 'You have created an event '
+      else
+        message = 'Invited you to the event '
+      end
       user.dashboard_records.create!({
-        content: 'Invited you to the event', 
+        content: message, 
         from_user_id: uid,
         has_link: true,
         link_url: '#/calendar/' + event.id.to_s,
         link_title: event.title})
 
-      notification = user.notifications.create!({content: 'Invited you to the event ' + event.title, from_user_id: uid})
+      notification = user.notifications.create!({content: message + event.title, from_user_id: uid})
+      
       notify = notification.to_json(:except => [:user_id])
       socket_id = p
       unless settings.sockets[socket_id].nil?
@@ -403,7 +451,7 @@ class App < Sinatra::Base
       end
     }
     
-    event.to_json(include: {participants: {only: :id}})
+    event.to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
   end
 
   delete '/events/:eventId' do
@@ -411,12 +459,16 @@ class App < Sinatra::Base
     if @userid == event.creator_id
       uid = @userid
 
-      content = 'Has canceled the event ' + event.title
-
       event.participants.each { |p|
         user = User.find(p.id)
-        next if p.id == uid 
         
+        content = ''
+        if event.creator_id == p.id
+          content = 'You have canceled the event ' + event.title
+        else
+          content = 'Has canceled the event ' + event.title
+        end
+
         user.dashboard_records.create!({content: content, from_user_id: uid})
         notification = user.notifications.create!({content: content, from_user_id: uid})
         notify = notification.to_json(:except => uid)
@@ -605,6 +657,7 @@ class App < Sinatra::Base
     end
     200
   end
+
 
   # start the server if ruby file executed directly
   run! if app_file == $0
