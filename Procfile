@@ -1,2 +1,2 @@
 web: bundle exec ruby app.rb -p $PORT
-bundle ruby text.rb
+worker: bundle exec ruby config/initializers/task_scheduler.rb
