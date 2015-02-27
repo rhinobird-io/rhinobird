@@ -4,9 +4,15 @@
 
 <polymer-element name="smart-display" attributes="value">
     <template>
+        <style>
+            .container {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+            }
+        </style>
         <app-globals id="globals"></app-globals>
         <link rel="stylesheet" href="../../bower_components/highlightjs/styles/default.css">
-        <div>
+        <div class="container">
             <html-echo html="{{wrap(value)}}"></html-echo>
         </div>
     </template>
