@@ -561,11 +561,13 @@
                                             </div>
                                         </div>
                                     </core-pages>
-                                    <member-select teamsUrl="/platform/teams_users"
-                                                   disabled="{{modeDisabled}}"
-                                                   selected="{{selected.participants}}"
-                                                   label="Participants"
-                                                   adaptive></member-select>
+                                    <template if="{{mode == 'edit'}}">
+                                        <member-select teamsUrl="/platform/teams_users"
+                                                       disabled="{{modeDisabled}}"
+                                                       selected="{{selected.participants}}"
+                                                       label="Participants"
+                                                       adaptive></member-select>
+                                    </template>
                                 </div>
                             </div>
                         </div>
