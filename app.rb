@@ -364,10 +364,10 @@ class App < Sinatra::Base
     from = DateTime.parse(params[:from_time])
 
     events = Array.new
-    events.concat User.find(@userid).events.where("from_time >= ?", from)
+    events.concat User.find(@userid).events.where("from_time > ?", from)
 
     User.find(@userid).teams.each { |t|
-      events.concat t.events.where("from_time >= ?", from)
+      events.concat t.events.where("from_time > ?", from)
     }
 
     events.sort!{ |a,b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
