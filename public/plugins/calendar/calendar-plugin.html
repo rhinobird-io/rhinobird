@@ -577,12 +577,15 @@
             </div>
         </div>
         <app-globals id="globals"></app-globals>
-        <core-ajax
-            
-            id="getEvents"
-            url="/platform/events"
-            handleAs="json"
-            on-core-response="{{handleEvents}}"></core-ajax>
+        <template if="{{$.globals.values.currentUser && eventId == null}}">
+            <core-ajax
+                auto
+                id="getEvents"
+                url="/platform/events"
+                handleAs="json"
+                on-core-response="{{handleEvents}}"></core-ajax>
+        </template>
+        
         <template if="{{$.globals.values.currentUser && eventId != null}}">
             <core-ajax
                     auto
@@ -591,7 +594,6 @@
                     on-core-error="{{handleSingleEventError}}"
                     on-core-response="{{handleSingleEvent}}">
             </core-ajax>
-            
         </template>
        
         <core-ajax
@@ -653,12 +655,6 @@
                     self.refresh();
                 }
 
-                if (!this.isListLoaded && this.eventId == null) {
-                    //console.log("hahah")
-                    //var router = document.querySelector("app-router");
-                    //router.go("/calendar");
-                    this.$.getEvents.go();
-                }
             },
 
             refresh: function() {
@@ -795,9 +791,9 @@
                     //console.log("hahah")
                     //var router = document.querySelector("app-router");
                     //router.go("/calendar");
+                    this.eventId = null;
                     this.$.getEvents.go();
                 }
-                this.eventId = null;
             },
             jumpToAdd: function () {
                 this.selected = {from_time: new Date(), to_time: new Date(), participants: {}, full_day: false, period: true};
