@@ -42,6 +42,12 @@
         background-color: white;
     }
 
+    div#emptyNotification {
+        color: #555;
+        text-align: center;
+        font-family: 'Open Sans', san-serif;
+        font-size: 2em;
+    }
 
     div.container {
         display: block;
@@ -50,15 +56,6 @@
         height: 100%;  
         overflow-y: auto;
         overflow-x: hidden;
-    }
-
-    div.timeline {
-        position: relative;
-        padding: 10px 0px;
-        *margin-top: 2em;
-        *margin-bottom: 2em;
-        min-height: 120%;
-        display: block;
     }
     
     .loading {
@@ -399,6 +396,13 @@
         <core-style ref="calendar"></core-style>
 
         <style>
+            div.timeline {
+                position: relative;
+                padding: 10px 0px;
+                min-height: {{(events == null || events.length == 0) ? 100 : 120}}%;
+                display: block;
+            }
+
             .bottom-spinner {
                 top: {{bottomSpinnerTop}}px;
                 -webkit-transition: top 0.3s linear;
@@ -436,12 +440,14 @@
                         </core-scroll-threshold>
                         
                         <div class="container" id="container">
-                            <div class="timeline" vertical layout>
+                            <div id="emptyNotification" hidden?="{{events == null || events.length != 0}}">Empty Calendar</div>
+                            <div class="timeline" vertical layout hidden?="{{events == null || events.length == 0}}">
                                 <paper-shadow layered class="spinner top-spinner" layout center-center horizontal hidden?="{{!loadingMoreOlderEvents}}">
                                     <paper-spinner active></paper-spinner>
                                 </paper-shadow>
                                 <div class="loading top-spinner" hidden?="{{!noMoreOlderEvents}}">No more events.</div>
-                                <core-list id="eventList" data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;" >
+                                
+                                <core-list id="eventList" data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;">
                                     <template>
                                         <div divider class="dayDivider">
                                             <div class="dayDividerLabel {{model.position}} {{model.today}}">
@@ -653,7 +659,6 @@
                     //router.go("/calendar");
                     this.$.getEvents.go();
                 }
-
             },
 
             refresh: function() {
@@ -849,7 +854,7 @@
                 this.refresh();
             },
             loadMoreNewerEvents: function() {
-                if (!this.noMoreNewerEvents) {
+                if (!this.noMoreNewerEvents && this.range != undefined) {
                     this.loadingMoreNewerEvents = true;
                     this.$.getMoreNewerEvents.go();
                 }
@@ -864,7 +869,7 @@
                 }*/
             },
             loadMoreOlderEvents: function() {
-                if (!this.noMoreOlderEvents) {
+                if (!this.noMoreOlderEvents && this.range != undefined) {
                     this.loadingMoreOlderEvents = true;
                     this.$.getMoreOlderEvents.go();
                 }
