@@ -16,15 +16,11 @@
     value, rows, maxRows:
         Applied to (paper-autogrow-)textarea.
 
-    ctrlEnter:
-        If true, Ctrl+Enter will trigger flush. Otherwise, Enter will trigger flush.
-
-    flush:
-        In most occasions, you might need a function to handle the text value (such
-        as send the text to server and clear it in the editor) after finish typing.
+    flushKey:
+        Optional values: "none", "enter", "ctrl-enter".
 -->
 
-<polymer-element name="smart-editor" attributes="label value rows maxRows ctrlEnter floatingLabel underline">
+<polymer-element name="smart-editor" attributes="label value rows maxRows flushKey floatingLabel underline">
     <template>
         <style>
             #menu {
@@ -86,8 +82,7 @@
             showMenu: false,
             publish: {
                 floatingLabel: false,
-                underline: false,
-                ctrlEnter: false
+                underline: false
             },
 
             ready: function() {
@@ -161,8 +156,8 @@
                         this.replaceText(user);
                         this.showMenu = false;
                         event.preventDefault();
-                    } else if ((this.ctrlEnter && event.ctrlKey && !event.shiftKey && !event.altKey) ||
-                        (!this.ctrlEnter && !event.ctrlKey && !event.shiftKey && !event.altKey)) {
+                    } else if ((this.flushKey == "enter" && !event.ctrlKey && !event.shiftKey && !event.altKey) ||
+                        (this.flushKey == "ctrl-enter" && event.ctrlKey && !event.shiftKey && !event.altKey)) {
                         // Trigger flush function
                         event.preventDefault();
                         this.fire('flush', {});
