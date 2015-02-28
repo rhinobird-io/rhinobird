@@ -328,6 +328,16 @@
         padding-left: 16px;
     }
 
+    .badge {
+        background-color: {{g.theme.accentBgColor}};
+        color: white;
+        border-radius: 2px;
+        font-size: 11px;
+        padding: 2px 6px;
+        margin: 0 6px;
+        box-sizing: border-box;
+    }
+
     @media screen and (min-width: 960px) {
         core-list {
             padding-left: 0px;
@@ -454,7 +464,12 @@
                                         <div divider class="dayDivider">
                                             <div class="dayDividerLabel {{model.position}} {{model.today}}">
                                                 <hr/>
-                                                <div class="dayDividerLabelContent">{{groupModel.date}}</div>
+                                                <div class="dayDividerLabelContent">
+                                                    <span>{{groupModel.date}}</span>
+                                                    <template if="{{model.isToday}}">
+                                                        <span class="badge">Today</span>
+                                                    </template>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="listitem">
@@ -710,6 +725,10 @@
                     if (now < from_time) event.eventStatus = 'normal';
                     else if (now >= from_time && now <= to_time) event.eventStatus = 'active';
                     else if (now > to_time) event.eventStatus = 'expired';
+
+                    if (now.getYear() == from_time.getYear() && now.getMonth() == from_time.getMonth() && now.getDate() == from_time.getDate()) {
+                        event.isToday = true;
+                    }
                 }
 
 
