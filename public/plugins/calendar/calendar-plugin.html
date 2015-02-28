@@ -14,6 +14,7 @@
 <link rel="import" href="../../bower_components/core-animated-pages/transitions/slide-up.html">
 <link rel="import" href="../../elements/smart-time-display/smart-time-display.html">
 <link rel="import" href="../../bower_components/core-list/core-list.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
 <link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
@@ -495,6 +496,13 @@
 
                     </section>
                     <section>
+
+                        <!-- Confirmation dialog for event deletion. -->
+                        <paper-action-dialog backdrop autoCloseDisabled heading="Sure to delete this event?" layered="false" id="confirmDeleteDialog">
+                            <paper-button dismissive>Cancel</paper-button>
+                            <paper-button affirmative on-tap="{{doDelete}}">Delete</paper-button>
+                        </paper-action-dialog>
+
                         <paper-icon-button icon="arrow-back" class="main-button"
                                            on-tap="{{main}}"></paper-icon-button>
                         <div hero hero-id="{{selected.id}}" class="detail" vertical layout fit slide-up>
@@ -562,13 +570,11 @@
                                             </div>
                                         </div>
                                     </core-pages>
-                                    <template if="{{mode == 'edit'}}">
-                                        <member-select teamsUrl="/platform/teams_users"
-                                                       disabled="{{modeDisabled}}"
-                                                       selected="{{selected.participants}}"
-                                                       label="Participants"
-                                                       adaptive></member-select>
-                                    </template>
+                                    <member-select teamsUrl="/platform/teams_users"
+                                                   disabled="{{modeDisabled}}"
+                                                   selected="{{selected.participants}}"
+                                                   label="Participants"
+                                                   adaptive></member-select>
                                 </div>
                             </div>
                         </div>
@@ -580,16 +586,17 @@
             </div>
         </div>
         <app-globals id="globals"></app-globals>
-        <template if="{{$.globals.values.currentUser && eventId == null}}">
+        <template if="{{eventId == null}}">
             <core-ajax
                 auto
                 id="getEvents"
                 url="/platform/events"
                 handleAs="json"
-                on-core-response="{{handleEvents}}"></core-ajax>
+                on-core-response="{{handleEvents}}">
+            </core-ajax>
         </template>
         
-        <template if="{{$.globals.values.currentUser && eventId != null}}">
+        <template if="{{eventId != null}}">
             <core-ajax
                     auto
                     url="/platform/events/{{eventId}}"
@@ -598,7 +605,7 @@
                     on-core-response="{{handleSingleEvent}}">
             </core-ajax>
         </template>
-       
+
         <core-ajax
                 id="getMoreNewerEvents"
                 url="/platform/events/after/{{range.max}}"
@@ -657,10 +664,11 @@
                 window.onresize = function(event) {
                     self.refresh();
                 }
-
             },
 
             refresh: function() {
+                if (this.mode != 'list' || this.events == null) return;
+
                 this.bottomSpinnerTop = -45 + this.$.eventList.scrollHeight;
                 this.events.sort(function(o1, o2) {
                     if (o1.from_time < o2.from_time) return -1;
@@ -794,8 +802,7 @@
                     //console.log("hahah")
                     //var router = document.querySelector("app-router");
                     //router.go("/calendar");
-                    this.eventId = null;
-                    this.$.getEvents.go();
+                    if (this.eventId != null) this.eventId = null;
                 }
             },
             jumpToAdd: function () {
@@ -836,18 +843,25 @@
 
             },
             deleteEvent: function() {
+                this.$.confirmDeleteDialog.toggle();
+                //this.$.deleteEvent.go();
+            },
+            doDelete: function() {
                 this.$.deleteEvent.go();
             },
             eventDeleted: function(event, detail) {
                 console.log(this.selected);
-                for (var i = 0; i < this.events.length; i++) {
-                    var e = this.events[i];
-                    console.log(e);
-                    if (e.id == this.selected.id) {
-                        this.events.splice(i, 1);
-                        break;
+                if (this.events != null) {
+                    for (var i = 0; i < this.events.length; i++) {
+                        var e = this.events[i];
+                        console.log(e);
+                        if (e.id == this.selected.id) {
+                            this.events.splice(i, 1);
+                            break;
+                        }
                     }
                 }
+                
                 this.main();
                 this.$.eventDeletedToast.show();
                 this.refresh();
