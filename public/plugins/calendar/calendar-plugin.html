@@ -484,9 +484,12 @@
                                                 <div hero hero-id="{{event.id}}" vertical layout class="content {{model.position}}">
                                                     <div class="event-title">{{model.title}}</div>
                                                     <div class="time iconColor">
-                                                        <smart-time-display from="{{model.from_time}}" to="{{model.to_time}}"
-                                                                            period="{{model.period}}"
-                                                                            full_day="{{model.full_day}}"></smart-time-display>
+                                                        <smart-time-display 
+                                                            from="{{model.from_time}}" 
+                                                            to="{{model.to_time}}"
+                                                            period="{{model.period}}"
+                                                            full_day="{{model.full_day}}">
+                                                        </smart-time-display>
                                                     </div>
                                                 </div>
                                                 <!--

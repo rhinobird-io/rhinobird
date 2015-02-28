@@ -1,15 +1,18 @@
 <script src="../../bower_components/moment/moment.js"></script>
 
-<polymer-element name="smart-time-display" attributes="from to full_day period">
+<polymer-element name="smart-time-display" attributes="from to full_day period with_message">
     <template>
         {{result}}
     </template>
     <script>
         Polymer({
             computed: {
-                result: 'compute(from, to, full_day, period)'
+                result: 'compute(from, to, full_day, period, with_message)'
             },
-            compute: function (from, to, full_day, period) {
+            compute: function (from, to, full_day, period, with_message) {
+                var full_day = full_day || false;
+                var period = period || false;
+                var with_message = with_message || false;
                 if (full_day == undefined || period == undefined) {
                     return "";
                 } else {
@@ -53,10 +56,12 @@
 
                     var an_hour = 3600000;
                     var a_minute = 60000;
-
-                    var result = message_prefix;
                     var has_hour = false;
-                    console.log(time_range)
+                    var result = "";
+
+                    if (with_message)
+                        result += message_prefix;
+
                     if (time_range - an_hour > 0) {
                         var hours = Math.floor(time_range / an_hour);
                         result += hours + " hours"; 
@@ -72,7 +77,10 @@
                     } else if (!has_hour) {
                         result += time_range + " seconds"; 
                     }
-                    return result + message_suffix;
+
+                    if (with_message)
+                        result += message_suffix;
+                    return result;
                 }
             }
         });
