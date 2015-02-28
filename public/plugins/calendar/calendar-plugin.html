@@ -664,6 +664,12 @@
                 window.onresize = function(event) {
                     self.refresh();
                 }
+
+                window.onmousewheel = function(event) {
+                    if (self.$.container.scrollTop == 0 && event.wheelDelta > 0 && !self.noMoreOlderEvents && !self.loadingMoreOlderEvents) {
+                        self.loadMoreOlderEvents();
+                    }
+                }
             },
 
             refresh: function() {
