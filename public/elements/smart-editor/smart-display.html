@@ -12,9 +12,14 @@
         </style>
         <app-globals id="globals"></app-globals>
         <link rel="stylesheet" href="../../bower_components/highlightjs/styles/default.css">
-        <div>
-            <html-echo html="{{wrap(value)}}" class="container"></html-echo>
-        </div>
+        <template if="{{readyDom}}">
+            <div>
+                <html-echo html="{{wrap(value)}}" class="container"></html-echo>
+            </div>
+        </template>
+        <template if="{{!readyDom}}">
+            <div class="container">{{value}}</div>
+        </template>
     </template>
 
     <script>
@@ -30,6 +35,9 @@
             enableCode: true,
             enableLink: true,
 
+            domReady: function(){
+                this.readyDom = true;
+            },
             slashTrigger: function(text, plugin, args) {
                 if (args == undefined) args = "";
                 if (plugin.toLowerCase() == "vity") {
