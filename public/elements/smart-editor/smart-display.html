@@ -13,9 +13,7 @@
         <app-globals id="globals"></app-globals>
         <link rel="stylesheet" href="../../bower_components/highlightjs/styles/default.css">
         <template if="{{readyDom}}">
-            <div>
-                <html-echo html="{{wrap(value)}}" class="container"></html-echo>
-            </div>
+            <html-echo html="{{wrap(value)}}" class="container"></html-echo>
         </template>
         <template if="{{!readyDom}}">
             <div class="container">{{value}}</div>
