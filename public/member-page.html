@@ -1,5 +1,7 @@
 <link rel="import" href="home-container.html">
 <link rel="import" href="elements/app-globals/app-globals.html">
+<link rel="import" href="bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="elements/member-select/avatar-image.html">
 
 <polymer-element name="member-page">
     <template>
@@ -12,14 +14,37 @@
         <home-container selected="member">
             <div class="title">Member</div>
             <div class="container">
-                {{userid}}
+                <div horizontal layout>
+                    <avatar-image userid="{{user.id}}" size="60"></avatar-image>
+                    <div vertical layout center-justified style="margin-left: 1em">
+                        <strong style="font-size: 24px;">{{user.realname}}</strong>
+                        <div>@{{user.name}}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">Teams:</div>
+                <div horizontal layout>
+                    <template repeat="{{user.teams}}">
+                        <div style="margin-left: 1em;">{{name}}</div>
+                    </template>
+                </div>
             </div>
         </home-container>
+        <core-ajax
+                auto
+                method="get"
+                contentType="application/json"
+                url="/platform/users/{{userid}}/teams"
+                handleAs="json"
+                response="{{user.teams}}"></core-ajax>
     </template>
     <script>
         Polymer("member-page", {
             domReady: function () {
-
+                this.user = this.$.globals.values.memberCacheId[this.userid];
+                this.user.teams = [];
+                this.useridChanged = function (oldValue, newValue) {
+                    this.user = this.$.globals.values.memberCacheId[newValue];
+                };
             }
         });
     </script>
