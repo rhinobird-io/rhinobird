@@ -26,7 +26,8 @@
     "textarea-caret-position": "https://github.com/component/textarea-caret-position.git#master",
     "zxcvbn": "*",
     "event-infinite-scroll": "git@github.com:liuyang1204/event-infinite-scroll.git#simple-without-core-list",
-    "highlightjs": "~8.4.0"
+    "highlightjs": "~8.4.0",
+    "sprintf": "~1.0.2"
   },
   "resolutions": {
     "polymer": "0.5.4",
