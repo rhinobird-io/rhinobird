@@ -163,6 +163,7 @@ class App < Sinatra::Base
     else
       user = User.where(name: params[:value]).take
     end
+
     gravatar = {}
     gravatar["id"] = user.id
     gravatar["url"] = get_image_url(user.id, user)

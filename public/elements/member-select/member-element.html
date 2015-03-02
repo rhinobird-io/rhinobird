@@ -33,10 +33,10 @@
                                       borderRadius="{{borderRadius}}"></avatar-image>
                         <div on-click="{{toggle}}">
                             <template if="{{userid}}">
-                                <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
+                                <span style="margin: 5px">{{$.globals.values.memberCacheId[userid].realname}}</span>
                             </template>
                             <template if="{{username}}">
-                                <span style="margin: 5px">{{$.globals.values.memberCache[username].realname}}</span>
+                                <span style="margin: 5px">{{$.globals.values.memberCacheName[username].realname}}</span>
                             </template>
                         </div>
                     </div>
@@ -48,10 +48,10 @@
                         <div vertical layout style="margin-left: 5px">
                             <div horizontal layout center on-click="{{toggle}}" class="pointer">
                                 <template if="{{userid}}">
-                                    <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
+                                    <span style="margin: 5px">{{$.globals.values.memberCacheId[userid].realname}}</span>
                                 </template>
                                 <template if="{{username}}">
-                                    <span style="margin: 5px">{{$.globals.values.memberCache[username].realname}}</span>
+                                    <span style="margin: 5px">{{$.globals.values.memberCacheName[username].realname}}</span>
                                 </template>
                                 <div class="title" flex>
                                     <content select=".title"></content>
@@ -76,10 +76,10 @@
                     <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}"
                                   borderRadius="{{borderRadius}}"></avatar-image>
                     <template if="{{userid}}">
-                        <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
+                        <span style="margin: 5px">{{$.globals.values.memberCacheId[userid].realname}}</span>
                     </template>
                     <template if="{{username}}">
-                        <span style="margin: 5px">{{$.globals.values.memberCache[username].realname}}</span>
+                        <span style="margin: 5px">{{$.globals.values.memberCacheName[username].realname}}</span>
                     </template>
                 </div>
             </template>
@@ -90,10 +90,10 @@
                     <div vertical layout style="margin: 5px">
                         <div horizontal layout center>
                             <template if="{{userid}}">
-                                <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
+                                <span style="margin: 5px">{{$.globals.values.memberCacheId[userid].realname}}</span>
                             </template>
                             <template if="{{username}}">
-                                <span style="margin: 5px">{{$.globals.values.memberCache[username].realname}}</span>
+                                <span style="margin: 5px">{{$.globals.values.memberCacheName[username].realname}}</span>
                             </template>
                             <div class="title">
                                 <content select=".title"></content>
@@ -116,9 +116,9 @@
 
             appGlobalReadyCallback: function() {
                 if (this.userid) {
-                    this.gravatar = this.$.globals.values.memberCache[this.userid];
+                    this.gravatar = this.$.globals.values.memberCacheId[this.userid];
                 } else {
-                    this.gravatar = this.$.globals.values.memberCache[this.username];
+                    this.gravatar = this.$.globals.values.memberCacheName[this.username];
                 }
             },
 
