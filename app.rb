@@ -350,14 +350,28 @@ class App < Sinatra::Base
   get '/events' do
     today = Date.today
 
-    events = Array.new
-    events.concat User.find(@userid).events.where("from_time >= ?", today)
+    user = User.find(@userid)
 
-    User.find(@userid).teams.each { |t|
+    events = Array.new
+    events.concat user.events.where("from_time >= ?", today)
+
+    user.teams.each { |t|
       events.concat t.events.where("from_time >= ?", today)
     }
 
-    events.sort!{ |a,b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+    if events.length >= 5
+      events.sort!{ |a,b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+    else
+      old_events = Array.new
+      old_events.concat user.events.where("from_time < ?", today)
+      
+      user.teams.each { |t|
+        old_events.concat t.events.where("from_time < ?", today)
+      }
+
+      events.concat old_events
+      events.sort!{ |a,b| a.from_time <=> b.from_time }.last(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+    end
   end
 
   get '/events/after/:from_time' do
