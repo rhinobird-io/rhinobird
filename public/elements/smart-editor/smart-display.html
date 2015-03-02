@@ -64,9 +64,7 @@
                     var codeBlocks = value.match(regex);
                     value = value.replace(regex, "<pre><code class='$1'></code></pre>");
                 }
-                // Replace newline with <br>
-                value = value.replace(/(<\/(div|pre)>)\n/g, "$1")
-                    .replace(/\n/g, "\n<br>\n").replace(/(<\/(div|pre)>)/g, "$1\n");
+                value = value.replace(/(<\/(div|pre)>)\n/g, "$1");
                 if (this.enableAt) {
                     root.innerHTML = value.replace(/(^|\s)(@[\w\.-]+)/g, "$1<at>$2</at>");
                     var list = root.querySelectorAll("at");
