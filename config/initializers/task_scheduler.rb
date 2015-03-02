@@ -52,9 +52,6 @@ end
 
 scheduler = Rufus::Scheduler.new
 
-scheduler.every '2s' do
-  puts 'Hello'
-end
 # Check events that are not full day.
 scheduler.every '30s' do
   now = Time.now
