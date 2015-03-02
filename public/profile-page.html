@@ -116,18 +116,18 @@
             ready: function() {
                 this.currentUser = JSON.parse(JSON.stringify(this.$.globals.values.currentUser));
 
-                if (!this.$.globals.values.memberCache[this.currentUser.id]) {
+                if (!this.$.globals.values.memberCacheId[this.currentUser.id]) {
                     this.$.avatarAjaxDiv.querySelector("#getGravatar").go();
                 } else {
-                    this.gravatar = this.$.globals.values.memberCache[this.currentUser.id];
+                    this.gravatar = this.$.globals.values.memberCacheId[this.currentUser.id];
                 }
             },
 
             changeRealName: function() {
                 this.$.updateRealNameAjax.go();
                 this.$.globals.values.currentUser = this.currentUser;
-                this.$.globals.values.memberCache[this.currentUser.id].realname = this.currentUser.realname;
-                this.$.globals.values.memberCache[this.currentUser.name].realname = this.currentUser.realname;
+                this.$.globals.values.memberCacheId[this.currentUser.id].realname = this.currentUser.realname;
+                this.$.globals.values.memberCacheName[this.currentUser.name].realname = this.currentUser.realname;
             },
 
             avatarUpload: function() {
@@ -144,8 +144,8 @@
             },
 
             gravatarResponse: function() {
-                this.$.globals.values.memberCache[this.gravatar.id] = this.gravatar;
-                this.$.globals.values.memberCache[this.gravatar.name] = this.gravatar;
+                this.$.globals.values.memberCacheId[this.gravatar.id] = this.gravatar;
+                this.$.globals.values.memberCacheName[this.gravatar.name] = this.gravatar;
             },
 
             changePassword: function() {

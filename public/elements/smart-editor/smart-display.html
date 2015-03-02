@@ -71,7 +71,7 @@
                     for (var i = 0; i < list.length; i++) {
                         var name = list[i].innerHTML;
                         var profile = document.createElement("span");
-                        if (this.$.globals.values.memberCache[name.substr(1)]) {
+                        if (this.$.globals.values.memberCacheName[name.substr(1)]) {
                             profile.innerHTML =
                                 "<member-profile username='" + name.substr(1) +
                                 "'><a class='trigger' href='#'>" + name + "</a>" +
