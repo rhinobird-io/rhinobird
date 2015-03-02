@@ -285,6 +285,7 @@
         padding-left: 16px;
         border-left: 4px solid transparent;
     }
+
     .event-title {
         font-size: 1.0em;
         font-family: Lato, san-serif;
@@ -337,6 +338,7 @@
         core-list {
             padding-left: 0px;
         }
+
         .event-wrapper {
             position: absolute;
             left: 50%;
@@ -392,6 +394,12 @@
             border: 0;
             padding-right: 6px;
             border-right: 4px solid transparent;
+        }
+
+        .time,
+        .event-title {
+            margin-left: 0px;
+            padding-left: 0px;
         }
 
     }
@@ -735,7 +743,6 @@
                 var self = this;
                 setTimeout(function() {
                     self.bottomSpinnerTop = -45 + self.$.eventList.scrollHeight + 55;
-                    console.log(self.bottomSpinnerTop);
                 }, 100);
             },
             handleEvents: function (event, detail) {
@@ -786,6 +793,20 @@
                     members.teams.push(p.id);
                 });
                 event.participants = members;
+                if (event.full_day) {
+                    var from_date = new Date(event.from_time);
+                    var to_date = new Date(event.to_time);
+
+                    from_date.setHours(0);
+                    from_date.setMinutes(0);
+                    from_date.setSeconds(0);
+                    to_date.setHours(23);
+                    to_date.setMinutes(59);
+                    to_date.setSeconds(59);
+
+                    event.from_time = from_date.toISOString();
+                    event.to_time = to_date.toISOString();
+                }
             },
             copyEvent: function(event) {
                 var newEvent = {};
