@@ -1,0 +1,26 @@
+<link rel="import" href="home-container.html">
+<link rel="import" href="elements/app-globals/app-globals.html">
+
+<polymer-element name="member-page">
+    <template>
+        <style>
+            .container {
+                padding: 1em;
+            }
+        </style>
+        <app-globals id="globals"></app-globals>
+        <home-container selected="member">
+            <div class="title">Member</div>
+            <div class="container">
+                {{userid}}
+            </div>
+        </home-container>
+    </template>
+    <script>
+        Polymer("member-page", {
+            domReady: function () {
+
+            }
+        });
+    </script>
+</polymer-element>
