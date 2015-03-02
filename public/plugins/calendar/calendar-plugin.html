@@ -14,6 +14,7 @@
 <link rel="import" href="../../bower_components/core-animated-pages/transitions/slide-up.html">
 <link rel="import" href="../../elements/smart-time-display/smart-time-display.html">
 <link rel="import" href="../../bower_components/core-list/core-list.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
 <link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
@@ -42,6 +43,12 @@
         background-color: white;
     }
 
+    div#emptyNotification {
+        color: #555;
+        text-align: center;
+        font-family: 'Open Sans', san-serif;
+        font-size: 2em;
+    }
 
     div.container {
         display: block;
@@ -50,15 +57,6 @@
         height: 100%;  
         overflow-y: auto;
         overflow-x: hidden;
-    }
-
-    div.timeline {
-        position: relative;
-        padding: 10px 0px;
-        *margin-top: 2em;
-        *margin-bottom: 2em;
-        min-height: 120%;
-        display: block;
     }
     
     .loading {
@@ -98,11 +96,6 @@
         padding: 2em 0;
     }
 
-    .listitem:last-child {
-        margin-bottom: 55px;
-    }
-    
-
     .time {
         margin-top: 4px;
     }
@@ -112,14 +105,15 @@
     }
 
     div.detail {
-        padding: 60px;
+        padding: 60px 80px;
         overflow-y: auto;
     }
 
     .main-button {
         position: absolute;
-        top: 20px;
+        top: 64px;
         left: 16px;
+        z-index: 10;
     }
 
     .tabs, .pages, .fullday {
@@ -329,6 +323,16 @@
         padding-left: 16px;
     }
 
+    .badge {
+        background-color: {{g.theme.accentBgColor}};
+        color: white;
+        border-radius: 2px;
+        font-size: 11px;
+        padding: 2px 6px;
+        margin: 0 6px;
+        box-sizing: border-box;
+    }
+
     @media screen and (min-width: 960px) {
         core-list {
             padding-left: 0px;
@@ -399,6 +403,13 @@
         <core-style ref="calendar"></core-style>
 
         <style>
+            div.timeline {
+                position: relative;
+                padding: 10px 0px;
+                min-height: {{(events == null || events.length == 0) ? 100 : 120}}%;
+                display: block;
+            }
+
             .bottom-spinner {
                 top: {{bottomSpinnerTop}}px;
                 -webkit-transition: top 0.3s linear;
@@ -436,17 +447,24 @@
                         </core-scroll-threshold>
                         
                         <div class="container" id="container">
-                            <div class="timeline" vertical layout>
+                            <div id="emptyNotification" hidden?="{{events == null || events.length != 0}}">Empty Calendar</div>
+                            <div class="timeline" vertical layout hidden?="{{events == null || events.length == 0}}">
                                 <paper-shadow layered class="spinner top-spinner" layout center-center horizontal hidden?="{{!loadingMoreOlderEvents}}">
                                     <paper-spinner active></paper-spinner>
                                 </paper-shadow>
                                 <div class="loading top-spinner" hidden?="{{!noMoreOlderEvents}}">No more events.</div>
-                                <core-list id="eventList" data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;" >
+                                
+                                <core-list id="eventList" data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;">
                                     <template>
                                         <div divider class="dayDivider">
                                             <div class="dayDividerLabel {{model.position}} {{model.today}}">
                                                 <hr/>
-                                                <div class="dayDividerLabelContent">{{groupModel.date}}</div>
+                                                <div class="dayDividerLabelContent">
+                                                    <span>{{groupModel.date}}</span>
+                                                    <template if="{{model.isToday}}">
+                                                        <span class="badge">Today</span>
+                                                    </template>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="listitem">
@@ -461,9 +479,14 @@
                                                 <div hero hero-id="{{event.id}}" vertical layout class="content {{model.position}}">
                                                     <div class="event-title">{{model.title}}</div>
                                                     <div class="time iconColor">
-                                                        <smart-time-display from="{{model.from_time}}" to="{{model.to_time}}"
-                                                                            period="{{model.period}}"
-                                                                            full_day="{{model.full_day}}"></smart-time-display>
+                                                        <smart-time-display 
+                                                            from="{{model.from_time}}" 
+                                                            to="{{model.to_time}}"
+                                                            period="{{model.period}}"
+                                                            full_day="{{model.full_day}}"
+                                                            with_message="{{true}}"
+                                                            threshold="{{86400000}}">
+                                                        </smart-time-display>
                                                     </div>
                                                 </div>
                                                 <!--
@@ -488,9 +511,16 @@
 
                     </section>
                     <section>
+
+                        <!-- Confirmation dialog for event deletion. -->
+                        <paper-action-dialog backdrop autoCloseDisabled heading="Sure to delete this event?" layered="false" id="confirmDeleteDialog">
+                            <paper-button dismissive>Cancel</paper-button>
+                            <paper-button affirmative on-tap="{{doDelete}}">Delete</paper-button>
+                        </paper-action-dialog>
+
+                        <paper-icon-button icon="arrow-back" class="main-button"
+                                           on-tap="{{main}}"></paper-icon-button>
                         <div hero hero-id="{{selected.id}}" class="detail" vertical layout fit slide-up>
-                            <paper-icon-button icon="arrow-back" class="main-button"
-                                               on-tap="{{main}}"></paper-icon-button>
                             <div class="detail-content" vertical layout>
                                 <div>
                                     <paper-input-decorator label="Title" floatingLabel id="title"
@@ -571,13 +601,17 @@
             </div>
         </div>
         <app-globals id="globals"></app-globals>
-        <core-ajax
-            
-            id="getEvents"
-            url="/platform/events"
-            handleAs="json"
-            on-core-response="{{handleEvents}}"></core-ajax>
-        <template if="{{$.globals.values.currentUser && eventId != null}}">
+        <template if="{{eventId == null}}">
+            <core-ajax
+                auto
+                id="getEvents"
+                url="/platform/events"
+                handleAs="json"
+                on-core-response="{{handleEvents}}">
+            </core-ajax>
+        </template>
+        
+        <template if="{{eventId != null}}">
             <core-ajax
                     auto
                     url="/platform/events/{{eventId}}"
@@ -585,9 +619,8 @@
                     on-core-error="{{handleSingleEventError}}"
                     on-core-response="{{handleSingleEvent}}">
             </core-ajax>
-            
         </template>
-       
+
         <core-ajax
                 id="getMoreNewerEvents"
                 url="/platform/events/after/{{range.max}}"
@@ -647,17 +680,17 @@
                     self.refresh();
                 }
 
-                if (!this.isListLoaded && this.eventId == null) {
-                    //console.log("hahah")
-                    //var router = document.querySelector("app-router");
-                    //router.go("/calendar");
-                    this.$.getEvents.go();
+                window.onmousewheel = function(event) {
+                    if (self.$.container.scrollTop == 0 && event.wheelDelta > 0 && !self.noMoreOlderEvents && !self.loadingMoreOlderEvents) {
+                        self.loadMoreOlderEvents();
+                    }
                 }
-
             },
 
             refresh: function() {
-                this.bottomSpinnerTop = -45 + this.$.eventList.scrollHeight;
+                if (this.mode != 'list' || this.events == null) return;
+
+                this.bottomSpinnerTop = -45 + this.$.eventList.scrollHeight + 55;
                 this.events.sort(function(o1, o2) {
                     if (o1.from_time < o2.from_time) return -1;
                     else if (o1.from_time > o2.from_time) return 1;
@@ -692,11 +725,16 @@
                     if (now < from_time) event.eventStatus = 'normal';
                     else if (now >= from_time && now <= to_time) event.eventStatus = 'active';
                     else if (now > to_time) event.eventStatus = 'expired';
+
+                    if (now.getYear() == from_time.getYear() && now.getMonth() == from_time.getMonth() && now.getDate() == from_time.getDate()) {
+                        event.isToday = true;
+                    }
                 }
+
 
                 var self = this;
                 setTimeout(function() {
-                    self.bottomSpinnerTop = -45 + self.$.eventList.scrollHeight;
+                    self.bottomSpinnerTop = -45 + self.$.eventList.scrollHeight + 55;
                     console.log(self.bottomSpinnerTop);
                 }, 100);
             },
@@ -790,9 +828,8 @@
                     //console.log("hahah")
                     //var router = document.querySelector("app-router");
                     //router.go("/calendar");
-                    this.$.getEvents.go();
+                    if (this.eventId != null) this.eventId = null;
                 }
-                this.eventId = null;
             },
             jumpToAdd: function () {
                 this.selected = {from_time: new Date(), to_time: new Date(), participants: {}, full_day: false, period: true};
@@ -832,24 +869,31 @@
 
             },
             deleteEvent: function() {
+                this.$.confirmDeleteDialog.toggle();
+                //this.$.deleteEvent.go();
+            },
+            doDelete: function() {
                 this.$.deleteEvent.go();
             },
             eventDeleted: function(event, detail) {
                 console.log(this.selected);
-                for (var i = 0; i < this.events.length; i++) {
-                    var e = this.events[i];
-                    console.log(e);
-                    if (e.id == this.selected.id) {
-                        this.events.splice(i, 1);
-                        break;
+                if (this.events != null) {
+                    for (var i = 0; i < this.events.length; i++) {
+                        var e = this.events[i];
+                        console.log(e);
+                        if (e.id == this.selected.id) {
+                            this.events.splice(i, 1);
+                            break;
+                        }
                     }
                 }
+                
                 this.main();
                 this.$.eventDeletedToast.show();
                 this.refresh();
             },
             loadMoreNewerEvents: function() {
-                if (!this.noMoreNewerEvents) {
+                if (!this.noMoreNewerEvents && this.range != undefined) {
                     this.loadingMoreNewerEvents = true;
                     this.$.getMoreNewerEvents.go();
                 }
@@ -864,7 +908,7 @@
                 }*/
             },
             loadMoreOlderEvents: function() {
-                if (!this.noMoreOlderEvents) {
+                if (!this.noMoreOlderEvents && this.range != undefined) {
                     this.loadingMoreOlderEvents = true;
                     this.$.getMoreOlderEvents.go();
                 }

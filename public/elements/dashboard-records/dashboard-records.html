@@ -7,6 +7,7 @@
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="../../bower_components/core-list/core-list.html">
 <link rel="import" href="../member-select/member-element.html">
+<link rel="import" href="../smart-time-display/smart-time-display.html">
 
 <polymer-element name="dashboard-record" attributes="record">
     <template>
@@ -14,7 +15,13 @@
             <div>
                 <div horizontal layout center>
                     <member-element view="custom" userid="{{record.from_user_id}}" menu="true" borderRadius="100%">
-                        <div class="title">{{record.created_at | date('yyyy-MM-dd HH:mm')}}</div>
+                        <div class="title">
+                            <smart-time-display 
+                                from="{{record.created_at}}" 
+                                to="{{record.created_at}}">
+                            </smart-time-display> 
+                            <span>ago</span>
+                        </div>
                         <div class="content">{{record.content}} 
                             <template if="{{record.has_link}}">
                                 <a href="{{record.link_url}}">{{record.link_title}}</a>

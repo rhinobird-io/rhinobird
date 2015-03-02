@@ -1,34 +1,97 @@
 <script src="../../bower_components/moment/moment.js"></script>
 
-<polymer-element name="smart-time-display" attributes="from to full_day period">
+<polymer-element name="smart-time-display" attributes="from to full_day period with_message threshold">
     <template>
         {{result}}
     </template>
     <script>
         Polymer({
             computed: {
-                result: 'compute(from, to, full_day, period)'
+                result: 'compute(from, to, full_day, period, with_message, threshold)'
             },
-            compute: function (from, to, full_day, period) {
+            compute: function (from, to, full_day, period, with_message, threshold) {
+                var full_day = full_day || false;
+                var period = period || false;
+                var with_message = with_message || false;
+                var threshold = threshold || Number.POSITIVE_INFINITY;
+
                 if (full_day == undefined || period == undefined) {
                     return "";
                 } else {
-                    var format;
-                    if (full_day) {
-                        format = "YYYY-MM-DD"
+                    var now = new Date();
+
+                    var message_prefix = "";
+                    var message_suffix = "";
+                    var time_range;
+                    var from_date = new Date(from);
+                    var to_date = new Date(to);
+
+                    if (now < from_date && from_date - now < threshold) {
+                        time_range = from_date - now;
+                        message_prefix = "Starting in ";
+                    } else if (now >= from_date && now <= to_date) {
+                        time_range = now - from_date;
+                        message_prefix = "Started ";
+                    } else if (now > to_date && now - to_date < threshold) {
+                        time_range = now - to_date;
+                        message_prefix = "Finished ";
+                        message_suffix = " ago";
                     } else {
-                        format = "HH:mm YYYY-MM-DD"
-                    }
-                    if (!period) {
-                        return moment(from).format(format);
-                    } else {
-                        var from = moment(from), to = moment(to);
-                        if (from.isSame(to, 'day')) {
-                            return moment(from).format('HH:mm') + "~" + moment(to).format("HH:mm") + " " + moment(from).format("YYYY-MM-DD");
+                        var format;
+                        if (full_day) {
+                            format = "YYYY-MM-DD"
                         } else {
-                            return moment(from).format('HH:mm') + " " + moment(from).format("YYYY-MM-DD") + "~" + moment(to).format("HH:mm") + " " + moment(to).format("YYYY-MM-DD");
+                            format = "HH:mm YYYY-MM-DD"
+                        }
+                        if (!period) {
+                            return moment(from).format(format);
+                        } else {
+                            var from = moment(from), to = moment(to);
+                            if (from.isSame(to, 'day')) {
+                                return moment(from).format('HH:mm') + "~" + moment(to).format("HH:mm") + " " + moment(from).format("YYYY-MM-DD");
+                            } else {
+                                return moment(from).format('HH:mm') + " " + moment(from).format("YYYY-MM-DD") + "~" + moment(to).format("HH:mm") + " " + moment(to).format("YYYY-MM-DD");
+                            }
                         }
                     }
+
+                    var a_year = 31536000000;
+                    var a_day = 86400000;
+                    var an_hour = 3600000;
+                    var a_minute = 60000;
+                    var has_hour = false;
+                    var result = "";
+
+                    if (with_message)
+                        result += message_prefix;
+
+                    if (time_range - a_year > 0) {
+                        var years = Math.floor(time_range / a_year);
+                        result += years + " years "; 
+                    } else if (time_range - a_day > 0) {
+                        var days = Math.floor(time_range / a_day);
+                        result += days + " days "; 
+                    } else {
+                        if (time_range - an_hour > 0) {
+                            var hours = Math.floor(time_range / an_hour);
+                            result += hours + " hours"; 
+                            time_range -= hours * an_hour;
+                            has_hour = true;
+                        }
+
+                        if (time_range - a_minute >= 0) {
+                            if (has_hour) result += " and ";
+                            var minutes = Math.floor(time_range / a_minute);
+                            result += minutes + " minutes"; 
+                            time_range -= minutes * a_minute;
+                        } else if (!has_hour) {
+                            result += time_range + " seconds"; 
+                        }
+                    }
+
+                    if (with_message)
+                        result += message_suffix;
+                    return result;
                 }
             }
         });
