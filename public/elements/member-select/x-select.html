@@ -327,6 +327,7 @@
 
             addElementHandler: function(event, detail, target) {
                 this.addElement(target.templateInstance.model.t);
+                this.fire("element-select");
             },
 
             addElement: function(element) {
