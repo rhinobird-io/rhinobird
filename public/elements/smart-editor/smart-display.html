@@ -4,11 +4,20 @@
 
 <polymer-element name="smart-display" attributes="value">
     <template>
+        <style>
+            .container {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+            }
+        </style>
         <app-globals id="globals"></app-globals>
         <link rel="stylesheet" href="../../bower_components/highlightjs/styles/default.css">
-        <div>
-            <html-echo html="{{wrap(value)}}"></html-echo>
-        </div>
+        <template if="{{readyDom}}">
+            <html-echo html="{{wrap(value)}}" class="container"></html-echo>
+        </template>
+        <template if="{{!readyDom}}">
+            <div class="container">{{value}}</div>
+        </template>
     </template>
 
     <script>
@@ -24,6 +33,9 @@
             enableCode: true,
             enableLink: true,
 
+            domReady: function(){
+                this.readyDom = true;
+            },
             slashTrigger: function(text, plugin, args) {
                 if (args == undefined) args = "";
                 if (plugin.toLowerCase() == "vity") {
@@ -52,9 +64,7 @@
                     var codeBlocks = value.match(regex);
                     value = value.replace(regex, "<pre><code class='$1'></code></pre>");
                 }
-                // Replace newline with <br>
-                value = value.replace(/(<\/(div|pre)>)\n/g, "$1")
-                    .replace(/\n/g, "\n<br>\n").replace(/(<\/(div|pre)>)/g, "$1\n");
+                value = value.replace(/(<\/(div|pre)>)\n/g, "$1");
                 if (this.enableAt) {
                     root.innerHTML = value.replace(/(^|\s)(@[\w\.-]+)/g, "$1<at>$2</at>");
                     var list = root.querySelectorAll("at");
