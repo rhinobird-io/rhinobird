@@ -73,7 +73,7 @@
                             <template repeat="{{team in teams}}">
                                 <div horizontal layout center wrap>
                                     <core-icon icon="social:people" style="width:16px; height:16px"></core-icon>
-                                    <span style="margin: 5px">{{team.name}}</span>
+                                    <span style="margin: 5px">{{$.globals.values.teamCache[team.id].name}}</span>
                                     <!--<core-icon class="small" icon="clear" on-click="{{ removeUserFromTeam }}"-->
                                     <!--on-mousedown="{{preventFocus}}"></core-icon>-->
                                 </div>
@@ -141,9 +141,20 @@
             },
 
             newMemberResponse: function() {
-                for (index in this.selectedUser) {
-                    this.users.push({"id" : this.selectedUser[index]});
+                if (this.mode == "member") {
+                    for (index in this.selectedUser) {
+                        this.users.push({"id" : this.selectedUser[index]});
+                    }
+                } else {
+                    for (index in this.selected.users) {
+                        this.users.push({"id" : this.selected.users[index]});
+                    }
+
+                    for (index in this.selected.teams) {
+                        this.teams.push({"id" : this.selected.teams[index]});
+                    }
                 }
+
             },
 
             deleteTeam: function() {
