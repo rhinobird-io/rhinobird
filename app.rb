@@ -241,6 +241,10 @@ class App < Sinatra::Base
     Team.all.to_json
   end
 
+  get '/teams/:teamId' do
+    Team.find(params[:teamId]).to_json
+  end
+
   post '/teams' do
     team = Team.create!(@body)
   end
