@@ -429,7 +429,6 @@ class App < Sinatra::Base
       end
     }
     
-
     # Whether the event creator is also a participant by default?
     user_self = User.find(uid)
     if !notified_users.include? uid 
@@ -672,8 +671,6 @@ class App < Sinatra::Base
     200
   end
 
-
   # start the server if ruby file executed directly
   run! if app_file == $0
-
 end
