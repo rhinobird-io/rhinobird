@@ -64,10 +64,12 @@ scheduler.every '30s' do
   	next if e.from_time - now < 575
   	
   	message = 'Your event will start in ten minutes: '
-	notification_message = 'Your event ' + e.title + ' will start in ten minutes.'
+	  notification_message = 'Your event ' + e.title + ' will start in ten minutes.'
   	
   	send_event_notification(e, message, '#/calendar/' + e.id.to_s, notification_message)
   }
+
+  puts 'Dashboard record and notification have been sent.'
 end
 
 # Check full day events at everyday's 12:00
