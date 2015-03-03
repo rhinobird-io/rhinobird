@@ -85,7 +85,8 @@
                             result += minutes + " minutes"; 
                             time_range -= minutes * a_minute;
                         } else if (!has_hour) {
-                            result += time_range + " seconds"; 
+                            var seconds = Math.floor(time_range / 1000); 
+                            result += seconds + " seconds"; 
                         }
                     }
 

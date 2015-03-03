@@ -6,13 +6,15 @@
 <link rel="import" href="../../home-container.html">
 <link rel="import" href="../../elements/member-select/member-select.html">
 <link rel="import" href="../../elements/datetime-input/datetime-input.html">
+<link rel="import" href="../../elements/smart-editor/smart-display.html">
+<link rel="import" href="../../elements/smart-editor/smart-editor.html">
+<link rel="import" href="../../elements/smart-time-display/smart-time-display.html">
 <link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../../bower_components/core-pages/core-pages.html">
 <link rel="import" href="../../bower_components/core-style/core-style.html">
 <link rel="import" href="../../bower_components/core-scroll-threshold/core-scroll-threshold.html">
 <link rel="import" href="../../bower_components/core-animated-pages/transitions/slide-up.html">
-<link rel="import" href="../../elements/smart-time-display/smart-time-display.html">
 <link rel="import" href="../../bower_components/core-list/core-list.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
@@ -285,6 +287,7 @@
         padding-left: 16px;
         border-left: 4px solid transparent;
     }
+
     .event-title {
         font-size: 1.0em;
         font-family: Lato, san-serif;
@@ -333,10 +336,31 @@
         box-sizing: border-box;
     }
 
+    smart-editor /deep/ paper-input-decorator {
+        padding: 0;
+    }
+
+    .floated-label {
+        font-size: 0.75em;
+        white-space: no-wrap;
+        background: transparent;
+    }
+
+    .label-text {
+        color: #757575;
+    }
+
+    .floated-content {
+        margin: 0.5em 0 0.25em;
+        padding: 0.25em 0;
+        border-bottom: 1px dashed #757575;
+    }
+
     @media screen and (min-width: 960px) {
         core-list {
             padding-left: 0px;
         }
+
         .event-wrapper {
             position: absolute;
             left: 50%;
@@ -392,6 +416,12 @@
             border: 0;
             padding-right: 6px;
             border-right: 4px solid transparent;
+        }
+
+        .time,
+        .event-title {
+            margin-left: 0px;
+            padding-left: 0px;
         }
 
     }
@@ -533,13 +563,19 @@
                                         </template>
                                     </paper-input-decorator>
 
-                                    <paper-input-decorator label="Description" floatingLabel id="decorator"
-                                                           disabled="{{modeDisabled}}" placeholder="">
-                                        <paper-autogrow-textarea id="autogrowArea">
-                                        <textarea id="textArea"  value="{{selected.description}}"
-                                                  disabled?="{{modeDisabled}}"></textarea>
-                                        </paper-autogrow-textarea>
-                                    </paper-input-decorator>
+                                    <template if="{{mode == 'edit'}}">
+                                        <smart-editor id="textArea" label="Description" value="{{selected.description}}" floatingLabel underline disabled>
+                                        </smart-editor>
+                                    </template>
+                                    <template if="{{mode == 'view'}}">
+                                        <div class="floated-label">
+                                            <span class="label-text">Description</span>
+                                        </div>  
+                                        <div class="floated-content">
+                                            <smart-display value="{{selected.description}}"></smart-display>
+                                        </div>
+                                    </template>
+
                                     <template if="{{!modeDisabled}}">
                                         <div center horizontal layout class="fullday">
                                             <div flex>Full Day</div>
@@ -735,7 +771,6 @@
                 var self = this;
                 setTimeout(function() {
                     self.bottomSpinnerTop = -45 + self.$.eventList.scrollHeight + 55;
-                    console.log(self.bottomSpinnerTop);
                 }, 100);
             },
             handleEvents: function (event, detail) {
@@ -755,8 +790,8 @@
                 this.parseEvent(this.selected);  
                 var self = this;
                 setTimeout(function () {
-                    self.$.autogrowArea.update(self.$.textArea);
-                    self.$.decorator.updateLabelVisibility(self.$.textArea.value);
+                    // self.$.autogrowArea.update(self.$.textArea);
+                    // self.$.decorator.updateLabelVisibility(self.$.textArea.value);
                     self.$.pages.selected = 1;
                 }, 100);
                 this.mode = 'view';
@@ -786,6 +821,20 @@
                     members.teams.push(p.id);
                 });
                 event.participants = members;
+                if (event.full_day) {
+                    var from_date = new Date(event.from_time);
+                    var to_date = new Date(event.to_time);
+
+                    from_date.setHours(0);
+                    from_date.setMinutes(0);
+                    from_date.setSeconds(0);
+                    to_date.setHours(23);
+                    to_date.setMinutes(59);
+                    to_date.setSeconds(59);
+
+                    event.from_time = from_date.toISOString();
+                    event.to_time = to_date.toISOString();
+                }
             },
             copyEvent: function(event) {
                 var newEvent = {};
@@ -815,8 +864,8 @@
                 //console.log(this.selected);
                 var self = this;
                 setTimeout(function () {
-                    self.$.autogrowArea.update(self.$.textArea);
-                    self.$.decorator.updateLabelVisibility(self.$.textArea.value);
+                    // self.$.autogrowArea.update(self.$.textArea);
+                    // self.$.decorator.updateLabelVisibility(self.$.textArea.value);
                     self.$.pages.selected = 1;
                 }, 100);
                 this.mode = 'view';
@@ -840,8 +889,8 @@
                 //this.selected.selected.users = [];
                 var self = this;
                 setTimeout(function () {
-                    self.$.autogrowArea.update(self.$.textArea);
-                    self.$.decorator.updateLabelVisibility(self.$.textArea.value);
+                    //self.$.autogrowArea.update(self.$.textArea);
+                    //self.$.decorator.updateLabelVisibility(self.$.textArea.value);
                     self.$.pages.selected = 1;
                 }, 100);
                 this.mode = 'edit';
@@ -945,6 +994,7 @@
                         this.range.max = events[events.length - 1].from_time;
                     else if (type == 2)
                         this.range.min = events[0].from_time;
+                    console.log(this.range)
                     this.refresh();
                 } else {
                     if (type == 1) {
