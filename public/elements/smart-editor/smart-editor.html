@@ -27,6 +27,7 @@
                 position: absolute;
                 background-color: #C5CAE9;
                 padding: 10px 14px;
+                z-index: 10;
             }
             .core-selected {
                 background-color: #FF4081;
@@ -107,7 +108,7 @@
                     menu.style.top = -coord.bottom + "px";
                     menu.style.left = coord.left + "px";
                     menu.style.right = "";
-                    menu.style.marginTop = "0.5em";
+                    menu.style.marginTop = "1em";
                     var text = lastWord.substring(1);
                     this.filteredUsers = this.filterUser(text);
                     this.showMenu = this.filteredUsers.length ? true : false;
@@ -165,6 +166,8 @@
                         event.preventDefault();
                         this.fire('flush', {});
                     }
+                } else if (event.keyCode == 27) {   // escape key
+                    if (this.showMenu) this.showMenu = !this.showMenu;
                 } else {
                     this.$.selector.selected = 0;
                     this.$.selector.parentElement.scrollTop = 0;
