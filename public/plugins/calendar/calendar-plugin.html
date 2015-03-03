@@ -884,22 +884,22 @@
                 this.selected = {from_time: new Date(), to_time: new Date(), participants: {}, full_day: false, period: true};
                 this.selected.participants.teams = [];
                 this.selected.participants.users = [];
-                //this.selected.selected = {};
-                //this.selected.selected.teams = [];
-                //this.selected.selected.users = [];
+
                 var self = this;
-                setTimeout(function () {
-                    //self.$.autogrowArea.update(self.$.textArea);
-                    //self.$.decorator.updateLabelVisibility(self.$.textArea.value);
-                    self.$.pages.selected = 1;
-                }, 100);
+                self.$.pages.selected = 1;
+                self.async(
+                    function() {
+                        self.$.titleInput.focus();
+                    }, 
+                    null, 100
+                );
                 this.mode = 'edit';
             },
             saveEvent: function(){
                 if (this.selected.title == null || this.selected.title.length == 0) {
                     this.$.titleCannotBeEmpty.show();
                     var self = this;
-                    setTimeout(function() {self.$.titleInput.focus();}, 100);
+                    this.async(function() {self.$.titleInput.focus();}, null, 100);
                     return;
                 }
                 this.eventBody = JSON.stringify(this.copyEvent(this.selected));
