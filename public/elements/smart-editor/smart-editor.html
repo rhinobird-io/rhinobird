@@ -47,7 +47,7 @@
 
         <paper-input-decorator label="{{label}}" id="decorator">
             <paper-autogrow-textarea id="autogrow" rows={{rows}} maxRows={{maxRows}}>
-                <textarea on-input="{{textInputted}}" on-keydown="{{doFilter}}" on-blur="{{}}" id="textarea" value="{{value}}"></textarea>
+                <textarea on-input="{{textInputted}}" on-keydown="{{doFilter}}" on-blur="{{inputBlur}}" id="textarea" value="{{value}}"></textarea>
             </paper-autogrow-textarea>
         </paper-input-decorator>
 
