@@ -327,7 +327,6 @@
 
             addElementHandler: function(event, detail, target) {
                 this.addElement(target.templateInstance.model.t);
-                this.fire("element-select", target.templateInstance.model.t);
             },
 
             addElement: function(element) {
@@ -341,6 +340,7 @@
                         this.selected[element.fieldName].shift();
                     }
                     this.selected[element.fieldName].push(element.id);
+                    this.fire("element-select", element);
                 }
 
                 this.changeFlag = !this.changeFlag;
