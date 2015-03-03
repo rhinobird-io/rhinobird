@@ -340,6 +340,22 @@
         padding: 0;
     }
 
+    .floated-label {
+        font-size: 0.75em;
+        white-space: no-wrap;
+        background: transparent;
+    }
+
+    .label-text {
+        color: #757575;
+    }
+
+    .floated-content {
+        margin: 0.5em 0 0.25em;
+        padding: 0.25em 0;
+        border-bottom: 1px dashed #757575;
+    }
+
     @media screen and (min-width: 960px) {
         core-list {
             padding-left: 0px;
@@ -547,16 +563,19 @@
                                         </template>
                                     </paper-input-decorator>
 
-                                    <paper-input-decorator label="Description" floatingLabel id="decorator"
-                                                           disabled="{{modeDisabled}}" placeholder="">
-                                        <template if="{{mode == 'edit'}}">
-                                            <smart-editor id="textArea" value="{{selected.description}}" maxRows="5">
-                                            </smart-editor>
-                                        </template>
-                                        <template if="{{mode == 'view'}}">
+                                    <template if="{{mode == 'edit'}}">
+                                        <smart-editor id="textArea" label="Description" value="{{selected.description}}" floatingLabel underline disabled>
+                                        </smart-editor>
+                                    </template>
+                                    <template if="{{mode == 'view'}}">
+                                        <div class="floated-label">
+                                            <span class="label-text">Description</span>
+                                        </div>  
+                                        <div class="floated-content">
                                             <smart-display value="{{selected.description}}"></smart-display>
-                                        </template>
-                                    </paper-input-decorator>
+                                        </div>
+                                    </template>
+
                                     <template if="{{!modeDisabled}}">
                                         <div center horizontal layout class="fullday">
                                             <div flex>Full Day</div>
