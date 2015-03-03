@@ -27,6 +27,7 @@
                 background-color: #C5CAE9;
                 padding: 10px 14px;
                 z-index: 10;
+                cursor: pointer;
             }
             .core-selected {
                 background-color: #FF4081;
@@ -45,7 +46,7 @@
 
         <paper-input-decorator label="{{label}}" id="decorator">
             <paper-autogrow-textarea id="autogrow" rows={{rows}} maxRows={{maxRows}}>
-                <textarea on-input="{{textInputted}}" on-keydown="{{doFilter}}" id="textarea" value="{{value}}"></textarea>
+                <textarea on-input="{{textInputted}}" on-keydown="{{doFilter}}" on-blur="{{inputBlur}}" id="textarea" value="{{value}}"></textarea>
             </paper-autogrow-textarea>
         </paper-input-decorator>
 
@@ -54,7 +55,7 @@
                 <div>
                     <core-selector id="selector" selected="0">
                         <template repeat="{{ u in filteredUsers}}">
-                            <div on-tap="{{addUserHandler}}">
+                            <div on-mousedown="{{addUserHandler}}">
                                 <member-element username="{{u.name}}"></member-element>
                             </div>
                         </template>
@@ -85,8 +86,7 @@
             showMenu: false,
             publish: {
                 floatingLabel: false,
-                underline: false,
-                disabled: false
+                underline: false
             },
 
             ready: function() {
@@ -129,6 +129,11 @@
                         }
                     }, 0);
                 }
+            },
+
+            inputBlur: function() {
+                if (this.showMenu) 
+                    this.showMenu = !this.showMenu;
             },
 
             filterUser: function(text) {
