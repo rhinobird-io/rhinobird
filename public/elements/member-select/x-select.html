@@ -85,7 +85,7 @@
                     <div horizontal layout center wrap>
                         <template repeat="{{ field in fields}}">
                             <template repeat="{{ selectedId in selected[field.name] }}">
-                                <div horizontal layout center class="badge">
+                                <div horizontal layout center class="{{ {badge: maxLen != 1} | tokenList}}">
                                     <div horizontal layout center>
                                         <template if="{{field.icon == 'avatar'}}">
                                             <avatar-image userid="{{dataIdMap[field.name][selectedId].id}}" size="15"></avatar-image>
@@ -340,6 +340,7 @@
                         this.selected[element.fieldName].shift();
                     }
                     this.selected[element.fieldName].push(element.id);
+                    this.fire("element-select", element);
                 }
 
                 this.changeFlag = !this.changeFlag;

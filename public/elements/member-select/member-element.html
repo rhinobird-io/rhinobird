@@ -12,7 +12,7 @@
 
             .title {
                 font-size: small;
-                color:dimgrey;
+                color: dimgrey;
             }
 
             ::content .content {
@@ -21,121 +21,92 @@
                 /*width: 300px;*/
             }
 
-            .pointer {
-                cursor: pointer;
+            a:visited {
+                color: blue;
             }
         </style>
-        <template if="{{menu}}">
-            <div>
-                <template if="{{!view || view == 'default'}}">
-                    <div class="element pointer" horizontal layout center>
-                        <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-click="{{toggle}}"
-                                      borderRadius="{{borderRadius}}"></avatar-image>
-                        <div on-click="{{toggle}}">
-                            <template if="{{userid}}">
-                                <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
-                            </template>
-                            <template if="{{username}}">
-                                <span style="margin: 5px">{{$.globals.values.memberCache[username].realname}}</span>
-                            </template>
-                        </div>
-                    </div>
-                </template>
-                <template if="{{view && view != 'default'}}">
-                    <div class="element" horizontal layout>
-                        <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}" on-click="{{toggle}}"
-                                      class="pointer" style="margin-top: 5px" borderRadius="{{borderRadius}}"></avatar-image>
-                        <div vertical layout style="margin-left: 5px">
-                            <div horizontal layout center on-click="{{toggle}}" class="pointer">
-                                <template if="{{userid}}">
-                                    <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
-                                </template>
-                                <template if="{{username}}">
-                                    <span style="margin: 5px">{{$.globals.values.memberCache[username].realname}}</span>
-                                </template>
-                                <div class="title" flex>
-                                    <content select=".title"></content>
-                                </div>
-                            </div>
-                            <content select=".content"></content>
-                        </div>
-                    </div>
-                </template>
-                <paper-dropdown class="dropdown member-element-dropdown" style="color:#000" layered>
-                    <core-menu class="menu">
-                        <core-item>Direct Message</core-item>
-                        <core-item>View Profile</core-item>
-                    </core-menu>
-                </paper-dropdown>
-            </div>
-        </template>
-
-        <template if="{{!menu}}">
+        <div>
             <template if="{{!view || view == 'default'}}">
-                <div class="element" horizontal layout center>
-                    <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}"
-                                  borderRadius="{{borderRadius}}"></avatar-image>
-                    <template if="{{userid}}">
-                        <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
+                <div class="element pointer" horizontal layout center>
+                    <template if="{{menu}}">
+                        <a target="_blank" href="#/member/{{user.id}}">
+                            <avatar-image userid="{{user.id}}" size="{{imagesize}}"
+                                      borderRadius="{{borderRadius}}"></avatar-image>
+                        </a>
                     </template>
-                    <template if="{{username}}">
-                        <span style="margin: 5px">{{$.globals.values.memberCache[username].realname}}</span>
+                    <template if="{{!menu}}">
+                        <avatar-image userid="{{user.id}}" size="{{imagesize}}"
+                                          borderRadius="{{borderRadius}}"></avatar-image>
                     </template>
+                    <div>
+                        <template if="{{menu}}">
+                            <a target="_blank" href="#/member/{{user.id}}" style="margin: 5px">{{user.realname}}</a>
+                        </template>
+                        <template if="{{!menu}}">
+                            <span style="margin: 5px">{{user.realname}}</span>
+                        </template>
+                    </div>
                 </div>
             </template>
             <template if="{{view && view != 'default'}}">
                 <div class="element" horizontal layout>
-                    <avatar-image userid="{{userid}}" username="{{username}}" size="{{imagesize}}"
-                                  borderRadius="{{borderRadius}}"></avatar-image>
-                    <div vertical layout style="margin: 5px">
-                        <div horizontal layout center>
-                            <template if="{{userid}}">
-                                <span style="margin: 5px">{{$.globals.values.memberCache[userid].realname}}</span>
+                    <template if="{{menu}}">
+                        <a target="_blank" href="#/member/{{user.id}}">
+                            <avatar-image userid="{{user.id}}" size="{{imagesize}}"
+                                      style="margin-top: 5px"
+                                      borderRadius="{{borderRadius}}"></avatar-image>
+                        </a>
+                    </template>
+                    <template if="{{!menu}}">
+                            <avatar-image userid="{{user.id}}" size="{{imagesize}}"
+                                          style="margin-top: 5px"
+                                          borderRadius="{{borderRadius}}"></avatar-image>
+                    </template>
+                    <div vertical layout style="margin-left: 5px">
+                        <div horizontal layout center class="pointer">
+                            <template if="{{menu}}">
+                                <a target="_blank" href="#/member/{{user.id}}" style="margin: 5px">{{user.realname}}</a>
                             </template>
-                            <template if="{{username}}">
-                                <span style="margin: 5px">{{$.globals.values.memberCache[username].realname}}</span>
+                            <template if="{{!menu}}">
+                                <span style="margin: 5px">{{user.realname}}</span>
                             </template>
-                            <div class="title">
+                            <div class="title" flex>
                                 <content select=".title"></content>
                             </div>
                         </div>
-                        <content select=".content" ></content>
+                        <content select=".content"></content>
                     </div>
                 </div>
             </template>
-        </template>
-        <app-globals id="globals"></app-globals>
+        </div>
+        <app-globals id="globals" on-gravatar-ready="{{appGlobalReadyCallback}}"></app-globals>
     </template>
     <script>
         Polymer("member-element", {
-            domReady: function() {
+            domReady: function () {
                 if (this.view && this.view != 'default' && !this.imagesize) {
                     this.imagesize = 36;
                 }
-            },
-
-            appGlobalReadyCallback: function() {
                 if (this.userid) {
-                    this.gravatar = this.$.globals.values.memberCache[this.userid];
-                } else {
-                    this.gravatar = this.$.globals.values.memberCache[this.username];
+                    this.$.globals.getGravatarById(this.userid);
+                } else if (this.username) {
+                    this.$.globals.getGravatarByName(this.username);
                 }
             },
 
-            toggle: function(event, detail, target) {
-                if (!this.dropdown) {
-                    this.dropdown = this.shadowRoot.querySelector('paper-dropdown');
-                }
+            useridChanged: function (oldValue, newValue) {
+                this.$.globals.getGravatarById(newValue);
+            },
 
-                var dropdownMenus = document.querySelectorAll('body /deep/ .member-element-dropdown');
-                for (var i = 0; i < dropdownMenus.length; i++) {
-                    if (dropdownMenus[i] != this.dropdown) {
-                        dropdownMenus[i].close();
-                    }
-                }
+            usernameChanged: function (oldValue, newValue) {
+                this.$.globals.getGravatarByName(newValue);
+            },
 
-                if (this.dropdown) {
-                    this.dropdown.toggle();
+            appGlobalReadyCallback: function () {
+                if (this.userid) {
+                    this.user = this.$.globals.values.memberCacheId[this.userid];
+                } else {
+                    this.user = this.$.globals.values.memberCacheName[this.username];
                 }
             }
         });

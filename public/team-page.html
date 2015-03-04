@@ -8,8 +8,9 @@
 <link rel="import" href="bower_components/core-collapse/core-collapse.html">
 <link rel="import" href="bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="bower_components/paper-dialog/paper-action-dialog.html">
+<link rel="import" href="bower_components/core-icons/social-icons.html">
 
-<polymer-element name="team-element" attributes="team">
+<polymer-element name="team-element" attributes="team mode">
     <template>
         <style>
             paper-fab.blue {
@@ -38,13 +39,25 @@
                 height: 20px;
             }
         </style>
-        <core-ajax id="getTeams"
-                   auto
-                   url="/platform/teams/{{team.id}}/users"
-                   handleAs="json"
-                   response="{{users}}"></core-ajax>
+        <tempalte if="{{ mode == 'member'}}">
+            <core-ajax id="getTeamUsers"
+                       url="/platform/teams/{{team.id}}/users"
+                       handleAs="json"
+                       on-core-response="{{teamUserCallback}}"></core-ajax>
+        </tempalte>
+
+        <tempalte if="{{ mode == 'relation'}}">
+            <core-ajax id="getTeamMembers"
+                       url="/platform/teams/{{team.id}}/members"
+                       handleAs="json"
+                       on-core-response="{{teamMemberCallback}}"></core-ajax>
+        </tempalte>
+
         <div horizontal layout center justified class="heading">
-            <span on-tap="{{showTeamContent}}" flex>{{team.name}}</span>
+            <div on-tap="{{showTeamContent}}" flex>
+                <span>{{team.name}}</span>
+                <core-icon-button icon="history" on-tap="{{showSnapshot}}"></core-icon-button>
+            </div>
 
             <core-ajax id="leaveTeamAjax"
                        url="/platform/teams/{{team.id}}/users/{{$.globals.values.currentUser.id}}/remove"
@@ -60,6 +73,14 @@
                             <core-ajax id="removeUserFromTeamAjax"
                                        url="/platform/teams/{{team.id}}/users/{{removeUserId}}/remove"
                                        method="post"></core-ajax>
+                            <template repeat="{{team in teams}}">
+                                <div horizontal layout center wrap>
+                                    <core-icon icon="social:people" style="width:16px; height:16px"></core-icon>
+                                    <span style="margin: 5px">{{$.globals.values.teamCache[team.id].name}}</span>
+                                    <!--<core-icon class="small" icon="clear" on-click="{{ removeUserFromTeam }}"-->
+                                    <!--on-mousedown="{{preventFocus}}"></core-icon>-->
+                                </div>
+                            </template>
                             <template repeat="{{user in users}}">
                                 <div horizontal layout center wrap>
                                     <member-element userid="{{user.id}}"></member-element>
@@ -69,7 +90,7 @@
                             </template>
                             <div style="width: 400px">
                                 <core-ajax id="addMember"
-                                           url="/platform/teams/{{team.id}}/users"
+                                           url="/platform/teams/{{team.id}}/members"
                                            method="post"
                                            contentType="application/json"
                                            body="{{newMember}}"
@@ -87,6 +108,14 @@
     <script>
         Polymer("team-element", {
 
+            modeChanged: function() {
+                if (this.mode == 'member') {
+                    this.$.getTeamUsers.go();
+                } else if (this.mode == 'relation') {
+                    this.$.getTeamMembers.go();
+                }
+            },
+
             inviteNewMember: function() {
                 var dialog = this.$.inviteDialog;
                 if (!dialog) {
@@ -96,17 +125,35 @@
                 }
             },
 
+            teamMemberCallback: function(event, response) {
+                this.users = response.response.users;
+                this.teams = response.response.teams;
+            },
+
+            teamUserCallback: function(event, response) {
+                this.users = response.response;
+                this.teams = [];
+            },
+
             addMemberToTeam: function() {
+                this.selected= this.$.memberSelectTeam.selected;
                 this.selectedUser = this.$.memberSelectTeam.getAllUserInvolved();
-                this.newMember = JSON.stringify(this.selectedUser);
+                this.newMember = JSON.stringify(this.selected);
                 var ajax = this.$.addMember;
                 ajax.go();
             },
 
             newMemberResponse: function() {
-                for (index in this.selectedUser) {
-                    this.users.push({"id" : this.selectedUser[index]});
+                if (this.mode == "member") {
+                    this.$.getTeamUsers.go();
+                } else {
+                    this.$.getTeamMembers.go();
                 }
+            },
+
+            showSnapshot: function() {
+                event.stopPropagation();
+                document.querySelector("app-router").go("/team/snapshot/" + this.team.id);
             },
 
             deleteTeam: function() {
@@ -179,9 +226,15 @@
                         <paper-button raised on-tap="{{newTeam}}"><core-icon icon="add"></core-icon>Create Team</paper-button>
                     </div>
                 </div>
+                <template if="{{mode == 'member'}}">
+                    <paper-button raised style="width: 200px" on-tap="{{switchRelationView}}"><core-icon icon="account-balance-wallet"></core-icon>View Relation</paper-button>
+                </template>
+                <template if="{{mode == 'relation'}}">
+                    <paper-button raised style="width: 200px" on-tap="{{switchMemberView}}"><core-icon icon="social:group"></core-icon>View Members</paper-button>
+                </template>
                 <div vertical layout>
                     <template repeat="{{team in teams}}">
-                        <team-element team="{{team}}" class="teamBlock" on-team-leave="{{teamLeaved}}"></team-element>
+                        <team-element team="{{team}}" class="teamBlock" mode="{{mode}}" on-team-leave="{{teamLeaved}}"></team-element>
                     </template>
                 </div>
             </div>
@@ -190,13 +243,24 @@
     </template>
     <script>
         Polymer("team-page", {
+
+            ready: function() {
+                this.mode = "member";
+            },
+
+            switchRelationView: function() {
+                this.mode = "relation";
+            },
+
+            switchMemberView: function() {
+                this.mode = "member";
+            },
+
             newTeam: function() {
                 var newTeamData = {};
                 newTeamData.team = {"name": this.teamName};
                 newTeamData.user = JSON.parse(JSON.stringify(this.$.memberSelect.getAllUserInvolved()));
-                console.log(newTeamData.user);
                 if (newTeamData.user.indexOf(this.$.globals.values.currentUser.id) == -1) {
-                    console.log(this.$.globals.values.currentUser.id);
                     newTeamData.user.push(this.$.globals.values.currentUser.id);
                 }
                 this.newTeamJson = JSON.stringify(newTeamData);
