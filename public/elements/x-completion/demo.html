@@ -47,6 +47,7 @@
             items: [{name: "aaa"}, {name: "bbb"}, {name: "ccc"}, {name: "ddd"}],
             handler: function (e) {
                 console.log("out keydown");
+                console.log(this);
             },
             inputing: function (e, d, t) {
                 if (t.value.substring(t.value.length - 1) === '@') {
