@@ -12,6 +12,8 @@ require './models/event'
 require './models/appointment'
 require './models/team_appointment'
 require './models/invitation'
+require './models/teams_relations'
+require './models/team_snapshot'
 require 'gravatar-ultimate'
 require 'sinatra-websocket'
 require 'rest_client'
@@ -162,6 +164,7 @@ class App < Sinatra::Base
     else
       user = User.where(name: params[:value]).take
     end
+
     gravatar = {}
     gravatar["id"] = user.id
     gravatar["url"] = get_image_url(user.id, user)
@@ -203,7 +206,7 @@ class App < Sinatra::Base
       url = "/platform/avatar/" + User.find(user_id).local_avatar.id.to_s
     end
 
-    return url
+    url
   end
 
   get '/avatar/:avatarId' do
@@ -239,8 +242,32 @@ class App < Sinatra::Base
     Team.all.to_json
   end
 
+  get '/teams/:teamId' do
+    Team.find(params[:teamId]).to_json
+  end
+
+  get '/teams/:teamId/snapshot' do
+   team = Team.find(params[:teamId])
+   team.team_snapshots.all.to_json
+  end
+
   post '/teams' do
     team = Team.create!(@body)
+    snapshot = TeamSnapshot.create!({:event_type => "create"})
+    team.team_snapshots << snapshot
+  end
+
+  def get_all_users(team_id)
+    result = []
+
+    team = Team.find(team_id)
+    result = result | team.users
+    member_teams = TeamsRelation.where(:parent_team_id => team_id).pluck(:team_id)
+    member_teams.each do |id|
+      result = result | get_all_users(id)
+    end
+
+    result
   end
 
   post '/teams/:teamId/delete' do
@@ -251,12 +278,18 @@ class App < Sinatra::Base
   #create team with initial users
   post '/teams/users' do
     team = Team.create!(@body["team"])
+    snapshot = TeamSnapshot.create!({:event_type => "create"})
+    team.team_snapshots << snapshot
     from_user = User.find(@userid)
     from_user.dashboard_records.create!(:content => "You have created a new team : " + team.name, :from_user_id => from_user.id)
 
     @body["user"].each do |userId|
       user = User.find(userId)
       team.users << user
+
+      snapshot = TeamSnapshot.create!({:event_type => "add_user", :member_user_id => user.id})
+      team.team_snapshots << snapshot
+
       unless userId.equal?(from_user.id)
         user.dashboard_records.create!(:content => from_user.realname + " has added you to team : " + team.name, :from_user_id => from_user.id)
         notification = user.notifications.create!(:content => from_user.realname + " has added you to team : " + team.name, :from_user_id => from_user.id)
@@ -271,7 +304,28 @@ class App < Sinatra::Base
 
   #get all users in a team
   get '/teams/:teamId/users' do
-    Team.find(params[:teamId]).users.to_json
+    # Team.find(params[:teamId]).users.to_json
+    get_all_users(params[:teamId]).to_json
+  end
+
+  #get all members in a team
+  get '/teams/:teamId/members' do
+
+    teams = []
+    member_teams = TeamsRelation.where(parent_team_id: params[:teamId]).pluck(:team_id)
+    member_teams.each do |team_id|
+      teams << Team.find(team_id)
+    end
+
+    result = {:users => Team.find(params[:teamId]).users, :teams => teams }
+    result.to_json
+  end
+
+  post '/teams/:parentTeamId/teams/:teamId' do
+    TeamsRelation.create!(:parent_team_id => params[:parentTeamId], :team_id => params[:teamId])
+    parent_team = Team.find(params[:parentTeamId])
+    snapshot = TeamSnapshot.create!({:event_type => "add team", :member_team_id => params[:teamId]})
+    parent_team.team_snapshots << snapshot
   end
 
   # add a user to a team
@@ -279,6 +333,9 @@ class App < Sinatra::Base
     team = Team.find(params[:teamId])
     user = User.find(params[:userId])
     team.users << user
+
+    snapshot = TeamSnapshot.create!({:event_type => "add_user", :member_user_id => user.id})
+    team.team_snapshots << snapshot
     200
   end
 
@@ -288,7 +345,41 @@ class App < Sinatra::Base
     @body.each do |userId|
       user = User.find(userId)
       team.users << user
+
+      snapshot = TeamSnapshot.create!({:event_type => "add_user", :member_user_id => user.id})
+      team.team_snapshots << snapshot
     end
+    200
+  end
+
+  #add multiple users and teams to a team
+  post '/teams/:teamId/members' do
+
+    teams = @body["teams"]
+    users = @body["users"]
+
+    team = Team.find(params[:teamId])
+
+    # add all direct users
+    unless users.nil?
+      users.each do |userId|
+        user = User.find(userId)
+        team.users << user
+
+        snapshot = TeamSnapshot.create!({:event_type => "add_user", :member_user_id => userId})
+        team.team_snapshots << snapshot
+      end
+    end
+
+    # add all teams as whole
+    unless teams.nil?
+      teams.each do |team_id|
+        TeamsRelation.create!(:parent_team_id => params[:teamId], :team_id => team_id)
+        snapshot = TeamSnapshot.create!({:event_type => "add_team", :member_team_id => team_id})
+        team.team_snapshots << snapshot
+      end
+    end
+
     200
   end
 
@@ -296,6 +387,10 @@ class App < Sinatra::Base
   post '/teams/:teamId/users/:userId/remove' do
     team = Team.find(params[:teamId])
     team.users.delete(params[:userId])
+
+    snapshot = TeamSnapshot.create!({:event_type => "remove_user", :member_user_id => params[:userId]})
+    team.team_snapshots << snapshot
+
     user = User.find(params[:userId])
     user.dashboard_records.create!(:content => "You have left team : " + team.name, :from_user_id => params[:userId])
 
@@ -563,6 +658,9 @@ class App < Sinatra::Base
       user_obj = {name: @body['name'], realname: @body['realname'], email: @body['email'], password: @body['password']}
       user = User.create!(user_obj)
       team.users << user
+
+      snapshot = TeamSnapshot.create!({:event_type => "create"})
+      team.team_snapshots << snapshot
     end
     200
   end
@@ -591,12 +689,29 @@ class App < Sinatra::Base
   # end
 
   get '/teams_users' do
-    Team.all.to_json(include: [:users]);
+    teams_users = []
+    teams = Team.all
+    teams.each do |team|
+      member = { :created_at => team.created_at, :updated_at => team.updated_at, :id => team.id, :name => team.name, :users => get_all_users(team.id) }
+      teams_users << member
+    end
+
+    teams_users.to_json
   end
 
   #get all team the user attend
   get '/users/:userId/teams' do
-    User.find(params[:userId]).teams.to_json
+    result = []
+    teams = User.find(params[:userId]).teams
+    teams.each do |team|
+      result = result | [Team.find(team.id)]
+      parent_teams = TeamsRelation.where(team_id: team.id).pluck(:parent_team_id)
+      parent_teams.each do |parent_id|
+        result = result | [Team.find(parent_id)]
+      end
+    end
+
+    result.to_json
   end
 
   get '/users/:userId/dashboard_records' do
@@ -654,7 +769,6 @@ class App < Sinatra::Base
   post '/users/notifications' do
     users = @body["users"]
     content =@body["content"]
-    p content
     content["from_user_id"] = @userid
 
     unless @body["url"].nil?

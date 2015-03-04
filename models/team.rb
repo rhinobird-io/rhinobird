@@ -5,4 +5,5 @@ class Team < ActiveRecord::Base
 
   has_many :team_appointments, foreign_key: :team_participant_id
   has_many :events, through: :team_appointments
+  has_many :team_snapshots
 end
