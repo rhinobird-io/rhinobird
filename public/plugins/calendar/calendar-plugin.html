@@ -16,7 +16,6 @@
 <link rel="import" href="../../bower_components/core-scroll-threshold/core-scroll-threshold.html">
 <link rel="import" href="../../bower_components/core-animated-pages/transitions/slide-up.html">
 <link rel="import" href="../../bower_components/core-list/core-list.html">
-<link rel="import" href="../../bower_components/core-tooltip/core-tooltip.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
@@ -146,11 +145,15 @@
         color: {{g.theme.mainColor}};
     }
 
-    .event:hover .event-wrapper {
+    .event-wrapper:hover {
         padding: 0px;
     }
 
-    .event:hover .event {
+    .event-wrapper:hover .event {
+        padding: 13px;
+    }
+
+    .event:hover {
         padding: 13px;
     }
 
@@ -437,7 +440,7 @@
             div.timeline {
                 position: relative;
                 padding: 10px 0px;
-                min-height: {{(events == null || events.length == 0) ? 100 : 120}}%;
+                height: 100%;
                 display: block;
             }
 
@@ -720,6 +723,9 @@
                 window.onmousewheel = function(event) {
                     if (self.$.container.scrollTop == 0 && event.wheelDelta > 0 && !self.noMoreOlderEvents && !self.loadingMoreOlderEvents) {
                         self.loadMoreOlderEvents();
+                    } else if (self.$.container.scrollTop + self.$.container.clientHeight == self.$.container.scrollHeight &&
+                        event.wheelDelta < 0 && !self.noMoreNewerEvents && !self.loadingMoreNewerEvents) {
+                        self.loadMoreNewerEvents();
                     }
                 }
             },
@@ -943,29 +949,12 @@
                     this.loadingMoreNewerEvents = true;
                     this.$.getMoreNewerEvents.go();
                 }
-
-                /*
-                if (!this.noMoreNewerEvents) {
-                } else {
-                    var self = this;
-                    setTimeout(function() {
-                        self.loadingMoreNewerEvents = false;
-                    }, 1000);
-                }*/
             },
             loadMoreOlderEvents: function() {
                 if (!this.noMoreOlderEvents && this.range != undefined) {
                     this.loadingMoreOlderEvents = true;
                     this.$.getMoreOlderEvents.go();
                 }
-                /*
-                if (!this.noMoreOlderEvents) {
-                } else {
-                    var self = this;
-                    setTimeout(function() {
-                        self.loadingMoreOlderEvents = false;
-                    }, 1000);
-                }*/
             },
             handleLoadEvents: function(type, event, detail) {
                 var self = this;
@@ -1018,6 +1007,11 @@
             handleLoadOlderEvents: function(event, detail) {
                 this.handleLoadEvents(2, event, detail);
             },
+            
+            /*
+             * On add event page, when from time is changed, 
+             * to time should be restricted to be larger or equal to from time.
+             */
             fromTimeUpdated: function(oldValue, newValue) {
                 if (this.mode == 'edit') {
                     if (newValue > this.selected.to_time) {
@@ -1025,6 +1019,11 @@
                     }
                 }
             },
+
+            /*
+             * On add event page, when to time is changed, 
+             * from time should be restricted to be smaller or equal to to time.
+             */
             toTimeUpdated: function(oldValue, newValue) {
                 if (this.mode == 'edit') {
                     if (newValue < this.selected.from_time) {
