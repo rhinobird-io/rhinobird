@@ -1,17 +1,33 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
 <link rel="import" href="../../bower_components/core-selector/core-selector.html">
+<link rel="import" href="../../bower_components/core-style/core-style.html">
 
+<core-style id="completion">
+    ::content > .core-selected {
+        background-color: {{g.theme.accentBgColor}};
+        color: {{g.theme.accentColor}};
+    }
+    ::content > * {
+        cursor: pointer;
+    }
+    paper-shadow {
+        background-color: {{g.theme.thirdBgColor}};
+        color: {{g.theme.thirdColor}};
+        overflow: auto;
+    }
+    .container {
+        margin: 0.5em;
+    }
+</core-style>
 <polymer-element name="x-completion" extends="core-selector" attributes="controller controllerKeydownHandler" hidden on-core-activate="{{itemSelected}}">
     <template>
-        <style>
-            ::content > .core-selected {
-                background-color: blue;
-                color: white;
-            }
-        </style>
+        <core-style ref="completion">
+        </core-style>
         <paper-shadow z="1">
-            <shadow></shadow>
+            <div on-mouseover="{{mouseover}}" class="container">
+                <shadow></shadow>
+            </div>
         </paper-shadow>
     </template>
     <script>
@@ -58,7 +74,22 @@
                     }
                 },
                 initialize: function () {
+                    this.setAttribute('hidden', true);
+                    this.controller.removeEventListener("keydown", listener);
                     this.controller.addEventListener("keydown", this.controllerKeydownHandler);
+                },
+                mouseover: function(event) {
+                    var root = this;
+                    //Find the parent Shadow Root
+                    while (root.parentNode) {
+                        root = root.parentNode;
+                    }
+                    var element = root.elementFromPoint(event.clientX, event.clientY);
+                    //Find the first-level child
+                    while (element.parentNode != this){
+                        element = element.parentNode;
+                    }
+                    this.selected = this.items.indexOf(element);
                 }
             });
         })();

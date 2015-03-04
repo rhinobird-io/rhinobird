@@ -7,6 +7,24 @@
     <link rel="import" href="x-completion.html">
     <link rel="import" href="../../bower_components/paper-input/paper-input.html">
     <link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
+    <link rel="import" href="../../bower_components/core-style/core-style.html">
+    <script>
+        CoreStyle.g.theme = {
+            mainBgColor: '#3F51B5',
+            secondBgColor: '#303F9F',
+            thirdBgColor: '#C5CAE9',
+            accentBgColor: '#FF4081',
+            mainColor: 'white',
+            secondColor: 'white',
+            thirdColor: '#000',
+            accentColor: 'white',
+            iconColor: 'rgba(0,0,0,0.54)',
+            mainText: 'rgba(0,0,0,0.87)',
+            secondText: 'rgba(0,0,0,0.54)',
+            disabledText: 'rgba(0,0,0,0.26)',
+            divider: 'rgba(0,0,0,0.12)'
+        };
+    </script>
 </head>
 
 <polymer-element name="demo-wrapper">
@@ -16,11 +34,13 @@
                 <textarea id="input" on-input="{{inputing}}"></textarea>
             </paper-autogrow-textarea>
         </paper-input-decorator>
+        <div>
         <x-completion id="com" controller="{{$.input}}" controllerKeydownHandler="{{handler}}" on-select="{{activate}}">
             <template repeat="{{items}}">
                 <div>{{name}}</div>
             </template>
         </x-completion>
+        </div>
     </template>
     <script>
         Polymer({
@@ -29,7 +49,7 @@
                 console.log("out keydown");
             },
             inputing: function (e, d, t) {
-                if (t.value.substring(t.value.length - 1) === 'a') {
+                if (t.value.substring(t.value.length - 1) === '@') {
                     this.$.com.active = true;
                 } else {
                     this.$.com.active = false;
