@@ -169,7 +169,7 @@
                         (this.flushKey == "ctrl-enter" && event.ctrlKey && !event.shiftKey && !event.altKey)) {
                         // Trigger flush function
                         event.preventDefault();
-                        this.fire('flush', {});
+                        this.flush();
                     }
                 } else if (event.keyCode == 27) {   // escape key
                     if (this.showMenu) this.showMenu = !this.showMenu;
@@ -203,6 +203,10 @@
 
             clearText: function() {
                 this.$.textarea.value = "";
+            },
+
+            flush: function() {
+                this.fire("flush", {"value": this.$.textarea.value});
             }
         });
 
