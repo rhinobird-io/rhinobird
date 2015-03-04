@@ -16,6 +16,7 @@
 <link rel="import" href="../../bower_components/core-scroll-threshold/core-scroll-threshold.html">
 <link rel="import" href="../../bower_components/core-animated-pages/transitions/slide-up.html">
 <link rel="import" href="../../bower_components/core-list/core-list.html">
+<link rel="import" href="../../bower_components/core-tooltip/core-tooltip.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
@@ -145,11 +146,11 @@
         color: {{g.theme.mainColor}};
     }
 
-    .block:hover .event-wrapper {
+    .event:hover .event-wrapper {
         padding: 0px;
     }
 
-    .block:hover .event {
+    .event:hover .event {
         padding: 13px;
     }
 
@@ -863,11 +864,7 @@
                 //this.selected.selected.teams = [];
                 //console.log(this.selected);
                 var self = this;
-                setTimeout(function () {
-                    // self.$.autogrowArea.update(self.$.textArea);
-                    // self.$.decorator.updateLabelVisibility(self.$.textArea.value);
-                    self.$.pages.selected = 1;
-                }, 100);
+                self.$.pages.selected = 1;
                 this.mode = 'view';
             },
             main: function () {
@@ -891,7 +888,7 @@
                     function() {
                         self.$.titleInput.focus();
                     }, 
-                    null, 100
+                    null, 200
                 );
                 this.mode = 'edit';
             },
