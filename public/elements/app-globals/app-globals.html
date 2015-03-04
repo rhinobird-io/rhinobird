@@ -63,6 +63,8 @@
                         this.keyType = "id";
                         this.keyValue = userid;
                         this.$.getGravatar.go();
+                    } else {
+                        this.fire("gravatar-ready");
                     }
                 },
 
@@ -71,6 +73,8 @@
                         this.keyType = "name";
                         this.keyValue = username;
                         this.$.getGravatar.go();
+                    } else {
+                        this.fire("gravatar-ready");
                     }
                 },
 
@@ -78,18 +82,22 @@
                     var gravatar = detail.response;
                     this.values["memberCacheId"][gravatar.id] = gravatar;
                     this.values["memberCacheName"][gravatar.name] = gravatar;
+                    this.fire("gravatar-ready");
                 },
 
                 getTeamById: function(teamid) {
                     if (!this.values["teamCache"][teamid]) {
                         this.teamId = teamid;
                         this.$.getTeam.go();
+                    } else {
+                        this.fire("team-ready");
                     }
                 },
 
                 handleTeamResponse: function(event, detail, target) {
                     var team = detail.response;
                     this.values["teamCache"][team.id] = team;
+                    this.fire("team-ready");
                 }
             });
         })();
