@@ -13,6 +13,7 @@ require './models/appointment'
 require './models/team_appointment'
 require './models/invitation'
 require './models/teams_relations'
+require './models/team_snapshot'
 require 'gravatar-ultimate'
 require 'sinatra-websocket'
 require 'rest_client'
@@ -245,8 +246,15 @@ class App < Sinatra::Base
     Team.find(params[:teamId]).to_json
   end
 
+  get '/teams/:teamId/snapshot' do
+   team = Team.find(params[:teamId])
+   team.team_snapshots.all.to_json
+  end
+
   post '/teams' do
     team = Team.create!(@body)
+    snapshot = TeamSnapshot.create!({:event_type => "create"})
+    team.team_snapshots << snapshot
   end
 
   def get_all_users(team_id)
@@ -270,12 +278,18 @@ class App < Sinatra::Base
   #create team with initial users
   post '/teams/users' do
     team = Team.create!(@body["team"])
+    snapshot = TeamSnapshot.create!({:event_type => "create"})
+    team.team_snapshots << snapshot
     from_user = User.find(@userid)
     from_user.dashboard_records.create!(:content => "You have created a new team : " + team.name, :from_user_id => from_user.id)
 
     @body["user"].each do |userId|
       user = User.find(userId)
       team.users << user
+
+      snapshot = TeamSnapshot.create!({:event_type => "add_user", :member_user_id => user.id})
+      team.team_snapshots << snapshot
+
       unless userId.equal?(from_user.id)
         user.dashboard_records.create!(:content => from_user.realname + " has added you to team : " + team.name, :from_user_id => from_user.id)
         notification = user.notifications.create!(:content => from_user.realname + " has added you to team : " + team.name, :from_user_id => from_user.id)
@@ -309,6 +323,9 @@ class App < Sinatra::Base
 
   post '/teams/:parentTeamId/teams/:teamId' do
     TeamsRelation.create!(:parent_team_id => params[:parentTeamId], :team_id => params[:teamId])
+    parent_team = Team.find(params[:parentTeamId])
+    snapshot = TeamSnapshot.create!({:event_type => "add team", :member_team_id => params[:teamId]})
+    parent_team.team_snapshots << snapshot
   end
 
   # add a user to a team
@@ -316,6 +333,9 @@ class App < Sinatra::Base
     team = Team.find(params[:teamId])
     user = User.find(params[:userId])
     team.users << user
+
+    snapshot = TeamSnapshot.create!({:event_type => "add_user", :member_user_id => user.id})
+    team.team_snapshots << snapshot
     200
   end
 
@@ -325,6 +345,9 @@ class App < Sinatra::Base
     @body.each do |userId|
       user = User.find(userId)
       team.users << user
+
+      snapshot = TeamSnapshot.create!({:event_type => "add_user", :member_user_id => user.id})
+      team.team_snapshots << snapshot
     end
     200
   end
@@ -342,6 +365,9 @@ class App < Sinatra::Base
       users.each do |userId|
         user = User.find(userId)
         team.users << user
+
+        snapshot = TeamSnapshot.create!({:event_type => "add_user", :member_user_id => userId})
+        team.team_snapshots << snapshot
       end
     end
 
@@ -349,6 +375,8 @@ class App < Sinatra::Base
     unless teams.nil?
       teams.each do |team_id|
         TeamsRelation.create!(:parent_team_id => params[:teamId], :team_id => team_id)
+        snapshot = TeamSnapshot.create!({:event_type => "add_team", :member_team_id => team_id})
+        team.team_snapshots << snapshot
       end
     end
 
@@ -359,6 +387,9 @@ class App < Sinatra::Base
   post '/teams/:teamId/users/:userId/remove' do
     team = Team.find(params[:teamId])
     team.users.delete(params[:userId])
+
+    snapshot = TeamSnapshot.create!({:event_type => "remove_user", :member_user_id => params[:userId]})
+    team.team_snapshots << snapshot
 
     user = User.find(params[:userId])
     user.dashboard_records.create!(:content => "You have left team : " + team.name, :from_user_id => params[:userId])
@@ -627,6 +658,9 @@ class App < Sinatra::Base
       user_obj = {name: @body['name'], realname: @body['realname'], email: @body['email'], password: @body['password']}
       user = User.create!(user_obj)
       team.users << user
+
+      snapshot = TeamSnapshot.create!({:event_type => "create"})
+      team.team_snapshots << snapshot
     end
     200
   end
