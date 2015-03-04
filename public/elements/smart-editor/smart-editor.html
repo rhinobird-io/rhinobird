@@ -46,6 +46,10 @@
             paper-input-decorator /deep/ .input-body {
                 line-height: 1.2em;
             }
+            .manual {
+                color: rgba(255,255,255,0.7);
+                font-style: italic;
+            }
         </style>
 
         <paper-input-decorator label="{{label}}" id="decorator">
@@ -56,12 +60,19 @@
         </paper-input-decorator>
 
         <div class="wrapper">
-            <x-completion z="1" id="selector" controller="{{$.textarea}}" on-select="{{addUserHandler}}"
+            <x-completion z="1" id="selector" controller="{{$.textarea}}" on-select="{{selectHandler}}"
                           controllerKeydownHandler="{{doFilter}}">
-                <template repeat="{{ u in filteredUsers}}">
-                    <div>
-                        <member-element username="{{u.name}}"></member-element>
-                    </div>
+                <template if="{{completingChar == '@'}}">
+                    <template repeat="{{ u in filteredUsers}}">
+                        <div>
+                            <member-element username="{{u.name}}"></member-element>
+                        </div>
+                    </template>
+                </template>
+                <template if="{{completingChar == '/'}}">
+                    <template repeat="{{ c in filteredCommands}}">
+                        <div>/{{c.name}}<span class="manual">{{c.manual}}</span></div>
+                    </template>
                 </template>
             </x-completion>
         </div>
@@ -96,14 +107,15 @@
                     this.$.decorator.$.underline.style.display = "none";
                 }
             },
-
+            commands: [{name: 'vity', manual:':room_name'}],
             textInputted: function (event, detail, target) {
                 this.$.selector.active = false;
                 var lastWord = target.value.substring(0, target.selectionEnd).match(/([^\s]*)$/)[1];
                 if (lastWord.length == 0) {
                     return;
                 }
-                if (lastWord.charAt(0) == '@') {
+                if (lastWord.charAt(0) == '@' || lastWord.charAt(0) == '/') {
+                    this.completingChar = lastWord.charAt(0);
                     var menu = this.$.selector;
                     var coord = getCaretCoordinates(target, target.selectionEnd - lastWord.length);
                     menu.style.top = -coord.bottom + "px";
@@ -111,8 +123,13 @@
                     menu.style.right = "";
                     menu.style.marginTop = "1em";
                     var text = lastWord.substring(1);
-                    this.filteredUsers = this.filterUser(text);
-                    this.$.selector.active = this.filteredUsers.length ? true : false;
+                    if(this.completingChar == "@"){
+                        this.filteredUsers = this.filterUser(text);
+                        this.$.selector.active = this.filteredUsers.length ? true : false;
+                    } else {
+                        this.filteredCommands = this.filterCommand(text);
+                        this.$.selector.active = this.filteredCommands.length ? true : false;
+                    }
 
                     setTimeout(function () {
                         // Right-align the menu if needed.
@@ -151,6 +168,16 @@
                 }
                 return result;
             },
+            filterCommand: function (text) {
+                var result = [];
+                text = text.toLowerCase();
+                this.commands.forEach(function (c) {
+                    if (c.name.toLowerCase().indexOf(text) != -1) {
+                        result.push(c);
+                    }
+                }, this);
+                return result;
+            },
 
             doFilter: function (event, detail, sender) {
                 if ((this.flushKey == "enter" && !event.ctrlKey && !event.shiftKey && !event.altKey) ||
@@ -164,17 +191,22 @@
                 }
             },
 
-            addUserHandler: function (event, detail, target) {
-                var user = detail.model.u;
-                this.replaceText(user);
+            selectHandler: function (event, detail, target) {
+                if(this.completingChar == "@") {
+                    var user = detail.model.u;
+                    this.replaceText("@" + user.name + " ");
+                } else {
+                    var c = detail.model.c;
+                    this.replaceText("/" + c.name);
+                }
                 this.$.selector.active = false;
             },
 
-            replaceText: function (user) {
+            replaceText: function (text) {
                 var left, right;
                 left = this.value.substring(0, this.$.textarea.selectionEnd);
                 right = this.value.substring(this.$.textarea.selectionEnd);
-                left = left.replace(/[^\s]*$/, "@" + user.name + " ");
+                left = left.replace(/[^\s]*$/, text);
                 this.value = left + right;
                 var self = this;
                 setTimeout(function () {
