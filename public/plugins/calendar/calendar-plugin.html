@@ -715,6 +715,7 @@
                 this.loadingOlderText = 'Please Wait...';
                 this.noMoreNewerEvents = false;
                 this.noMoreOlderEvents = false;
+                this.initialPosition = "right";
                 var self = this;
                 window.onresize = function(event) {
                     self.refresh();
@@ -742,7 +743,7 @@
 
                 this.eventGroups = [];
 
-                var position = "right";
+                var position = this.initialPosition;
                 for (var i = 0; i < this.events.length; i++) {
                     var event = this.events[i];
                     var len = this.eventGroups.length;
@@ -959,11 +960,12 @@
             handleLoadEvents: function(type, event, detail) {
                 var self = this;
                 var events = detail.response;
-                console.log(events);
+
                 if (events.length > 0) {
                     events.forEach(function (event) {
                         self.parseEvent(event);
                     });
+                    var newLoadedDates = [];
                     for (var i = 0; i < events.length; i++) {
                         var contain = false;
                         for (var j = 0; j < this.events.length; j++) {
@@ -972,15 +974,26 @@
                                 break;
                             }
                         }
-                        if (!contain)
-                           this.events.push(events[i]);
+                        if (!contain) {
+
+                            if (events[i].from_time < this.events[0].from_time) {
+                                var newFromTime = new Date(events[i].from_time);
+                                if (newLoadedDates.indexOf(newFromTime.toDateString()) == -1)
+                                    newLoadedDates.push(newFromTime.toDateString());
+                            }
+                            this.events.push(events[i]);
+                        }
                     }
 
-                    if (type == 1)
+                    if (type == 1) {
                         this.range.max = events[events.length - 1].from_time;
-                    else if (type == 2)
+                    } else if (type == 2) {
                         this.range.min = events[0].from_time;
-                    console.log(this.range)
+                        if (newLoadedDates.length % 2 != 0) {
+                            this.initialPosition = "left";
+                        }
+                    }
+
                     this.refresh();
                 } else {
                     if (type == 1) {
