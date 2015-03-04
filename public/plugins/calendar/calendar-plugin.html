@@ -20,6 +20,7 @@
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
 <link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="/comment/elements/thread-element.html">
 
 <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
@@ -631,6 +632,14 @@
                                                    selected="{{selected.participants}}"
                                                    label="Participants"
                                                    adaptive></member-select>
+                                    <template if="{{mode == 'view'}}">
+                                        <div class="floated-label">
+                                            <span class="label-text">Comments</span>
+                                        </div>  
+                                        <br>
+                                        <thread-element key="calendar/{{selected.id}}"></thread-element>
+                                        
+                                    </template>
                                 </div>
                             </div>
                         </div>
