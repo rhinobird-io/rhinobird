@@ -5,6 +5,7 @@
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../member-select/member-element.html">
+<link rel="import" href="../x-completion/x-completion.html">
 
 <!--
     Attributes:
@@ -22,23 +23,26 @@
 <polymer-element name="smart-editor" attributes="label value rows maxRows flushKey floatingLabel underline">
     <template>
         <style>
-            #menu {
+            #selector {
                 position: absolute;
                 background-color: #C5CAE9;
-                padding: 10px 14px;
                 z-index: 10;
                 cursor: pointer;
             }
+
             .core-selected {
                 background-color: #FF4081;
                 color: white;
             }
+
             .wrapper {
                 position: relative;
             }
+
             paper-autogrow-textarea {
                 width: 100%;
             }
+
             paper-input-decorator /deep/ .input-body {
                 line-height: 1.2em;
             }
@@ -46,22 +50,20 @@
 
         <paper-input-decorator label="{{label}}" id="decorator">
             <paper-autogrow-textarea id="autogrow" rows={{rows}} maxRows={{maxRows}}>
-                <textarea on-input="{{textInputted}}" on-keydown="{{doFilter}}" on-blur="{{inputBlur}}" id="textarea" value="{{value}}"></textarea>
+                <textarea on-input="{{textInputted}}" on-blur="{{inputBlur}}" id="textarea"
+                          value="{{value}}"></textarea>
             </paper-autogrow-textarea>
         </paper-input-decorator>
 
         <div class="wrapper">
-            <paper-shadow z="1" id="menu" hidden?="{{!showMenu}}">
-                <div>
-                    <core-selector id="selector" valueattr="label" selected="0">
-                        <template repeat="{{u in filteredUsers}}">
-                            <div label="{{u.name}}" on-mousedown="{{addUserHandler}}" on-mouseover="{{menuItemMouseover}}">
-                                <member-element username="{{u.name}}"></member-element>
-                            </div>
-                        </template>
-                    </core-selector>
-                </div>
-            </paper-shadow>
+            <x-completion z="1" id="selector" controller="{{$.textarea}}" on-select="{{addUserHandler}}"
+                          controllerKeydownHandler="{{doFilter}}">
+                <template repeat="{{ u in filteredUsers}}">
+                    <div>
+                        <member-element username="{{u.name}}"></member-element>
+                    </div>
+                </template>
+            </x-completion>
         </div>
 
         <core-ajax url="/platform/users" auto handleAs="json" response="{{users}}"></core-ajax>
@@ -83,27 +85,26 @@
         }
 
         Polymer({
-            showMenu: false,
             publish: {
                 floatingLabel: false,
                 underline: false
             },
 
-            ready: function() {
+            ready: function () {
                 this.$.decorator.floatingLabel = this.floatingLabel;
                 if (this.underline == false) {
                     this.$.decorator.$.underline.style.display = "none";
                 }
             },
 
-            textInputted: function(event, detail, target) {
-                this.showMenu = false;
+            textInputted: function (event, detail, target) {
+                this.$.selector.active = false;
                 var lastWord = target.value.substring(0, target.selectionEnd).match(/([^\s]*)$/)[1];
                 if (lastWord.length == 0) {
                     return;
                 }
                 if (lastWord.charAt(0) == '@') {
-                    var menu = this.$.menu;
+                    var menu = this.$.selector;
                     var coord = getCaretCoordinates(target, target.selectionEnd - lastWord.length);
                     menu.style.top = -coord.bottom + "px";
                     menu.style.left = coord.left + "px";
@@ -111,9 +112,9 @@
                     menu.style.marginTop = "1em";
                     var text = lastWord.substring(1);
                     this.filteredUsers = this.filterUser(text);
-                    this.showMenu = this.filteredUsers.length ? true : false;
+                    this.$.selector.active = this.filteredUsers.length ? true : false;
 
-                    setTimeout(function() {
+                    setTimeout(function () {
                         // Right-align the menu if needed.
                         if (menu.offsetWidth >= coord.right) {
                             menu.style.left = "";
@@ -131,21 +132,18 @@
                 }
             },
 
-            inputBlur: function() {
-                if (this.showMenu) 
-                    this.showMenu = !this.showMenu;
+            inputBlur: function () {
+                //prevent missing mouse click event
+                var self = this;
+                setTimeout(function () {
+                    self.$.selector.active = false;
+                }, 100);
             },
-
-            menuItemMouseover: function(event, detail, target) {
-                var user = target.templateInstance.model.u;
-                this.$.selector.selected = user.name;
-            },
-
-            filterUser: function(text) {
+            filterUser: function (text) {
                 var result = [];
                 text = text.toLowerCase();
                 if (this.users) {
-                    this.users.forEach(function(user) {
+                    this.users.forEach(function (user) {
                         if ((user.email.toLowerCase().indexOf(text) != -1 || user.name.toLowerCase().indexOf(text) != -1 || user.realname.toLowerCase().indexOf(text) != -1) && result.length < 8) {
                             result.push(user);
                         }
@@ -154,63 +152,45 @@
                 return result;
             },
 
-            doFilter: function(event, detail, sender) {
-                if (event.keyCode === 38 || event.keyCode === 40) { // up down keys
-                    if (!this.showMenu) return;
-                    //avoid change cursor on input
-                    event.preventDefault();
-                    if (event.keyCode === 38) {
-                        this.$.selector.selectPrevious(true);
-                    } else {
-                        this.$.selector.selectNext(true);
-                    }
-                } else if (event.keyCode === 13) {
-                    if (this.showMenu) {
-                        var user = this.$.selector.selectedModel.u;
-                        this.replaceText(user);
-                        this.showMenu = false;
-                        event.preventDefault();
-                    } else if ((this.flushKey == "enter" && !event.ctrlKey && !event.shiftKey && !event.altKey) ||
+            doFilter: function (event, detail, sender) {
+                if ((this.flushKey == "enter" && !event.ctrlKey && !event.shiftKey && !event.altKey) ||
                         (this.flushKey == "ctrl-enter" && event.ctrlKey && !event.shiftKey && !event.altKey)) {
-                        // Trigger flush function
-                        event.preventDefault();
-                        this.flush();
-                    }
-                } else if (event.keyCode == 27) {   // escape key
-                    if (this.showMenu) this.showMenu = !this.showMenu;
+                    // Trigger flush function
+                    event.preventDefault();
+                    this.flush();
                 } else {
                     this.$.selector.selected = 0;
                     this.$.selector.parentElement.scrollTop = 0;
                 }
             },
 
-            addUserHandler: function(event, detail, target) {
-                var user = target.templateInstance.model.u;
+            addUserHandler: function (event, detail, target) {
+                var user = detail.model.u;
                 this.replaceText(user);
-                this.showMenu = false;
+                this.$.selector.active = false;
             },
 
-            replaceText: function(user) {
+            replaceText: function (user) {
                 var left, right;
                 left = this.value.substring(0, this.$.textarea.selectionEnd);
                 right = this.value.substring(this.$.textarea.selectionEnd);
                 left = left.replace(/[^\s]*$/, "@" + user.name + " ");
                 this.value = left + right;
                 var self = this;
-                setTimeout(function() {
+                setTimeout(function () {
                     self.$.textarea.selectionEnd = left.length + 1;
                 }, 0);
             },
 
-            valueChanged: function() {
+            valueChanged: function () {
                 this.$.autogrow.update(this.$.textarea);
             },
 
-            clearText: function() {
+            clearText: function () {
                 this.$.textarea.value = "";
             },
 
-            flush: function() {
+            flush: function () {
                 this.fire("flush", {"value": this.$.textarea.value});
             }
         });
