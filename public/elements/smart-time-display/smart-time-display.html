@@ -1,8 +1,20 @@
+<link rel="import" href="../../bower_components/core-tooltip/core-tooltip.html">
 <script src="../../bower_components/moment/moment.js"></script>
+
+<!--
+    Attributes:
+
+        threshold: if current time is within [from - threhold, to + threhold], time elapsed message like "Started xx hours" will be displayed.
+            default value: 0, only time elaspsed message will be displayed
+            -1: only formatted datetime will be displayed
+            other value: it depends on current time
+-->
 
 <polymer-element name="smart-time-display" attributes="from to full_day period with_message threshold">
     <template>
-        {{result}}
+        <core-tooltip label="{{datetime_result}}" disabled?="{{!show_tooltip}}">
+            <span>{{result}}</span>
+        </core-tooltip>
     </template>
     <script>
         Polymer({
@@ -13,7 +25,9 @@
                 var full_day = full_day || false;
                 var period = period || false;
                 var with_message = with_message || false;
-                var threshold = threshold || Number.POSITIVE_INFINITY;
+                var threshold = threshold || 0;
+                if (threshold == 0) threshold = Number.POSITIVE_INFINITY;
+                this.show_tooltip = true;
 
                 if (full_day == undefined || period == undefined) {
                     return "";
@@ -37,22 +51,27 @@
                         message_prefix = "Finished ";
                         message_suffix = " ago";
                     } else {
+                        this.show_tooltip = false;
                         var format;
                         if (full_day) {
                             format = "YYYY-MM-DD"
                         } else {
                             format = "HH:mm YYYY-MM-DD"
                         }
+
+                        var result = "";
                         if (!period) {
-                            return moment(from).format(format);
+                            result = moment(from).format(format);
                         } else {
                             var from = moment(from), to = moment(to);
                             if (from.isSame(to, 'day')) {
-                                return moment(from).format('HH:mm') + "~" + moment(to).format("HH:mm") + " " + moment(from).format("YYYY-MM-DD");
+                                result = moment(from).format('HH:mm') + "~" + moment(to).format("HH:mm") + " " + moment(from).format("YYYY-MM-DD");
                             } else {
-                                return moment(from).format('HH:mm') + " " + moment(from).format("YYYY-MM-DD") + "~" + moment(to).format("HH:mm") + " " + moment(to).format("YYYY-MM-DD");
+                                result = moment(from).format('HH:mm') + " " + moment(from).format("YYYY-MM-DD") + "~" + moment(to).format("HH:mm") + " " + moment(to).format("YYYY-MM-DD");
                             }
                         }
+                        this.datetime_result = result;
+                        return result;
                     }
 
                     var a_year = 31536000000;

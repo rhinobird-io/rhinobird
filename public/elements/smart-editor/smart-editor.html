@@ -53,9 +53,9 @@
         <div class="wrapper">
             <paper-shadow z="1" id="menu" hidden?="{{!showMenu}}">
                 <div>
-                    <core-selector id="selector" selected="0">
-                        <template repeat="{{ u in filteredUsers}}">
-                            <div on-mousedown="{{addUserHandler}}">
+                    <core-selector id="selector" valueattr="label" selected="0">
+                        <template repeat="{{u in filteredUsers}}">
+                            <div label="{{u.name}}" on-mousedown="{{addUserHandler}}" on-mouseover="{{menuItemMouseover}}">
                                 <member-element username="{{u.name}}"></member-element>
                             </div>
                         </template>
@@ -134,6 +134,11 @@
             inputBlur: function() {
                 if (this.showMenu) 
                     this.showMenu = !this.showMenu;
+            },
+
+            menuItemMouseover: function(event, detail, target) {
+                var user = target.templateInstance.model.u;
+                this.$.selector.selected = user.name;
             },
 
             filterUser: function(text) {

@@ -20,6 +20,7 @@
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
 <link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="/comment/elements/thread-element.html">
 
 <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
@@ -54,7 +55,8 @@
 
     div.container {
         display: block;
-        padding: 45px 0;      
+        padding: 45px 0;
+        padding-bottom: 60px;      
         width: 100%;
         height: 100%;  
         overflow-y: auto;
@@ -145,11 +147,15 @@
         color: {{g.theme.mainColor}};
     }
 
-    .block:hover .event-wrapper {
+    .event-wrapper:hover {
         padding: 0px;
     }
 
-    .block:hover .event {
+    .event-wrapper:hover .event {
+        padding: 13px;
+    }
+
+    .event:hover {
         padding: 13px;
     }
 
@@ -433,21 +439,21 @@
         <core-style ref="calendar"></core-style>
 
         <style>
-            div.timeline {
-                position: relative;
-                padding: 10px 0px;
-                min-height: {{(events == null || events.length == 0) ? 100 : 120}}%;
-                display: block;
-            }
-
             .bottom-spinner {
                 top: {{bottomSpinnerTop}}px;
                 -webkit-transition: top 0.3s linear;
             }
 
             .top-spinner {
-                top: -45px;
+                top: {{topSpinnerTop}}px;
                 -webkit-transition: top 0.3s linear;
+            }
+
+            div.timeline {
+                position: relative;
+                padding: 10px 0px;
+                height: 100%;
+                display: block;
             }
 
         </style>
@@ -479,7 +485,7 @@
                         <div class="container" id="container">
                             <div id="emptyNotification" hidden?="{{events == null || events.length != 0}}">Empty Calendar</div>
                             <div class="timeline" vertical layout hidden?="{{events == null || events.length == 0}}">
-                                <paper-shadow layered class="spinner top-spinner" layout center-center horizontal hidden?="{{!loadingMoreOlderEvents}}">
+                                <paper-shadow layered id="topSpinner" class="spinner top-spinner" layout center-center horizontal hidden?="{{!loadingMoreOlderEvents}}">
                                     <paper-spinner active></paper-spinner>
                                 </paper-shadow>
                                 <div class="loading top-spinner" hidden?="{{!noMoreOlderEvents}}">No more events.</div>
@@ -530,7 +536,7 @@
                                     </template>
                                 </core-list>
 
-                                <paper-shadow layered class="spinner bottom-spinner" layout center-center horizontal hidden?="{{!loadingMoreNewerEvents}}">
+                                <paper-shadow layered id="bottomSpinner" class="spinner bottom-spinner" layout center-center horizontal hidden?="{{!loadingMoreNewerEvents}}">
                                     <paper-spinner active></paper-spinner>
                                 </paper-shadow>
                                 
@@ -626,6 +632,14 @@
                                                    selected="{{selected.participants}}"
                                                    label="Participants"
                                                    adaptive></member-select>
+                                    <template if="{{mode == 'view'}}">
+                                        <div class="floated-label">
+                                            <span class="label-text">Comments</span>
+                                        </div>  
+                                        <br>
+                                        <thread-element key="calendar/{{selected.id}}"></thread-element>
+                                        
+                                    </template>
                                 </div>
                             </div>
                         </div>
@@ -711,6 +725,7 @@
                 this.loadingOlderText = 'Please Wait...';
                 this.noMoreNewerEvents = false;
                 this.noMoreOlderEvents = false;
+                this.initialPosition = "right";
                 var self = this;
                 window.onresize = function(event) {
                     self.refresh();
@@ -719,6 +734,9 @@
                 window.onmousewheel = function(event) {
                     if (self.$.container.scrollTop == 0 && event.wheelDelta > 0 && !self.noMoreOlderEvents && !self.loadingMoreOlderEvents) {
                         self.loadMoreOlderEvents();
+                    } else if (self.$.container.scrollTop + self.$.container.clientHeight == self.$.container.scrollHeight &&
+                        event.wheelDelta < 0 && !self.noMoreNewerEvents && !self.loadingMoreNewerEvents) {
+                        self.loadMoreNewerEvents();
                     }
                 }
             },
@@ -735,7 +753,7 @@
 
                 this.eventGroups = [];
 
-                var position = "right";
+                var position = this.initialPosition;
                 for (var i = 0; i < this.events.length; i++) {
                     var event = this.events[i];
                     var len = this.eventGroups.length;
@@ -863,11 +881,7 @@
                 //this.selected.selected.teams = [];
                 //console.log(this.selected);
                 var self = this;
-                setTimeout(function () {
-                    // self.$.autogrowArea.update(self.$.textArea);
-                    // self.$.decorator.updateLabelVisibility(self.$.textArea.value);
-                    self.$.pages.selected = 1;
-                }, 100);
+                self.$.pages.selected = 1;
                 this.mode = 'view';
             },
             main: function () {
@@ -884,22 +898,22 @@
                 this.selected = {from_time: new Date(), to_time: new Date(), participants: {}, full_day: false, period: true};
                 this.selected.participants.teams = [];
                 this.selected.participants.users = [];
-                //this.selected.selected = {};
-                //this.selected.selected.teams = [];
-                //this.selected.selected.users = [];
+
                 var self = this;
-                setTimeout(function () {
-                    //self.$.autogrowArea.update(self.$.textArea);
-                    //self.$.decorator.updateLabelVisibility(self.$.textArea.value);
-                    self.$.pages.selected = 1;
-                }, 100);
+                self.$.pages.selected = 1;
+                self.async(
+                    function() {
+                        self.$.titleInput.focus();
+                    }, 
+                    null, 200
+                );
                 this.mode = 'edit';
             },
             saveEvent: function(){
                 if (this.selected.title == null || this.selected.title.length == 0) {
                     this.$.titleCannotBeEmpty.show();
                     var self = this;
-                    setTimeout(function() {self.$.titleInput.focus();}, 100);
+                    this.async(function() {self.$.titleInput.focus();}, null, 100);
                     return;
                 }
                 this.eventBody = JSON.stringify(this.copyEvent(this.selected));
@@ -944,40 +958,38 @@
             loadMoreNewerEvents: function() {
                 if (!this.noMoreNewerEvents && this.range != undefined) {
                     this.loadingMoreNewerEvents = true;
-                    this.$.getMoreNewerEvents.go();
-                }
-
-                /*
-                if (!this.noMoreNewerEvents) {
-                } else {
                     var self = this;
+                    self.bottomSpinnerTop += 100;
                     setTimeout(function() {
-                        self.loadingMoreNewerEvents = false;
-                    }, 1000);
-                }*/
+                        self.bottomSpinnerTop -= 100;
+                    }, 0);
+                    setTimeout(function() {
+                        self.$.getMoreNewerEvents.go();
+                    }, 500);
+                }
             },
             loadMoreOlderEvents: function() {
                 if (!this.noMoreOlderEvents && this.range != undefined) {
                     this.loadingMoreOlderEvents = true;
-                    this.$.getMoreOlderEvents.go();
-                }
-                /*
-                if (!this.noMoreOlderEvents) {
-                } else {
                     var self = this;
+                    self.topSpinnerTop = -105;
                     setTimeout(function() {
-                        self.loadingMoreOlderEvents = false;
-                    }, 1000);
-                }*/
+                        self.topSpinnerTop = -45;
+                    }, 0);
+                    setTimeout(function() {
+                        self.$.getMoreOlderEvents.go();
+                    }, 500);
+                }
             },
             handleLoadEvents: function(type, event, detail) {
                 var self = this;
                 var events = detail.response;
-                console.log(events);
+
                 if (events.length > 0) {
                     events.forEach(function (event) {
                         self.parseEvent(event);
                     });
+                    var newLoadedDates = [];
                     for (var i = 0; i < events.length; i++) {
                         var contain = false;
                         for (var j = 0; j < this.events.length; j++) {
@@ -986,15 +998,26 @@
                                 break;
                             }
                         }
-                        if (!contain)
-                           this.events.push(events[i]);
+                        if (!contain) {
+
+                            if (events[i].from_time < this.events[0].from_time) {
+                                var newFromTime = new Date(events[i].from_time);
+                                if (newLoadedDates.indexOf(newFromTime.toDateString()) == -1)
+                                    newLoadedDates.push(newFromTime.toDateString());
+                            }
+                            this.events.push(events[i]);
+                        }
                     }
 
-                    if (type == 1)
+                    if (type == 1) {
                         this.range.max = events[events.length - 1].from_time;
-                    else if (type == 2)
+                    } else if (type == 2) {
                         this.range.min = events[0].from_time;
-                    console.log(this.range)
+                        if (newLoadedDates.length % 2 != 0) {
+                            this.initialPosition = "left";
+                        }
+                    }
+
                     this.refresh();
                 } else {
                     if (type == 1) {
@@ -1021,6 +1044,11 @@
             handleLoadOlderEvents: function(event, detail) {
                 this.handleLoadEvents(2, event, detail);
             },
+            
+            /*
+             * On add event page, when from time is changed, 
+             * to time should be restricted to be larger or equal to from time.
+             */
             fromTimeUpdated: function(oldValue, newValue) {
                 if (this.mode == 'edit') {
                     if (newValue > this.selected.to_time) {
@@ -1028,6 +1056,11 @@
                     }
                 }
             },
+
+            /*
+             * On add event page, when to time is changed, 
+             * from time should be restricted to be smaller or equal to to time.
+             */
             toTimeUpdated: function(oldValue, newValue) {
                 if (this.mode == 'edit') {
                     if (newValue < this.selected.from_time) {
