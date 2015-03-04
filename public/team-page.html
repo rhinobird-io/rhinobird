@@ -54,7 +54,10 @@
         </tempalte>
 
         <div horizontal layout center justified class="heading">
-            <span on-tap="{{showTeamContent}}" flex>{{team.name}}</span>
+            <div on-tap="{{showTeamContent}}" flex>
+                <span>{{team.name}}</span>
+                <core-icon-button icon="history" on-tap="{{showSnapshot}}"></core-icon-button>
+            </div>
 
             <core-ajax id="leaveTeamAjax"
                        url="/platform/teams/{{team.id}}/users/{{$.globals.values.currentUser.id}}/remove"
@@ -142,19 +145,15 @@
 
             newMemberResponse: function() {
                 if (this.mode == "member") {
-                    for (index in this.selectedUser) {
-                        this.users.push({"id" : this.selectedUser[index]});
-                    }
+                    this.$.getTeamUsers.go();
                 } else {
-                    for (index in this.selected.users) {
-                        this.users.push({"id" : this.selected.users[index]});
-                    }
-
-                    for (index in this.selected.teams) {
-                        this.teams.push({"id" : this.selected.teams[index]});
-                    }
+                    this.$.getTeamMembers.go();
                 }
+            },
 
+            showSnapshot: function() {
+                event.stopPropagation();
+                document.querySelector("app-router").go("/team/snapshot/" + this.team.id);
             },
 
             deleteTeam: function() {
