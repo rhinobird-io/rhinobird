@@ -102,7 +102,7 @@
                                 </div>
                             </template>
                         </template>
-                        <input is="core-input" value="{{searchText}}" on-keydown="{{ doFilter }}"
+                        <input id="searchTextInput" is="core-input" value="{{searchText}}" on-keydown="{{ doFilter }}"
                                on-focus="{{ showMenu }}" on-blur="{{ hideMenu }}" disabled?="{{disabled}}">
                     </div>
                 </paper-input-decorator>
@@ -258,6 +258,8 @@
                     if (this.searchText.length === 0) {
                         this.removeLastSelectedElement();
                     }
+                } else if (event.keyCode === 27) {  // escape
+                    this.$.searchTextInput.blur();
                 } else {
                     this.$.selector.selected = 0;
                     this.$.selector.parentElement.scrollTop = 0;
