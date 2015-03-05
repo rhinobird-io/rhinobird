@@ -1,5 +1,6 @@
 <link rel="import" href="../app-globals/app-globals.html">
 <link rel="import" href="../html-echo/html-echo.html">
+<link rel="import" href="../file-display/file-display.html">
 <script src="../../bower_components/highlightjs/highlight.pack.js"></script>
 <script src="../../bower_components/sprintf/dist/sprintf.min.js"></script>
 
@@ -46,12 +47,12 @@
                     link.target = "_blank";
                     link.innerHTML = text;
                     return link;
+                } else if(plugin.toLowerCase() == "file") {
+                    var display = document.createElement("file-display");
+                    display.setAttribute("fileid", args);
+                    return display;
                 } else {
-                    // TODO Design the format
-                    var link = document.createElement("a");
-                    link.href = "/" + plugin + "/cmd/" + args.replace(",", "/");
-                    link.innerHTML = text;
-                    return link;
+                    // TODO Other plugins
                 }
             },
 
