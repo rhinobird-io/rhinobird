@@ -5,6 +5,7 @@
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/ajax-file-input/ajax-file-input.html">
 <link rel="import" href="../member-select/member-element.html">
 <link rel="import" href="../x-completion/x-completion.html">
@@ -85,8 +86,8 @@
             </x-completion>
         </div>
 
-        <paper-action-dialog backdrop autoCloseDisabled id="fileUpload">
-            <ajax-file-input url="/file/files" on-success="{{fileUploaded}}"></ajax-file-input>
+        <paper-action-dialog backdrop autoCloseDisabled id="fileUpload" vertical layout>
+            <ajax-file-input id="fileInput" url="/file/files" on-success="{{fileUploaded}}"></ajax-file-input>
             <paper-button affirmative autofocus on-tap="{{cancelFileUpload}}">Cancel</paper-button>
         </paper-action-dialog>
         <core-ajax url="/platform/users" auto handleAs="json" response="{{users}}"></core-ajax>
@@ -212,6 +213,7 @@
                     var c = detail.model.c;
                     this.replaceText("/" + c.name);
                     if (c.name == 'file') {
+                        this.$.fileInput.clear();
                         this.$.fileUpload.open();
                     }
                 }
