@@ -195,9 +195,10 @@
             },
 
             doFilter: function (event, detail, sender) {
-                if ((this.flushKey == "enter" && !event.ctrlKey && !event.shiftKey && !event.altKey) ||
-                        (this.flushKey == "ctrl-enter" && event.ctrlKey && !event.shiftKey && !event.altKey)) {
-                    // Trigger flush function
+                if ((this.flushKey == "enter" &&
+                    event.keyCode === 13 && !event.ctrlKey && !event.shiftKey && !event.altKey) ||
+                    (this.flushKey == "ctrl-enter" &&
+                    event.keyCode === 13 && event.ctrlKey && !event.shiftKey && !event.altKey)) {
                     event.preventDefault();
                     this.flush();
                 } else {
