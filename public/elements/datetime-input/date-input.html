@@ -4,7 +4,7 @@
 <link rel="import" href="../../bower_components/paper-date-picker/paper-date-picker-dialog.html">
 <script src="../../bower_components/moment/moment.js"></script>
 
-<polymer-element name="date-input" attributes="date label disabled">
+<polymer-element name="date-input" attributes="date label disabled floatingLabel">
     <template>
         <style>
             .date {
@@ -12,7 +12,7 @@
                 cursor: pointer;
             }
         </style>
-        <paper-input-decorator floatingLabel label="{{label}}" disabled="{{disabled}}">
+        <paper-input-decorator id="decorator" label="{{label}}" disabled="{{disabled}}">
             <div layout horizontal>
                 <div class="date" on-tap="{{openDateDialog}}">
                     <div>{{date | date('yyyy-MM-dd')}}</div>
@@ -26,6 +26,9 @@
     </template>
     <script>
         Polymer({
+            ready: function() {
+                this.$.decorator.floatingLabel = this.floatingLabel;
+            },
             dateChanged: function (oldV, newV) {
                 if (newV) {
                     this.innerDate = newV;
