@@ -547,15 +547,23 @@
 
                     </section>
                     <section>
-
                         <!-- Confirmation dialog for event deletion. -->
                         <paper-action-dialog backdrop autoCloseDisabled heading="Sure to delete this event?" layered="false" id="confirmDeleteDialog">
                             <paper-button dismissive>Cancel</paper-button>
                             <paper-button affirmative on-tap="{{doDelete}}">Delete</paper-button>
                         </paper-action-dialog>
 
+                        <!-- -->
+                        <paper-action-dialog backdrop autoCloseDisabled heading="Repeat" layered="false" id="repeatEventDialog">
+                            <paper-button affirmative on-tap="{{confirmRepeatEvent}}">Done</paper-button>
+                            <paper-button dismissive on-tap="{{cancelRepeatEvent}}">Cancel</paper-button>
+                        </paper-action-dialog>
+
+                        <!-- Back button from edit/view to list -->
                         <paper-icon-button icon="arrow-back" class="main-button"
-                                           on-tap="{{main}}"></paper-icon-button>
+                                           on-tap="{{main}}">
+                        </paper-icon-button>
+
                         <div hero hero-id="{{selected.id}}" class="detail" vertical layout fit slide-up>
                             <div class="detail-content" vertical layout>
                                 <div>
@@ -573,6 +581,7 @@
                                         <smart-editor id="textArea" label="Description" value="{{selected.description}}" floatingLabel underline disabled>
                                         </smart-editor>
                                     </template>
+
                                     <template if="{{mode == 'view'}}">
                                         <div class="floated-label">
                                             <span class="label-text">Description</span>
@@ -585,8 +594,10 @@
                                     <template if="{{!modeDisabled}}">
                                         <div center horizontal layout class="fullday">
                                             <div flex>Full Day</div>
-                                            <paper-toggle-button checked="{{selected.full_day}}"
-                                                                 disabled="{{modeDisabled}}"></paper-toggle-button>
+                                            <paper-toggle-button 
+                                                checked="{{selected.full_day}}"
+                                                disabled="{{modeDisabled}}">
+                                            </paper-toggle-button>
                                         </div>
                                         <paper-tabs selected="{{tabSelected}}" class="tabs">
                                             <paper-tab>Period</paper-tab>
@@ -627,6 +638,17 @@
                                             </div>
                                         </div>
                                     </core-pages>
+                                    <template if="{{!modeDisabled}}">
+                                        <div center horizontal layout class="fullday">
+                                            <div flex>Repeat</div>
+                                            <paper-toggle-button 
+                                                id="repeatToggle"
+                                                checked="{{selected.repeated}}"
+                                                on-change="{{repeatToggled}}"
+                                                disabled="{{modeDisabled}}">
+                                            </paper-toggle-button>
+                                        </div>
+                                    </template>
                                     <member-select teamsUrl="/platform/teams_users"
                                                    disabled="{{modeDisabled}}"
                                                    selected="{{selected.participants}}"
@@ -1067,7 +1089,20 @@
                         this.selected.from_time = newValue;
                     }
                 }
+            },
+
+            // Event method for repeat paper-toggle-button
+            repeatToggled: function(event, detail, target) {
+                if (target.checked) {
+                    this.$.repeatEventDialog.toggle();
+                }
+            },
+
+            //
+            cancelRepeatEvent: function(event, detail, target) {
+                this.$.repeatToggle.checked = false;
             }
+
         });
     </script>
 </polymer-element>
