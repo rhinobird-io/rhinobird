@@ -98,7 +98,7 @@
                     // Replace links and emails
                     value = value.replace(/(^|\s)((http|ftp)s?:\/\/\S+)/gi,
                         "$1<a href='$2' target='_blank'>$2</a>");
-                    value = value.replace(EMAIL_REGEX, "$1<a href='mailto:$1'>$2</a>");
+                    value = value.replace(EMAIL_REGEX, "$1<a href='mailto:$2'>$2</a>");
                 }
                 if (this.enableCode) {
                     // Re-insert code blocks

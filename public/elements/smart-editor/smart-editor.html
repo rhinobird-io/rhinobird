@@ -215,7 +215,10 @@
             },
 
             valueChanged: function () {
-                this.$.autogrow.update(this.$.textarea);
+                var _this = this;
+                setTimeout(function() {
+                    _this.$.autogrow.update(_this.$.textarea);
+                }, 0);
             },
 
             clearText: function () {
