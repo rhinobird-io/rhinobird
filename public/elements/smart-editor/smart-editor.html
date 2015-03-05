@@ -23,7 +23,7 @@
         Optional values: "none", "enter", "ctrl-enter".
 -->
 
-<polymer-element name="smart-editor" attributes="label value rows maxRows flushKey floatingLabel underline">
+<polymer-element name="smart-editor" attributes="label value rows maxRows flushKey floatingLabel underline disabled">
     <template>
         <style>
             #selector {
@@ -62,8 +62,8 @@
         </style>
 
         <paper-input-decorator label="{{label}}" id="decorator">
-            <paper-autogrow-textarea id="autogrow" rows={{rows}} maxRows={{maxRows}}>
-                <textarea on-input="{{textInputted}}" on-blur="{{inputBlur}}" id="textarea"
+            <paper-autogrow-textarea id="autogrow" rows="{{rows}}" maxRows="{{maxRows}}" disabled="{{disabled}}">
+                <textarea on-input="{{textInputted}}" on-blur="{{inputBlur}}" id="textarea" disabled="{{disabled}}"
                           value="{{value}}"></textarea>
             </paper-autogrow-textarea>
         </paper-input-decorator>
@@ -113,6 +113,7 @@
                 floatingLabel: false,
                 underline: false
             },
+            disabled: false,
 
             ready: function () {
                 this.$.decorator.floatingLabel = this.floatingLabel;
@@ -242,7 +243,8 @@
 
             valueChanged: function () {
                 var _this = this;
-                setTimeout(function () {
+                setTimeout(function() {
+                    _this.$.decorator.updateLabelVisibility(_this.value);
                     _this.$.autogrow.update(_this.$.textarea);
                 }, 0);
             },
