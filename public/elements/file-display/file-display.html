@@ -1,0 +1,15 @@
+<link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
+
+<polymer-element name="file-display" attributes="fileid">
+    <template><a target="_blank" href="/file/files/{{fileid}}/download">{{file.name}}</a><core-ajax id="ajax" handleAs="json" response="{{file}}"></core-ajax></template>
+    <script>
+        Polymer({
+            fileidChanged: function (oldValue, newValue) {
+                if (newValue) {
+                    this.$.ajax.url = "/file/files/" + newValue;
+                    this.$.ajax.go();
+                }
+            }
+        })
+    </script>
+</polymer-element>

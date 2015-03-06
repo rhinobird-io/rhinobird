@@ -3,7 +3,10 @@
 <link rel="import" href="../../bower_components/paper-input/paper-autogrow-textarea.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input-decorator.html">
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/ajax-file-input/ajax-file-input.html">
 <link rel="import" href="../member-select/member-element.html">
 <link rel="import" href="../x-completion/x-completion.html">
 
@@ -20,7 +23,7 @@
         Optional values: "none", "enter", "ctrl-enter".
 -->
 
-<polymer-element name="smart-editor" attributes="label value rows maxRows flushKey floatingLabel underline">
+<polymer-element name="smart-editor" attributes="label value rows maxRows flushKey floatingLabel underline disabled">
     <template>
         <style>
             #selector {
@@ -46,15 +49,21 @@
             paper-input-decorator /deep/ .input-body {
                 line-height: 1.2em;
             }
+
             .manual {
-                color: rgba(255,255,255,0.7);
+                color: rgba(0, 0, 0, 0.54);
+                font-style: italic;
+            }
+
+            .core-selected .manual {
+                color: rgba(255, 255, 255, 0.7);
                 font-style: italic;
             }
         </style>
 
-        <paper-input-decorator label="{{label}}" id="decorator">
-            <paper-autogrow-textarea id="autogrow" rows={{rows}} maxRows={{maxRows}}>
-                <textarea on-input="{{textInputted}}" on-blur="{{inputBlur}}" id="textarea"
+        <paper-input-decorator label="{{label}}" id="decorator" disabled="{{disabled}}">
+            <paper-autogrow-textarea id="autogrow" rows="{{rows}}" maxRows="{{maxRows}}">
+                <textarea on-input="{{textInputted}}" on-blur="{{inputBlur}}" id="textarea" disabled?="{{disabled}}"
                           value="{{value}}"></textarea>
             </paper-autogrow-textarea>
         </paper-input-decorator>
@@ -77,6 +86,10 @@
             </x-completion>
         </div>
 
+        <paper-action-dialog backdrop autoCloseDisabled id="fileUpload" vertical layout>
+            <ajax-file-input id="fileInput" url="/file/files" on-success="{{fileUploaded}}"></ajax-file-input>
+            <paper-button affirmative autofocus on-tap="{{cancelFileUpload}}">Cancel</paper-button>
+        </paper-action-dialog>
         <core-ajax url="/platform/users" auto handleAs="json" response="{{users}}"></core-ajax>
     </template>
 
@@ -100,6 +113,7 @@
                 floatingLabel: false,
                 underline: false
             },
+            disabled: false,
 
             ready: function () {
                 this.$.decorator.floatingLabel = this.floatingLabel;
@@ -107,7 +121,8 @@
                     this.$.decorator.$.underline.style.display = "none";
                 }
             },
-            commands: [{name: 'vity', manual:':room_name'}],
+            commands: [{name: 'vity', manual: ':room_name'},
+                {name: 'file', manual: ':file_id'}],
             textInputted: function (event, detail, target) {
                 this.$.selector.active = false;
                 var lastWord = target.value.substring(0, target.selectionEnd).match(/([^\s]*)$/)[1];
@@ -123,7 +138,7 @@
                     menu.style.right = "";
                     menu.style.marginTop = "1em";
                     var text = lastWord.substring(1);
-                    if(this.completingChar == "@"){
+                    if (this.completingChar == "@") {
                         this.filteredUsers = this.filterUser(text);
                         this.$.selector.active = this.filteredUsers.length ? true : false;
                     } else {
@@ -180,9 +195,10 @@
             },
 
             doFilter: function (event, detail, sender) {
-                if ((this.flushKey == "enter" && !event.ctrlKey && !event.shiftKey && !event.altKey) ||
-                        (this.flushKey == "ctrl-enter" && event.ctrlKey && !event.shiftKey && !event.altKey)) {
-                    // Trigger flush function
+                if ((this.flushKey == "enter" &&
+                    event.keyCode === 13 && !event.ctrlKey && !event.shiftKey && !event.altKey) ||
+                    (this.flushKey == "ctrl-enter" &&
+                    event.keyCode === 13 && event.ctrlKey && !event.shiftKey && !event.altKey)) {
                     event.preventDefault();
                     this.flush();
                 } else {
@@ -192,16 +208,28 @@
             },
 
             selectHandler: function (event, detail, target) {
-                if(this.completingChar == "@") {
+                if (this.completingChar == "@") {
                     var user = detail.model.u;
                     this.replaceText("@" + user.name + " ");
                 } else {
                     var c = detail.model.c;
                     this.replaceText("/" + c.name);
+                    if (c.name == 'file') {
+                        this.$.fileInput.clear();
+                        this.$.fileUpload.open();
+                    }
                 }
                 this.$.selector.active = false;
             },
 
+            fileUploaded: function (event, detail, target) {
+                var file = JSON.parse(detail.xhr.response);
+                this.value += ":" + file.id + " ";
+                this.$.fileUpload.close();
+            },
+            cancelFileUpload: function () {
+                this.value = this.value.substring(0, this.value.length - 5);
+            },
             replaceText: function (text) {
                 var left, right;
                 left = this.value.substring(0, this.$.textarea.selectionEnd);
@@ -217,6 +245,7 @@
             valueChanged: function () {
                 var _this = this;
                 setTimeout(function() {
+                    _this.$.decorator.updateLabelVisibility(_this.value);
                     _this.$.autogrow.update(_this.$.textarea);
                 }, 0);
             },

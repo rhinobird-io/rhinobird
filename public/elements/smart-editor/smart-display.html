@@ -1,5 +1,6 @@
 <link rel="import" href="../app-globals/app-globals.html">
 <link rel="import" href="../html-echo/html-echo.html">
+<link rel="import" href="../file-display/file-display.html">
 <script src="../../bower_components/highlightjs/highlight.pack.js"></script>
 <script src="../../bower_components/sprintf/dist/sprintf.min.js"></script>
 
@@ -24,8 +25,8 @@
     <script>
         function stripTags(value) {
             return value.replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;");
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
         }
 
         Polymer('smart-display', {
@@ -34,10 +35,10 @@
             enableCode: true,
             enableLink: true,
 
-            domReady: function(){
+            domReady: function () {
                 this.readyDom = true;
             },
-            slashTrigger: function(text, plugin, args) {
+            slashTrigger: function (text, plugin, args) {
                 if (args == undefined) args = "";
                 if (plugin.toLowerCase() == "vity") {
                     var link = document.createElement("a");
@@ -46,6 +47,10 @@
                     link.target = "_blank";
                     link.innerHTML = text;
                     return link;
+                } else if (plugin.toLowerCase() == "file") {
+                    var display = document.createElement("file-display");
+                    display.setAttribute("fileid", args);
+                    return display;
                 } else {
                     // TODO Design the format
                     var link = document.createElement("a");
@@ -55,7 +60,7 @@
                 }
             },
 
-            wrap: function(value) {
+            wrap: function (value) {
                 if (!value) return "";
                 value = stripTags(value);
                 var root = document.createElement("span");
@@ -97,7 +102,7 @@
                 if (this.enableLink) {
                     // Replace links and emails
                     value = value.replace(/(^|\s)((http|ftp)s?:\/\/\S+)/gi,
-                        "$1<a href='$2' target='_blank'>$2</a>");
+                            "$1<a href='$2' target='_blank'>$2</a>");
                     value = value.replace(EMAIL_REGEX, "$1<a href='mailto:$2'>$2</a>");
                 }
                 if (this.enableCode) {
