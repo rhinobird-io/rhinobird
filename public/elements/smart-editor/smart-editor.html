@@ -227,10 +227,12 @@
                 var file = JSON.parse(detail.xhr.response);
                 this.value += ":" + file.id + " ";
                 this.$.fileUpload.close();
+                this.$.textarea.focus();
             },
             cancelFileUpload: function () {
                 this.$.fileInput.cancel();
                 this.value = this.value.substring(0, this.value.length - 5);
+                this.$.textarea.focus();
             },
             replaceText: function (text) {
                 var left, right;
