@@ -229,6 +229,7 @@
                 this.$.fileUpload.close();
             },
             cancelFileUpload: function () {
+                this.$.fileInput.cancel();
                 this.value = this.value.substring(0, this.value.length - 5);
             },
             replaceText: function (text) {
