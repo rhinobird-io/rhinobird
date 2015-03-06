@@ -1,7 +1,9 @@
 <link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="../../bower_components/core-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/core-icon/core-icon.html">
 
 <polymer-element name="file-display" attributes="fileid">
-    <template><a target="_blank" href="/file/files/{{fileid}}/download">{{file.name}}</a><core-ajax id="ajax" handleAs="json" response="{{file}}"></core-ajax></template>
+    <template><a target="_blank" href="/file/files/{{fileid}}/download"><core-icon icon="editor:insert-drive-file"></core-icon>{{file.name}}</a><core-ajax id="ajax" handleAs="json" response="{{file}}"></core-ajax></template>
     <script>
         Polymer({
             fileidChanged: function (oldValue, newValue) {
