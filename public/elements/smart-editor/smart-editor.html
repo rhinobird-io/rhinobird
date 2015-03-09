@@ -4,6 +4,7 @@
 <link rel="import" href="../../bower_components/paper-input/paper-input-decorator.html">
 <link rel="import" href="../../bower_components/paper-shadow/paper-shadow.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog-transition.html">
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/ajax-file-input/ajax-file-input.html">
@@ -86,7 +87,7 @@
             </x-completion>
         </div>
 
-        <paper-action-dialog backdrop autoCloseDisabled id="fileUpload" vertical layout>
+        <paper-action-dialog backdrop autoCloseDisabled id="fileUpload" vertical layout transition="core-transition-center">
             <ajax-file-input id="fileInput" url="/file/files" on-success="{{fileUploaded}}"></ajax-file-input>
             <paper-button affirmative autofocus on-tap="{{cancelFileUpload}}">Cancel</paper-button>
         </paper-action-dialog>
@@ -226,9 +227,12 @@
                 var file = JSON.parse(detail.xhr.response);
                 this.value += ":" + file.id + " ";
                 this.$.fileUpload.close();
+                this.$.textarea.focus();
             },
             cancelFileUpload: function () {
+                this.$.fileInput.cancel();
                 this.value = this.value.substring(0, this.value.length - 5);
+                this.$.textarea.focus();
             },
             replaceText: function (text) {
                 var left, right;
