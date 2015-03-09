@@ -106,6 +106,10 @@
         margin-top: 4px;
     }
 
+    time-input {
+        margin-left: 12px;
+    }
+
     p.description {
         margin-bottom: 0;
     }
@@ -171,10 +175,6 @@
 
     .event.active {
         background-color: {{g.theme.accentBgColor}};
-    }
-
-    time-input.upper {
-        margin-top: -35px;
     }
 
     date-input {
@@ -769,28 +769,39 @@
                                         </paper-tabs>
                                     </template>
 
+                                    <!-- Select from_time and to_time -->
                                     <core-pages selected="{{tabSelected}}" class="pages">
                                         <div class="page">
                                             <div layout horizontal justified end>
-                                                <div layout vertical>
-                                                    <date-input label="From" disabled="{{modeDisabled}}"
-                                                                date="{{selected.from_time}}">
+                                                <div layout horizontal flex class="datetime-selector">
+                                                    <!-- from_date -->
+                                                    <date-input 
+                                                        label="From" 
+                                                        disabled="{{modeDisabled}}"
+                                                        date="{{selected.from_time}}">
                                                     </date-input>
+
+                                                    <!-- from_time -->
                                                     <template if="{{!selected.full_day}}">
-                                                        <time-input class="upper"
-                                                                    disabled="{{modeDisabled}}"
-                                                                    time="{{selected.from_time}}">
+                                                        <time-input 
+                                                            class="upper"
+                                                            disabled="{{modeDisabled}}"
+                                                            time="{{selected.from_time}}">
                                                         </time-input>
                                                     </template>
                                                 </div>
-                                                <div layout vertical>
+                                                <div layout horizontal flex end-justified class="datetime-selector">
+                                                    <!-- to_date -->
                                                     <date-input label="To" disabled="{{modeDisabled}}"
                                                                 date="{{selected.to_time}}">
                                                     </date-input>
+
+                                                    <!-- to_time -->
                                                     <template if="{{!selected.full_day}}">
-                                                        <time-input class="upper"
-                                                                    disabled="{{modeDisabled}}"
-                                                                    time="{{selected.to_time}}">
+                                                        <time-input 
+                                                            class="upper"
+                                                            disabled="{{modeDisabled}}"
+                                                            time="{{selected.to_time}}">
                                                         </time-input>
                                                     </template>
                                                 </div>
