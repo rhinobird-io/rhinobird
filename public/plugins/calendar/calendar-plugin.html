@@ -198,7 +198,7 @@
     }
 
     .list {
-        *margin-top: 20px;
+        padding-bottom: 40px;
     }
 
     .subTitle {
@@ -366,9 +366,9 @@
     #repeatEventDialog {
         font-size: 0.8em;
         max-width: 90%;
-        width: 450px;
+        width: 500px;
         height: 60%;
-        min-height: 420px;
+        min-height: 460px;
     }
 
     #repeatEventDialogContent > div{
@@ -606,7 +606,7 @@
                             <paper-button affirmative on-tap="{{doDelete}}">Delete</paper-button>
                         </paper-action-dialog>
 
-                        <!-- -->
+                        <!-- Repeated event dialog-->
                         <paper-action-dialog backdrop autoCloseDisabled heading="Repeat" layered="false" id="repeatEventDialog">
                             <div vertical layout id="repeatEventDialogContent">
                                 <div horizontal auto-vertical layout>
@@ -627,7 +627,8 @@
                                     <span>
                                         <paper-input label="frequency" 
                                             id="repeatedFrequency" 
-                                            value="{{selected.repeated_frequency}}">
+                                            value="{{selected.repeated_frequency}}"
+                                            on-input="{{repeatedFrequencyChange}}">
                                         </paper-input> 
 
                                         <template if="{{selected.repeated_type == 'Daily'}}">
@@ -694,7 +695,9 @@
                                     <core-label flex></core-label>
                                     <span style="">
                                         After 
-                                        <paper-input id="repeatedTimes" label="times" value="{{selected.repeated_times}}">
+                                        <paper-input id="repeatedTimes" label="times" 
+                                            on-input="{{repeatedTimesChange}}"
+                                            value="{{selected.repeated_times}}">
                                         </paper-input> 
                                         times
                                     </span>
@@ -712,7 +715,8 @@
                                 </div>
 
                                 <div horizontal layout>
-                                    <core-label flex>Summary:</core-label>
+                                    <core-label flex>Repeat Summary:</core-label>
+                                    <core-label flex two end-justified style="text-align:right;">{{selected.summary}}</core-label>
                                 </div>
                             </div>
                             <paper-button affirmative on-tap="{{confirmRepeatEvent}}">Done</paper-button>
@@ -804,9 +808,16 @@
                                             </div>
                                         </div>
                                     </core-pages>
+
+                                    <!-- Repeat event toggle button -->
                                     <template if="{{!modeDisabled}}">
                                         <div center horizontal layout class="fullday">
-                                            <div flex>Repeat</div>
+                                            <div flex>
+                                                Repeat 
+                                                <template if="{{selected.repeated}}">
+                                                    : {{selected.summary}}
+                                                </template>
+                                            </div>
                                             <paper-toggle-button 
                                                 id="repeatToggle"
                                                 checked="{{selected.repeated}}"
@@ -815,6 +826,7 @@
                                             </paper-toggle-button>
                                         </div>
                                     </template>
+                                    
                                     <member-select teamsUrl="/platform/teams_users"
                                                    disabled="{{modeDisabled}}"
                                                    selected="{{selected.participants}}"
@@ -891,10 +903,33 @@
     </template>
     <script src="../../bower_components/moment/moment.js"></script>
     <script>
+        // Return the number of week days of a month
+        // Eg: 2015/2/1 is the first sunday of February, it will return 1.
+        Date.prototype.weekOfMonth = function() {
+            var date = this.getDate();
+            var result = 1;
+            while (date - 7 >= 0) {
+                result++;
+                date -= 7;
+            }
+            return result;
+        }
+
         Polymer({
             mode: "list",
             isListLoaded: false,
             daysInWeek: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            months: ['January', 'February', 'March', 'April', 'May', 'June', 
+                     'July', 'Augest', 'September', 'October', 'November', 'December'],
+            daysInWeekMap: {
+                'Sun': 'Sunday',
+                'Mon': 'Monday',
+                'Tue': 'Tuesday',
+                'Wed': 'Wednesday',
+                'Thu': 'Thursday',
+                'Fri': 'Friday',
+                'Sat': 'Saturday'
+            },
             computed:{
                 modeDisabled: 'mode=="view"'
             },
@@ -907,6 +942,7 @@
                 'selected.from_time': 'fromTimeUpdated',
                 'selected.to_time': 'toTimeUpdated',
             },
+
             ready: function() {
                 this.loadingMoreOlderEvents = false;
                 this.loadingMoreNewerEvents = false;
@@ -980,6 +1016,7 @@
                     self.bottomSpinnerTop = -45 + self.$.eventList.scrollHeight + 55;
                 }, 100);
             },
+
             handleEvents: function (event, detail) {
                 var self = this;
                 this.events = detail.response;
@@ -992,6 +1029,7 @@
                 if (this.events.length > 0)
                     this.range = {min: this.events[0].from_time, max: this.events[this.events.length - 1].from_time};
             },
+
             handleSingleEvent: function(event, detail) {
                 this.selected = detail.response;
                 this.parseEvent(this.selected);  
@@ -1003,6 +1041,7 @@
                 }, 100);
                 this.mode = 'view';
             },
+
             handleSingleEventError: function(event, detail) {
                 console.log(detail)
                 if (detail.xhr.status == 404) {
@@ -1011,12 +1050,14 @@
                     this.$.pages.selected = 2;
                 }
             },
+
             changeTab: function (oldV, newV) {
                 this.tabSelected = newV ? 0 : 1;
                 if (newV && !this.selected.to_time) {
                     this.selected.to_time = new Date();
                 }
             },
+
             parseEvent: function(event) {
                 var members = {};
                 members.users = [];
@@ -1043,6 +1084,7 @@
                     event.to_time = to_date.toISOString();
                 }
             },
+
             copyEvent: function(event) {
                 var newEvent = {};
                 newEvent.from_time = event.from_time.toISOString();
@@ -1060,9 +1102,11 @@
                 newEvent.description = event.description;
                 return newEvent;
             },
+
             to_time: function (date) {
                 return moment(date).format('HH:mm');
             },
+
             select: function (event, detail, target) {
                 this.selected = target.templateInstance.model.model;
                 //this.selected.selected = {};
@@ -1073,6 +1117,7 @@
                 self.$.pages.selected = 1;
                 this.mode = 'view';
             },
+
             main: function () {
                 this.$.pages.selected = 0;
                 this.mode = 'list';
@@ -1083,6 +1128,7 @@
                     if (this.eventId != null) this.eventId = null;
                 }
             },
+
             jumpToAdd: function () {
                 this.selected = {from_time: new Date(), to_time: new Date(), participants: {}, full_day: false, period: true};
                 this.selected.participants.teams = [];
@@ -1098,6 +1144,7 @@
                 );
                 this.mode = 'edit';
             },
+
             saveEvent: function(){
                 if (this.selected.title == null || this.selected.title.length == 0) {
                     this.$.titleCannotBeEmpty.show();
@@ -1108,6 +1155,7 @@
                 this.eventBody = JSON.stringify(this.copyEvent(this.selected));
                 this.$.postEvent.go();
             },
+
             eventSaved: function(event, detail) {
                 this.mode = 'view';
 
@@ -1120,13 +1168,16 @@
                 this.refresh();
 
             },
+
             deleteEvent: function() {
                 this.$.confirmDeleteDialog.toggle();
                 //this.$.deleteEvent.go();
             },
+
             doDelete: function() {
                 this.$.deleteEvent.go();
             },
+
             eventDeleted: function(event, detail) {
                 console.log(this.selected);
                 if (this.events != null) {
@@ -1144,6 +1195,7 @@
                 this.$.eventDeletedToast.show();
                 this.refresh();
             },
+
             loadMoreNewerEvents: function() {
                 if (!this.noMoreNewerEvents && this.range != undefined) {
                     this.loadingMoreNewerEvents = true;
@@ -1157,6 +1209,7 @@
                     }, 500);
                 }
             },
+
             loadMoreOlderEvents: function() {
                 if (!this.noMoreOlderEvents && this.range != undefined) {
                     this.loadingMoreOlderEvents = true;
@@ -1170,6 +1223,7 @@
                     }, 500);
                 }
             },
+
             handleLoadEvents: function(type, event, detail) {
                 var self = this;
                 var events = detail.response;
@@ -1227,9 +1281,11 @@
                     this.$.threshold.clearUpper();
                     
             },
+
             handleLoadNewerEvents: function(event, detail) {
                 this.handleLoadEvents(1, event, detail);
             },
+
             handleLoadOlderEvents: function(event, detail) {
                 this.handleLoadEvents(2, event, detail);
             },
@@ -1290,6 +1346,11 @@
                         var from = new Date(this.selected.from_time);
                         this.selected.repeated_on.push(this.daysInWeek[from.getDay()]); 
                     }
+
+                    // When repeated type is Monthly, event can be repeated by day of month of day of week
+                    if (this.selected.repeated_by == undefined) {
+                        this.selected.repeated_by = 'Month';
+                    }
                 }
             },
 
@@ -1302,6 +1363,7 @@
             // Triggered when repeated type is changed.
             repeatedTypeChange: function(event, detail, target) {
                 this.$.repeatedFrequency.focus();
+                this.updateSummary();
             },
 
             // Triggered when repeated days of week are changed.
@@ -1313,12 +1375,21 @@
                     var from = new Date(this.selected.from_time);
                     this.selected.repeated_on.push(this.daysInWeek[from.getDay()]); 
                 }
+                this.updateSummary();
+            },
+
+            repeatedFrequencyChange: function(event, detail, target) {
+                this.updateSummary();
             },
 
             // Triggered when repeated day of month changed.
             // When repeated type is monthly, users can decide to repeat by day of month of day of week.
             repeatedDayOfMonthChange: function(event, detail, target) {
+                this.updateSummary();
+            },
 
+            repeatedTimesChange: function(event, detail, target) {
+                this.updateSummary();
             },
 
             // Event method for repeated end type change
@@ -1332,6 +1403,79 @@
                         this.selected.repeated_end_date = endDate;
                     }
                 }
+                this.updateSummary();
+            }, 
+
+            updateSummary: function() {
+                if (!this.selected.repeated) return 'None';
+                var summary = "", frequencyOne, frequencyMultiple;
+                frequencyOne = this.selected.repeated_type;
+
+                if (this.selected.repeated_type == 'Daily') {
+                    frequencyMultiple = 'days';
+                } else if (this.selected.repeated_type == 'Weekly') {
+                    frequencyMultiple = 'weeks';
+                } else if (this.selected.repeated_type == 'Monthly') {
+                    frequencyMultiple = 'months'
+                } else if (this.selected.repeated_type == 'Yearly') {
+                    frequencyMultiple = 'years';
+                }
+
+                // Repeat event frequency summary
+                if (this.selected.repeated_frequency == 1) {
+                    summary += frequencyOne;
+                } else if (this.selected.repeated_frequency > 1) {
+                    summary += ("Every " + this.selected.repeated_frequency + " " + frequencyMultiple);
+                } else {
+                    summary += frequencyOne;
+                }
+
+                var from = new Date(this.selected.from_time);
+
+                // Repeat event days summary
+                if (this.selected.repeated_type == 'Weekly') {
+                    summary += ' on ';
+                    for (var i = 0; i < this.selected.repeated_on.length; i++) {
+                        summary += this.daysInWeekMap[this.selected.repeated_on[i]];
+                        if (i != this.selected.repeated_on.length - 1)
+                            summary += ', ';
+                    }
+                } else if (this.selected.repeated_type == 'Monthly') {
+                    summary += ' on ';
+                    if (this.selected.repeated_by == 'Month') {
+                        summary += ' day ' + from.getDate();
+                    } else if (this.selected.repeated_by == 'Week') {
+                        summary += ' the ';
+                        var weekOfMonth = from.weekOfMonth();
+
+                        if (weekOfMonth == 1) {
+                            summary += ' first ';
+                        } else if (weekOfMonth == 2) {
+                            summary += ' second ';
+                        } else if (weekOfMonth == 3) {
+                            summary += ' third ';
+                        } else if (weekOfMonth == 4) {
+                            summary += ' fourth ';
+                        } else if (weekOfMonth == 5) {
+                            summary += ' fifth ';
+                        }
+
+                        summary += this.daysInWeekMap[this.daysInWeek[from.getDay()]];
+                    }
+                } else if (this.selected.repeated_type == 'Yearly') {
+                    summary += ' on ' + this.months[from.getMonth()] + ' ' + from.getDate();
+                }
+
+                // Repeat event ends way summary
+                if (this.selected.repeated_end_type == 'Occurence') {
+                    if (isNaN(this.selected.repeated_times)) this.selected.repeated_times = 1;
+                    else this.selected.repeated_times = Math.floor(this.selected.repeated_times);
+
+                    summary += ", " + this.selected.repeated_times + " times";
+                } else if (this.selected.repeated_end_type == 'Date') {
+                    summary += ", until " + this.selected.repeated_end_date.toDateString();
+                }
+                this.selected.summary = summary;
             }
             
         });
