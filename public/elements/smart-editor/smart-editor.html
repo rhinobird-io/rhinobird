@@ -110,11 +110,15 @@
         }
 
         Polymer({
+            disabled: false,
             publish: {
                 floatingLabel: false,
                 underline: false
             },
-            disabled: false,
+            commands: [
+                {name: 'vity', manual: ':room_name'},
+                {name: 'file', manual: ':file_id'}
+            ],
 
             ready: function () {
                 this.$.decorator.floatingLabel = this.floatingLabel;
@@ -122,8 +126,7 @@
                     this.$.decorator.$.underline.style.display = "none";
                 }
             },
-            commands: [{name: 'vity', manual: ':room_name'},
-                {name: 'file', manual: ':file_id'}],
+
             textInputted: function (event, detail, target) {
                 this.$.selector.active = false;
                 var lastWord = target.value.substring(0, target.selectionEnd).match(/([^\s]*)$/)[1];
@@ -172,6 +175,7 @@
                     self.$.selector.active = false;
                 }, 100);
             },
+
             filterUser: function (text) {
                 var result = [];
                 text = text.toLowerCase();
@@ -184,6 +188,7 @@
                 }
                 return result;
             },
+
             filterCommand: function (text) {
                 var result = [];
                 text = text.toLowerCase();
@@ -229,11 +234,13 @@
                 this.$.fileUpload.close();
                 this.$.textarea.focus();
             },
+
             cancelFileUpload: function () {
                 this.$.fileInput.cancel();
                 this.value = this.value.substring(0, this.value.length - 5);
                 this.$.textarea.focus();
             },
+
             replaceText: function (text) {
                 var left, right;
                 left = this.value.substring(0, this.$.textarea.selectionEnd);
@@ -262,6 +269,5 @@
                 this.fire("flush", {"value": this.$.textarea.value});
             }
         });
-
     </script>
 </polymer-element>
