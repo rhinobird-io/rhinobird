@@ -22,9 +22,16 @@
 
     flushKey:
         Optional values: "none", "enter", "ctrl-enter".
+
+    disabled:
+        whether user can change the value.
+
+    atUsers:
+        All (unique) usernames following an @, but not guaranteed valid.
 -->
 
-<polymer-element name="smart-editor" attributes="label value rows maxRows flushKey floatingLabel underline disabled">
+<polymer-element name="smart-editor" attributes="label value rows maxRows flushKey floatingLabel
+                                                 underline disabled atUsers">
     <template>
         <style>
             #selector {
@@ -111,6 +118,7 @@
 
         Polymer({
             disabled: false,
+            atUsers: [],
             publish: {
                 floatingLabel: false,
                 underline: false
@@ -254,6 +262,17 @@
             },
 
             valueChanged: function () {
+                // Add all (valid or invalid) usernames following an @ to atUsers
+                var regex = /(^|\s)@\w+/g;
+                this.atUsers = [];
+                do {
+                    var match = regex.exec(this.value);
+                    if (match) this.atUsers.push(match[0].trim().substr(1));
+                } while (match);
+                this.atUsers = this.atUsers.filter(function (x, i, arr) {
+                    return arr.lastIndexOf(x) === i;
+                });
+                // Update display effect
                 var _this = this;
                 setTimeout(function() {
                     _this.$.decorator.updateLabelVisibility(_this.value);
