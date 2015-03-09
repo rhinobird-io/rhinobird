@@ -1033,12 +1033,8 @@
             handleSingleEvent: function(event, detail) {
                 this.selected = detail.response;
                 this.parseEvent(this.selected);  
-                var self = this;
-                setTimeout(function () {
-                    // self.$.autogrowArea.update(self.$.textArea);
-                    // self.$.decorator.updateLabelVisibility(self.$.textArea.value);
-                    self.$.pages.selected = 1;
-                }, 100);
+                
+                this.$.pages.selected = 1;
                 this.mode = 'view';
             },
 
@@ -1083,6 +1079,8 @@
                     event.from_time = from_date.toISOString();
                     event.to_time = to_date.toISOString();
                 }
+                if (event.description == undefined || event.description.length == 0)
+                    event.description = ' ';
             },
 
             copyEvent: function(event) {
@@ -1100,6 +1098,17 @@
                 newEvent.period = event.period;
                 newEvent.title = event.title;
                 newEvent.description = event.description;
+                newEvent.repeated = event.repeated;
+                
+                if (newEvent.repeated) {
+                    newEvent.repeated_type = event.repeated_type;
+                    newEvent.repeated_on = event.repeated_on;
+                    newEvent.repeated_by = event.repeated_by;
+                    newEvent.repeated_frequency = event.repeated_frequency;
+                    newEvent.repeated_end_type = event.repeated_end_type;
+                    newEvent.repeated_times = event.repeated_times;
+                    newEvent.repeated_end_date = event.repeated_end_date;
+                }
                 return newEvent;
             },
 
@@ -1109,10 +1118,9 @@
 
             select: function (event, detail, target) {
                 this.selected = target.templateInstance.model.model;
-                //this.selected.selected = {};
-                //this.selected.selected.users = this.selected.participants;
-                //this.selected.selected.teams = [];
-                //console.log(this.selected);
+                
+                if (this.selected.description == undefined || this.selected.description.length == 0)
+                    this.selected.description = ' ';
                 var self = this;
                 self.$.pages.selected = 1;
                 this.mode = 'view';
