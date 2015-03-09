@@ -130,6 +130,10 @@
         max-width: 320px;
     }
 
+    .pages {
+        margin-top: 0.75em;
+    }
+
     .fullday {
         margin: 1em 0;
     }
@@ -358,7 +362,7 @@
     }
 
     .floated-content {
-        margin: 0.5em 0 0.25em;
+        margin: 0.5em 0 0.5em;
         padding: 0.25em 0;
         border-bottom: 1px dashed #757575;
     }
@@ -381,14 +385,16 @@
 
     paper-input#repeatedTimes /deep/ paper-input-decorator,
     paper-input#repeatedFrequency /deep/ paper-input-decorator,
-    date-input#repeatedEndDate /deep/ paper-input-decorator {
+    date-input /deep/ paper-input-decorator,
+    time-input /deep/ paper-input-decorator {
         margin: 0;
         padding: 0;
     }
 
     paper-input#repeatedTimes /deep/ paper-input-decorator input,
     paper-input#repeatedFrequency /deep/ paper-input-decorator input,
-    date-input#repeatedEndDate /deep/ paper-input-decorator * {
+    date-input /deep/ paper-input-decorator *,
+    time-input /deep/ paper-input-decorator * {
         margin: 0;
         padding: 0;
     }
@@ -772,38 +778,48 @@
                                     <!-- Select from_time and to_time -->
                                     <core-pages selected="{{tabSelected}}" class="pages">
                                         <div class="page">
-                                            <div layout horizontal justified end>
-                                                <div layout horizontal flex class="datetime-selector">
-                                                    <!-- from_date -->
-                                                    <date-input 
-                                                        label="From" 
-                                                        disabled="{{modeDisabled}}"
-                                                        date="{{selected.from_time}}">
-                                                    </date-input>
-
-                                                    <!-- from_time -->
-                                                    <template if="{{!selected.full_day}}">
-                                                        <time-input 
-                                                            class="upper"
+                                            <div layout horizontal justified>
+                                                <div layout vertical>
+                                                    <div class="floated-label" hidden?="{{!modeDisabled}}">
+                                                        <span class="label-text">From</span>
+                                                    </div>
+                                                    <div layout horizontal>
+                                                        <!-- from_date -->
+                                                        <date-input 
+                                                            label="From" 
                                                             disabled="{{modeDisabled}}"
-                                                            time="{{selected.from_time}}">
-                                                        </time-input>
-                                                    </template>
+                                                            date="{{selected.from_time}}">
+                                                        </date-input>
+
+                                                        <!-- from_time -->
+                                                        <template if="{{!selected.full_day}}">
+                                                            <time-input 
+                                                                class="upper"
+                                                                disabled="{{modeDisabled}}"
+                                                                time="{{selected.from_time}}">
+                                                            </time-input>
+                                                        </template>
+                                                    </div>
                                                 </div>
-                                                <div layout horizontal flex end-justified class="datetime-selector">
-                                                    <!-- to_date -->
-                                                    <date-input label="To" disabled="{{modeDisabled}}"
-                                                                date="{{selected.to_time}}">
-                                                    </date-input>
+                                                <div layout vertical>
+                                                    <div class="floated-label" hidden?="{{!modeDisabled}}">
+                                                        <span class="label-text">To</span>
+                                                    </div>
+                                                    <div layout horizontal flex end-justified>
+                                                        <!-- to_date -->
+                                                        <date-input label="To" disabled="{{modeDisabled}}"
+                                                                    date="{{selected.to_time}}">
+                                                        </date-input>
 
-                                                    <!-- to_time -->
-                                                    <template if="{{!selected.full_day}}">
-                                                        <time-input 
-                                                            class="upper"
-                                                            disabled="{{modeDisabled}}"
-                                                            time="{{selected.to_time}}">
-                                                        </time-input>
-                                                    </template>
+                                                        <!-- to_time -->
+                                                        <template if="{{!selected.full_day}}">
+                                                            <time-input 
+                                                                class="upper"
+                                                                disabled="{{modeDisabled}}"
+                                                                time="{{selected.to_time}}">
+                                                            </time-input>
+                                                        </template>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -819,6 +835,17 @@
                                             </div>
                                         </div>
                                     </core-pages>
+
+                                    <template if="{{modeDisabled && selected.repeated}}">
+                                        <div style="margin-top:0.75em;">
+                                            <div class="floated-label">
+                                                <span class="label-text">Repeat</span>
+                                            </div>  
+                                            <div class="floated-content">
+                                                <span>{{selected.summary}}</span>
+                                            </div>
+                                        </div>
+                                    </template>
 
                                     <!-- Repeat event toggle button -->
                                     <template if="{{!modeDisabled}}">
@@ -1092,6 +1119,8 @@
                 }
                 if (event.description == undefined || event.description.length == 0)
                     event.description = ' ';
+                if (event.selected)
+                    this.updateSummary(event);
             },
 
             copyEvent: function(event) {
@@ -1382,7 +1411,7 @@
             // Triggered when repeated type is changed.
             repeatedTypeChange: function(event, detail, target) {
                 this.$.repeatedFrequency.focus();
-                this.updateSummary();
+                this.updateSummary(this.selected);
             },
 
             // Triggered when repeated days of week are changed.
@@ -1394,21 +1423,21 @@
                     var from = new Date(this.selected.from_time);
                     this.selected.repeated_on.push(this.daysInWeek[from.getDay()]); 
                 }
-                this.updateSummary();
+                this.updateSummary(this.selected);
             },
 
             repeatedFrequencyChange: function(event, detail, target) {
-                this.updateSummary();
+                this.updateSummary(this.selected);
             },
 
             // Triggered when repeated day of month changed.
             // When repeated type is monthly, users can decide to repeat by day of month of day of week.
             repeatedDayOfMonthChange: function(event, detail, target) {
-                this.updateSummary();
+                this.updateSummary(this.selected);
             },
 
             repeatedTimesChange: function(event, detail, target) {
-                this.updateSummary();
+                this.updateSummary(this.selected);
             },
 
             // Event method for repeated end type change
@@ -1425,45 +1454,45 @@
                 this.updateSummary();
             }, 
 
-            updateSummary: function() {
-                if (!this.selected.repeated) return 'None';
+            updateSummary: function(event) {
+                if (!event.repeated) return 'None';
                 var summary = "", frequencyOne, frequencyMultiple;
-                frequencyOne = this.selected.repeated_type;
+                frequencyOne = event.repeated_type;
 
-                if (this.selected.repeated_type == 'Daily') {
+                if (event.repeated_type == 'Daily') {
                     frequencyMultiple = 'days';
-                } else if (this.selected.repeated_type == 'Weekly') {
+                } else if (event.repeated_type == 'Weekly') {
                     frequencyMultiple = 'weeks';
-                } else if (this.selected.repeated_type == 'Monthly') {
+                } else if (event.repeated_type == 'Monthly') {
                     frequencyMultiple = 'months'
-                } else if (this.selected.repeated_type == 'Yearly') {
+                } else if (event.repeated_type == 'Yearly') {
                     frequencyMultiple = 'years';
                 }
 
                 // Repeat event frequency summary
-                if (this.selected.repeated_frequency == 1) {
+                if (event.repeated_frequency == 1) {
                     summary += frequencyOne;
-                } else if (this.selected.repeated_frequency > 1) {
-                    summary += ("Every " + this.selected.repeated_frequency + " " + frequencyMultiple);
+                } else if (event.repeated_frequency > 1) {
+                    summary += ("Every " + event.repeated_frequency + " " + frequencyMultiple);
                 } else {
                     summary += frequencyOne;
                 }
 
-                var from = new Date(this.selected.from_time);
+                var from = new Date(event.from_time);
 
                 // Repeat event days summary
-                if (this.selected.repeated_type == 'Weekly') {
+                if (event.repeated_type == 'Weekly') {
                     summary += ' on ';
-                    for (var i = 0; i < this.selected.repeated_on.length; i++) {
-                        summary += this.daysInWeekMap[this.selected.repeated_on[i]];
-                        if (i != this.selected.repeated_on.length - 1)
+                    for (var i = 0; i < event.repeated_on.length; i++) {
+                        summary += this.daysInWeekMap[event.repeated_on[i]];
+                        if (i != event.repeated_on.length - 1)
                             summary += ', ';
                     }
-                } else if (this.selected.repeated_type == 'Monthly') {
+                } else if (event.repeated_type == 'Monthly') {
                     summary += ' on ';
-                    if (this.selected.repeated_by == 'Month') {
+                    if (event.repeated_by == 'Month') {
                         summary += ' day ' + from.getDate();
-                    } else if (this.selected.repeated_by == 'Week') {
+                    } else if (event.repeated_by == 'Week') {
                         summary += ' the ';
                         var weekOfMonth = from.weekOfMonth();
 
@@ -1481,20 +1510,20 @@
 
                         summary += this.daysInWeekMap[this.daysInWeek[from.getDay()]];
                     }
-                } else if (this.selected.repeated_type == 'Yearly') {
+                } else if (event.repeated_type == 'Yearly') {
                     summary += ' on ' + this.months[from.getMonth()] + ' ' + from.getDate();
                 }
 
                 // Repeat event ends way summary
-                if (this.selected.repeated_end_type == 'Occurence') {
-                    if (isNaN(this.selected.repeated_times)) this.selected.repeated_times = 1;
-                    else this.selected.repeated_times = Math.floor(this.selected.repeated_times);
+                if (event.repeated_end_type == 'Occurence') {
+                    if (isNaN(event.repeated_times)) event.repeated_times = 1;
+                    else event.repeated_times = Math.floor(event.repeated_times);
 
-                    summary += ", " + this.selected.repeated_times + " times";
-                } else if (this.selected.repeated_end_type == 'Date') {
-                    summary += ", until " + this.selected.repeated_end_date.toDateString();
+                    summary += ", " + event.repeated_times + " times";
+                } else if (event.repeated_end_type == 'Date') {
+                    summary += ", until " + event.repeated_end_date.toDateString();
                 }
-                this.selected.summary = summary;
+                event.summary = summary;
             }
             
         });
