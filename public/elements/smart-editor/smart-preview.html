@@ -17,15 +17,19 @@
             paper-tabs::shadow #selectionBar {
                 background-color: #3F51B5;
             }
+
+            core-icon {
+                margin-right: 1em;
+            }
         </style>
 
         <div vertical layout>
             <paper-tabs selected="{{selected}}">
                 <paper-tab>
-                    <core-icon icon="create"></core-icon> &nbsp; EDIT
+                    <core-icon icon="create"></core-icon> EDIT
                 </paper-tab>
                 <paper-tab on-tap="{{updateDisplayValue}}">
-                    <core-icon icon="visibility"></core-icon> &nbsp; PREVIEW
+                    <core-icon icon="visibility"></core-icon> PREVIEW
                 </paper-tab>
             </paper-tabs>
 
