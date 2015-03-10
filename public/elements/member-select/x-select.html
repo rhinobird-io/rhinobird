@@ -10,7 +10,7 @@
 <link rel="import" href="member-element.html">
 <link rel="import" href="avatar-image.html">
 
-<polymer-element name="x-select" attributes="selected disabled label type maxLen adaptive width height fields">
+<polymer-element name="x-select" attributes="selected disabled label type maxLen adaptive width height fields floatingLabel direction">
     <template>
         <!--<core-ajax url="/platform/teams_users" auto handleAs="json" on-core-response="{{handleTeamsResponse}}"></core-ajax>-->
         <!--<core-ajax url="/platform/users" auto handleAs="json" on-core-response="{{handleUsersResponse}}"></core-ajax>-->
@@ -81,7 +81,7 @@
 
         <div vertical layout class="wrapper" id="wrapper">
             <div>
-                <paper-input-decorator label="{{label}}" floatingLabel labelVisible="{{_labelVisible}}" disabled="{{disabled}}">
+                <paper-input-decorator label="{{label}}" floatingLabel="{{floatingLabel}}" labelVisible="{{_labelVisible}}" disabled="{{disabled}}">
                     <div horizontal layout center wrap>
                         <template repeat="{{ field in fields}}">
                             <template repeat="{{ selectedId in selected[field.name] }}">
@@ -160,6 +160,9 @@
             label: "Members",
             computed: {
                 _labelVisible: 'selectedCount === 0 && !isShowMenu'
+            },
+            publish : {
+                floatingLabel : true
             },
             preventFocus: function (event) {
                 event.stopPropagation();
@@ -291,11 +294,17 @@
                 var wrapperHeight = this.$.wrapper.offsetHeight;
                 var menuHeight = this.height + 20;
 
-                if (offsetTop - scrollTop + wrapperHeight + menuHeight <= parentHeight) {
-                    // show menu at bottom
+                if (this.direction === 'downward') {
                     this.$.menu.style.bottom = '-' + menuHeight + 'px';
-                } else {
+                } else if (this.direction === 'upward') {
                     this.$.menu.style.bottom = wrapperHeight + 'px';
+                } else {
+                    if (offsetTop - scrollTop + wrapperHeight + menuHeight <= parentHeight || menuHeight > offsetTop - scrollTop) {
+                        // show menu at bottom
+                        this.$.menu.style.bottom = '-' + menuHeight + 'px';
+                    } else if (menuHeight <= offsetTop - scrollTop) {
+                        this.$.menu.style.bottom = wrapperHeight + 'px';
+                    }
                 }
 
                 this.isShowMenu = true;
