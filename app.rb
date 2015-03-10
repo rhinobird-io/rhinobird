@@ -442,7 +442,6 @@ class App < Sinatra::Base
 
   end
 
-  daysInWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   # Calculate the day difference of two dates(date_1 - date_2)
   def day_diff(date_1, date_2)
@@ -507,12 +506,16 @@ class App < Sinatra::Base
       range_after = 0
 
       # 2. The date should match the repeated type's corresponding date
+      daysInWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
       case event.repeated_type
       when "Daily"
         range_after = day_diff(date, from_date)
       when "Weekly"
         # If the week day's of date is not within the repeated setting, return false
-        if event.repeated_on.index(daysInWeek[date.wday]) == nil
+        puts daysInWeek
+        puts date.wday
+        puts event.repeated_on.index(daysInWeek[date.wday])
+        if event.repeated_on.index(daysInWeek[date.wday]).nil?
           return false
         end
         range_after = week_diff(date, from_date)
@@ -565,27 +568,48 @@ class App < Sinatra::Base
 
     user = User.find(@userid)
 
-    events = Array.new
-
-    events.concat user.events.where("from_time >= ?", today)
+    all_events = Array.new
+    all_events.concat user.events
 
     user.teams.each { |t|
-      events.concat t.events.where("from_time >= ?", today)
+      all_events.concat t.events
     }
 
-    if events.length >= 5
-      events.sort!{ |a,b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
-    else
-      old_events = Array.new
-      old_events.concat user.events.where("from_time < ?", today)
-      
-      user.teams.each { |t|
-        old_events.concat t.events.where("from_time < ?", today)
-      }
+    repeated_events_on_today = Array.new
 
-      events.concat old_events
-      events.sort!{ |a,b| a.from_time <=> b.from_time }.last(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
-    end
+    all_events.each { |e|
+      if e.repeated && e.from_time.to_date != today && will_event_occur_on_date(e, today)
+        day_diff = day_diff(today, e.from_time.to_date)
+        new_event = Marshal::load(Marshal.dump(e))
+        new_event.from_time = e.from_time + day_diff.days
+        new_event.to_time = e.to_time + day_diff.days
+        repeated_events_on_today.push(new_event)
+      end
+    }
+
+    all_events.concat repeated_events_on_today
+
+    all_events.to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+    # events = Array.new
+
+    # events.concat user.events.where("from_time >= ?", today)
+
+    # user.teams.each { |t|
+    #   events.concat t.events.where("from_time >= ?", today)
+    # }
+    # if events.length >= 5
+    #   events.sort!{ |a,b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+    # else
+    #   old_events = Array.new
+    #   old_events.concat user.events.where("from_time < ?", today)
+      
+    #   user.teams.each { |t|
+    #     old_events.concat t.events.where("from_time < ?", today)
+    #   }
+
+    #   events.concat old_events
+    #   events.sort!{ |a,b| a.from_time <=> b.from_time }.last(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+    # end
   end
 
   get '/events/after/:from_time' do

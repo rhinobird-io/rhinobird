@@ -22,7 +22,7 @@
                 var self = this;
                 setInterval(function() {
                     self.result = self.compute(self.from, self.to, self.full_day, self.period, self.with_message, self.threshold);
-                }, 600000);
+                }, 60000);
             },
             computed: {
                 result: 'compute(from, to, full_day, period, with_message, threshold)'
