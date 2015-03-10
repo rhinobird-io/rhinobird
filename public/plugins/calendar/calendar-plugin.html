@@ -780,7 +780,7 @@
                                         <div class="page">
                                             <div layout horizontal justified>
                                                 <div layout vertical>
-                                                    <div class="floated-label" hidden?="{{!modeDisabled}}">
+                                                    <div class="floated-label">
                                                         <span class="label-text">From</span>
                                                     </div>
                                                     <div layout horizontal>
@@ -802,7 +802,7 @@
                                                     </div>
                                                 </div>
                                                 <div layout vertical>
-                                                    <div class="floated-label" hidden?="{{!modeDisabled}}">
+                                                    <div class="floated-label">
                                                         <span class="label-text">To</span>
                                                     </div>
                                                     <div layout horizontal flex end-justified>
@@ -865,11 +865,13 @@
                                         </div>
                                     </template>
                                     
-                                    <member-select teamsUrl="/platform/teams_users"
-                                                   disabled="{{modeDisabled}}"
-                                                   selected="{{selected.participants}}"
-                                                   label="Participants"
-                                                   adaptive></member-select>
+                                    <member-select 
+                                        teamsUrl="/platform/teams_users"
+                                        disabled="{{modeDisabled}}"
+                                        selected="{{selected.participants}}"
+                                        label="Participants"
+                                        adaptive>
+                                    </member-select>
                                     <template if="{{mode == 'view'}}">
                                         <div class="floated-label">
                                             <span class="label-text">Comments</span>
@@ -1119,8 +1121,12 @@
                 }
                 if (event.description == undefined || event.description.length == 0)
                     event.description = ' ';
-                if (event.selected)
+                if (event.repeated) {
+                    if (event.repeated_on != undefined && event.repeated_on != null) {
+                        event.repeated_on = JSON.parse(event.repeated_on);
+                    }
                     this.updateSummary(event);
+                }
             },
 
             copyEvent: function(event) {
@@ -1161,6 +1167,8 @@
                 
                 if (this.selected.description == undefined || this.selected.description.length == 0)
                     this.selected.description = ' ';
+
+                console.log(this.selected)
                 var self = this;
                 self.$.pages.selected = 1;
                 this.mode = 'view';
@@ -1411,6 +1419,7 @@
             // Triggered when repeated type is changed.
             repeatedTypeChange: function(event, detail, target) {
                 this.$.repeatedFrequency.focus();
+                console.log('Repeated type changed.');
                 this.updateSummary(this.selected);
             },
 
@@ -1423,20 +1432,25 @@
                     var from = new Date(this.selected.from_time);
                     this.selected.repeated_on.push(this.daysInWeek[from.getDay()]); 
                 }
+
+                console.log('Repeated days of week changed.');
                 this.updateSummary(this.selected);
             },
 
             repeatedFrequencyChange: function(event, detail, target) {
+                console.log('Repeated frequency changed.');
                 this.updateSummary(this.selected);
             },
 
             // Triggered when repeated day of month changed.
             // When repeated type is monthly, users can decide to repeat by day of month of day of week.
             repeatedDayOfMonthChange: function(event, detail, target) {
+                console.log('Repeated day of month changed.');
                 this.updateSummary(this.selected);
             },
 
             repeatedTimesChange: function(event, detail, target) {
+                console.log('Repeated times changed.');
                 this.updateSummary(this.selected);
             },
 
@@ -1451,10 +1465,11 @@
                         this.selected.repeated_end_date = endDate;
                     }
                 }
-                this.updateSummary();
+                this.updateSummary(this.selected);
             }, 
 
             updateSummary: function(event) {
+                console.log(event)
                 if (!event.repeated) return 'None';
                 var summary = "", frequencyOne, frequencyMultiple;
                 frequencyOne = event.repeated_type;
