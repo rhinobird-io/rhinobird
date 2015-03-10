@@ -299,10 +299,10 @@
                 } else if (this.direction === 'upward') {
                     this.$.menu.style.bottom = wrapperHeight + 'px';
                 } else {
-                    if (offsetTop - scrollTop + wrapperHeight + menuHeight <= parentHeight) {
+                    if (offsetTop - scrollTop + wrapperHeight + menuHeight <= parentHeight || menuHeight > offsetTop - scrollTop) {
                         // show menu at bottom
                         this.$.menu.style.bottom = '-' + menuHeight + 'px';
-                    } else {
+                    } else if (menuHeight <= offsetTop - scrollTop) {
                         this.$.menu.style.bottom = wrapperHeight + 'px';
                     }
                 }
