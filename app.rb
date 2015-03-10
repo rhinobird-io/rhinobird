@@ -442,12 +442,131 @@ class App < Sinatra::Base
 
   end
 
+  daysInWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+  # Calculate the day difference of two dates(date_1 - date_2)
+  def day_diff(date_1, date_2)
+    return date_1.mjd - date_2.mjd
+  end
+
+  # Calculate the month difference of two dates(date_1 - date_2)
+  def month_diff(date_1, date_2)
+    (date1.year * 12 + date_1.month) - (date_2.year * 12 + date_2.month)
+  end
+
+  # Calculate the week difference of two dates(date_1 - date_2)
+  def week_diff(date_1, date_2)
+    day_diff = day_diff(date_1, date_2)
+    if date_1.wday < date_2.wday
+      return day_diff / 7 + 1
+    else 
+      return day_diff / 7
+    end
+  end
+
+  # Return the number of week day of a date in is month
+  # E.g: 2015/1/1 is the first Thursday of January, then this method will return 1
+  def week_day_of_month(date) 
+    day = date.day
+    result = 1
+    while day - 7 >= 0 do
+      result = result + 1
+      day -= 7
+    end
+    return result
+  end
+
+  # Calculate the year difference of two dates(date_1 - date_2)
+  def year_diff(date_1, date_2)
+    date_1.year - date_2.year
+  end
+
+  # Check whether the events will happen on certain date
+  def will_event_occur_on_date(event, date)
+    from_date = event.from_time.to_date 
+
+    if !event.repeated 
+      date == from_date
+    else
+      # When the event is repeated
+      if date < from_date
+        return false
+      elsif date == from_date
+        return true
+      end 
+
+      # 1. The date should not exceed the end date of the repeated event
+      # If event's event type is to end on certain date
+      if event.repeated_end_type == 'Date'
+        if event.repeated_end_date < date
+          return false
+        end
+      end 
+
+      # Days, weeks, months or years after the repeat event's start datetime
+      range_after = 0
+
+      # 2. The date should match the repeated type's corresponding date
+      case event.repeated_type
+      when "Daily"
+        range_after = day_diff(date, from_date)
+      when "Weekly"
+        # If the week day's of date is not within the repeated setting, return false
+        if event.repeated_on.index(daysInWeek[date.wday]) == nil
+          return false
+        end
+        range_after = week_diff(date, from_date)
+      when "Monthly"
+        if event.repeated_by == 'Month' 
+          # When monthly repeated by day of month
+          # If the day of month is not equal, return false
+          if date.day != from_date.day
+            return false
+          end
+        elsif event.repeated_by == 'Week' # E.g: both are the second Monday
+          # When monthly repeated by day of month
+          # If the day of week is not equal, return false
+          if !(date.wday == from.date.wday && week_day_of_month(date) == week_day_of_month(from_date))
+            return false
+          end
+        end
+        range_after = month_diff(date, from_date)
+      when "Yearly"
+        # If not the same day of years, return false
+        if !(date.month == from_date.month && date.day == from_date.day)
+          return false
+        end
+        range_after = year_diff(date, from_date)
+      end
+
+      # 3. The date should match the repeated frequency
+      # If the date won't match the repeat frequency
+      if range_after % event.repeated_frequency != 0
+        return false
+      end
+
+      # The repeated number of the repeated event
+      repeated_number = range_after / event.repeated_frequency + 1
+
+      # 4. The repeated number should not exceed the setted repeated times 
+      # If repeat event will end after certain times
+      if event.repeated_end_type == 'Occurence'
+        if repeated_number > event.repeated_times
+          return false
+        end
+      end
+
+      true
+    end
+  end
+
   get '/events' do
     today = Date.today
 
     user = User.find(@userid)
 
     events = Array.new
+
     events.concat user.events.where("from_time >= ?", today)
 
     user.teams.each { |t|
