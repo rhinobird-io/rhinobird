@@ -576,6 +576,8 @@ class App < Sinatra::Base
     }
 
     repeated_events_on_today = Array.new
+    today_or_after_events = Array.new
+    old_events = Array.new
 
     all_events.each { |e|
       if e.repeated && e.from_time.to_date != today && will_event_occur_on_date(e, today)
@@ -583,33 +585,25 @@ class App < Sinatra::Base
         new_event = Marshal::load(Marshal.dump(e))
         new_event.from_time = e.from_time + day_diff.days
         new_event.to_time = e.to_time + day_diff.days
-        repeated_events_on_today.push(new_event)
+        today_or_after_events.push(new_event)
+        today_or_after_events.push(e)
+      elsif e.from_time.to_date >= today
+        today_or_after_events.push(e)
+      elsif e.from_time.to_date < today
+        old_events.push(e)
       end
+
     }
 
-    all_events.concat repeated_events_on_today
-
-    all_events.to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
-    # events = Array.new
-
-    # events.concat user.events.where("from_time >= ?", today)
-
-    # user.teams.each { |t|
-    #   events.concat t.events.where("from_time >= ?", today)
-    # }
-    # if events.length >= 5
-    #   events.sort!{ |a,b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
-    # else
-    #   old_events = Array.new
-    #   old_events.concat user.events.where("from_time < ?", today)
-      
-    #   user.teams.each { |t|
-    #     old_events.concat t.events.where("from_time < ?", today)
-    #   }
-
-    #   events.concat old_events
-    #   events.sort!{ |a,b| a.from_time <=> b.from_time }.last(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
-    # end
+    if today_or_after_events.length >= 5
+      today_or_after_events.sort!{ |a,b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+    else
+      puts 'asdfjoiasjfoiasdjf'
+      puts old_events.sort!{ |a,b| a.from_time <=> b.from_time }.last(5 - today_or_after_events.length).length
+      events = old_events.sort!{ |a,b| a.from_time <=> b.from_time }.last(5 - today_or_after_events.length)
+      events.concat today_or_after_events
+      events.to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+    end
   end
 
   get '/events/after/:from_time' do
