@@ -4,17 +4,13 @@
     <!-- 1. Load platform support before any code that touches the DOM. -->
     <script src="../../bower_components/webcomponentsjs/webcomponents.min.js"></script>
 
-    <link rel="import" href="smart-editor.html">
-    <link rel="import" href="smart-display.html">
+    <link rel="import" href="smart-preview.html">
 </head>
 
 <body>
-    <template is="auto-binding">
-        <div layout vertical fit style="width:640px; left:50%; margin: 25px 0 0 -320px">
-            <smart-display value="{{value}}"></smart-display>
-            <smart-editor value="{{value}}" rows=2 maxRows=5 underline label="Text" floatingLabel></smart-editor>
-        </div>
-    </template>
+    <div layout vertical fit style="width:640px; left:50%; margin: 25px 0 0 -320px">
+        <smart-preview></smart-preview>
+    </div>
 </body>
 
 </html>
