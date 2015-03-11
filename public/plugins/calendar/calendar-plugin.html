@@ -84,7 +84,7 @@
     }
 
     core-list {
-        *overflow-y: visible;
+        overflow-x: hidden;
     }
     
     .content {
@@ -293,6 +293,8 @@
         margin-left: 22px;
         padding-left: 16px;
         border-left: 4px solid transparent;
+        overflow: hidden;
+        text-overflow: ellipse;
     }
 
     .event-title {
@@ -1251,10 +1253,13 @@
             },
 
             loadMoreNewerEvents: function() {
-                if (!this.noMoreNewerEvents && this.range != undefined) {
+                if (!this.noMoreNewerEvents && 
+                    !this.loadingMoreNewerEvents && 
+                    !this.loadingMoreOlderEvents && 
+                    this.range != undefined) {
+                    
                     this.spinnerXOffset = (this.$.container.clientWidth - this.$.eventList.clientWidth) / 2;
 
-                    console.log(this.spinnerXOffset)
                     this.loadingMoreNewerEvents = true;
 
                     var self = this;
@@ -1269,7 +1274,11 @@
             },
 
             loadMoreOlderEvents: function() {
-                if (!this.noMoreOlderEvents && this.range != undefined) {
+                if (!this.noMoreOlderEvents &&
+                    !this.loadingMoreNewerEvents && 
+                    !this.loadingMoreOlderEvents &&
+                    this.range != undefined) {
+                    
                     this.spinnerXOffset = (this.$.container.clientWidth - this.$.eventList.clientWidth) / 2;
                     this.loadingMoreOlderEvents = true;
 
