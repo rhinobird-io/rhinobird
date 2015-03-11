@@ -34,7 +34,6 @@ class App < Sinatra::Base
   set :protection, :except => [:json_csrf]
   set :logging, true
   
-  
   I18n.config.enforce_available_locales = true
 
   include BCrypt
@@ -480,8 +479,16 @@ class App < Sinatra::Base
     date_1.year - date_2.year
   end
 
+  # Return the fisrt copy of repeated event which will happen after $datetime
+  # If there's no such copy, return nil 
+  def first_occur_repeated_event_after(event, datetime)
+    nil
+  end
+
   # Check whether the events will happen on certain date
-  def will_event_occur_on_date(event, date)
+  # True, than return the repeated number
+  # Otherwise, return 0
+  def get_repeated_number(event, date)
     from_date = event.from_time.to_date 
 
     if !event.repeated 
@@ -489,16 +496,16 @@ class App < Sinatra::Base
     else
       # When the event is repeated
       if date < from_date
-        return false
+        return 0
       elsif date == from_date
-        return true
+        return 1
       end 
 
       # 1. The date should not exceed the end date of the repeated event
       # If event's event type is to end on certain date
       if event.repeated_end_type == 'Date'
         if event.repeated_end_date < date
-          return false
+          return 0
         end
       end 
 
@@ -516,7 +523,7 @@ class App < Sinatra::Base
         puts date.wday
         puts event.repeated_on.index(daysInWeek[date.wday])
         if event.repeated_on.index(daysInWeek[date.wday]).nil?
-          return false
+          return 0
         end
         range_after = week_diff(date, from_date)
       when "Monthly"
@@ -524,20 +531,20 @@ class App < Sinatra::Base
           # When monthly repeated by day of month
           # If the day of month is not equal, return false
           if date.day != from_date.day
-            return false
+            return 0
           end
         elsif event.repeated_by == 'Week' # E.g: both are the second Monday
           # When monthly repeated by day of month
           # If the day of week is not equal, return false
           if !(date.wday == from.date.wday && week_day_of_month(date) == week_day_of_month(from_date))
-            return false
+            return 0
           end
         end
         range_after = month_diff(date, from_date)
       when "Yearly"
         # If not the same day of years, return false
         if !(date.month == from_date.month && date.day == from_date.day)
-          return false
+          return 0
         end
         range_after = year_diff(date, from_date)
       end
@@ -545,7 +552,7 @@ class App < Sinatra::Base
       # 3. The date should match the repeated frequency
       # If the date won't match the repeat frequency
       if range_after % event.repeated_frequency != 0
-        return false
+        return 0
       end
 
       # The repeated number of the repeated event
@@ -555,11 +562,11 @@ class App < Sinatra::Base
       # If repeat event will end after certain times
       if event.repeated_end_type == 'Occurence'
         if repeated_number > event.repeated_times
-          return false
+          return 0
         end
       end
 
-      true
+      repeated_number
     end
   end
 
@@ -580,11 +587,15 @@ class App < Sinatra::Base
     old_events = Array.new
 
     all_events.each { |e|
-      if e.repeated && e.from_time.to_date != today && will_event_occur_on_date(e, today)
+      e.repeated_number = 1
+
+      repeated_number = get_repeated_number(e, today)
+      if e.repeated && e.from_time.to_date != today && repeated_number > 0
         day_diff = day_diff(today, e.from_time.to_date)
         new_event = Marshal::load(Marshal.dump(e))
         new_event.from_time = e.from_time + day_diff.days
         new_event.to_time = e.to_time + day_diff.days
+        new_event.repeated_number = repeated_number
         today_or_after_events.push(new_event)
         today_or_after_events.push(e)
       elsif e.from_time.to_date >= today
@@ -592,18 +603,16 @@ class App < Sinatra::Base
       elsif e.from_time.to_date < today
         old_events.push(e)
       end
-
     }
 
+    result = Array.new
     if today_or_after_events.length >= 5
-      today_or_after_events.sort!{ |a,b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+      result.concat today_or_after_events.sort!{ |a,b| a.from_time <=> b.from_time }.first(5)
     else
-      puts 'asdfjoiasjfoiasdjf'
-      puts old_events.sort!{ |a,b| a.from_time <=> b.from_time }.last(5 - today_or_after_events.length).length
-      events = old_events.sort!{ |a,b| a.from_time <=> b.from_time }.last(5 - today_or_after_events.length)
-      events.concat today_or_after_events
-      events.to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+      result.concat old_events.sort!{ |a,b| a.from_time <=> b.from_time }.last(5 - today_or_after_events.length)
+      result.concat today_or_after_events
     end
+    result.to_json(json: Event, methods: [:repeated_number], include: {participants: {only: :id}, team_participants: {only: :id}})
   end
 
   get '/events/after/:from_time' do
