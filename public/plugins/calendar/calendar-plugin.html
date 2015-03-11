@@ -57,11 +57,10 @@
 
     div.container {
         display: block;
-        padding: 45px 0;
-        padding-bottom: 60px;      
+        padding: 50px 0;     
         width: 100%;
         height: 100%;  
-        overflow-y: auto;
+        overflow-y: hidden;
         overflow-x: hidden;
     }
     
@@ -85,7 +84,7 @@
     }
 
     core-list {
-        overflow-y: visible;
+        *overflow-y: visible;
     }
     
     .content {
@@ -318,16 +317,6 @@
         font-family: 'Open Sans';
     }
 
-    .spinner {
-        z-index: 1;
-        position: absolute;
-        border-radius: 50%;
-        background-color: white;
-        left: 50%;
-        margin-left: -25px;
-        width: 50px;
-        height: 50px;
-    }
     
     core-list {
         padding-left: 16px;
@@ -494,6 +483,17 @@
         <core-style ref="calendar"></core-style>
 
         <style>
+            .spinner {
+                z-index: 1;
+                position: absolute;
+                border-radius: 50%;
+                background-color: white;
+                left: 50%;
+                margin-left: -{{25 + spinnerXOffset}}px;
+                width: 50px;
+                height: 50px;
+            }
+
             .bottom-spinner {
                 top: {{bottomSpinnerTop}}px;
                 -webkit-transition: top 0.3s linear;
@@ -506,7 +506,7 @@
 
             div.timeline {
                 position: relative;
-                padding: 10px 0px;
+                *padding: 10px 0px;
                 height: 100%;
                 display: block;
             }
@@ -529,23 +529,24 @@
             <div flex vertical layout class="list">
                 <core-animated-pages selected="0" transitions="cross-fade-all" id="pages" flex>
                     <section>
-                        <core-scroll-threshold id="threshold" 
-                            scrolltarget="{{$.container}}" 
-                            lowerthreshold="30" 
-                            on-lower-trigger="{{ loadMoreNewerEvents }}"
-                            upperThreshold="30" 
-                            on-upper-trigger="{{ loadMoreOlderEvents }}">
-                        </core-scroll-threshold>
+                        
                         
                         <div class="container" id="container">
                             <div id="emptyNotification" hidden?="{{events == null || events.length != 0}}">Empty Calendar</div>
                             <div class="timeline" vertical layout hidden?="{{events == null || events.length == 0}}">
+                                
                                 <paper-shadow layered id="topSpinner" class="spinner top-spinner" layout center-center horizontal hidden?="{{!loadingMoreOlderEvents}}">
                                     <paper-spinner active></paper-spinner>
                                 </paper-shadow>
                                 <div class="loading top-spinner" hidden?="{{!noMoreOlderEvents}}">No more events.</div>
-                                
-                                <core-list id="eventList" data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;">
+                                <core-list id="eventList" data="{{events}}" groups="{{eventGroups}}" flex>
+                                    <core-scroll-threshold id="threshold" 
+                                        scrolltarget="{{$.container}}" 
+                                        lowerthreshold="30" 
+                                        on-lower-trigger="{{ loadMoreNewerEvents }}"
+                                        upperThreshold="30" 
+                                        on-upper-trigger="{{ loadMoreOlderEvents }}">
+                                    </core-scroll-threshold>
                                     <template>
                                         <div divider class="dayDivider">
                                             <div class="dayDividerLabel {{model.position}} {{model.today}}">
@@ -986,15 +987,16 @@
                 this.noMoreNewerEvents = false;
                 this.noMoreOlderEvents = false;
                 this.initialPosition = "right";
+                
                 var self = this;
                 window.onresize = function(event) {
                     self.refresh();
                 }
 
                 window.onmousewheel = function(event) {
-                    if (self.$.container.scrollTop == 0 && event.wheelDelta > 0 && !self.noMoreOlderEvents && !self.loadingMoreOlderEvents) {
+                    if (self.$.eventList.scrollTop == 0 && event.wheelDelta > 0 && !self.noMoreOlderEvents && !self.loadingMoreOlderEvents) {
                         self.loadMoreOlderEvents();
-                    } else if (self.$.container.scrollTop + self.$.container.clientHeight == self.$.container.scrollHeight &&
+                    } else if (self.$.eventList.scrollTop + self.$.eventList.clientHeight == self.$.eventList.scrollHeight &&
                         event.wheelDelta < 0 && !self.noMoreNewerEvents && !self.loadingMoreNewerEvents) {
                         self.loadMoreNewerEvents();
                     }
@@ -1004,7 +1006,8 @@
             refresh: function() {
                 if (this.mode != 'list' || this.events == null) return;
 
-                this.bottomSpinnerTop = -45 + this.$.eventList.scrollHeight + 55;
+                this.bottomSpinnerTop = this.$.eventList.clientHeight;// + 55;
+                //this.spinnerXOffset = (this.$.container.clientWidth - this.$.eventList.clientWidth) / 2;
                 this.events.sort(function(o1, o2) {
                     if (o1.from_time < o2.from_time) return -1;
                     else if (o1.from_time > o2.from_time) return 1;
@@ -1048,7 +1051,7 @@
 
                 var self = this;
                 setTimeout(function() {
-                    self.bottomSpinnerTop = -45 + self.$.eventList.scrollHeight + 55;
+                    self.bottomSpinnerTop = self.$.eventList.clientHeight;// + 55;
                 }, 100);
             },
 
@@ -1249,11 +1252,15 @@
 
             loadMoreNewerEvents: function() {
                 if (!this.noMoreNewerEvents && this.range != undefined) {
+                    this.spinnerXOffset = (this.$.container.clientWidth - this.$.eventList.clientWidth) / 2;
+
+                    console.log(this.spinnerXOffset)
                     this.loadingMoreNewerEvents = true;
+
                     var self = this;
-                    self.bottomSpinnerTop += 100;
+                    self.bottomSpinnerTop = self.$.eventList.clientHeight + 100;
                     setTimeout(function() {
-                        self.bottomSpinnerTop -= 100;
+                        self.bottomSpinnerTop = self.$.eventList.clientHeight;
                     }, 0);
                     setTimeout(function() {
                         self.$.getMoreNewerEvents.go();
@@ -1263,11 +1270,13 @@
 
             loadMoreOlderEvents: function() {
                 if (!this.noMoreOlderEvents && this.range != undefined) {
+                    this.spinnerXOffset = (this.$.container.clientWidth - this.$.eventList.clientWidth) / 2;
                     this.loadingMoreOlderEvents = true;
+
                     var self = this;
-                    self.topSpinnerTop = -105;
+                    self.topSpinnerTop = -100;
                     setTimeout(function() {
-                        self.topSpinnerTop = -45;
+                        self.topSpinnerTop = -50;
                     }, 0);
                     setTimeout(function() {
                         self.$.getMoreOlderEvents.go();
@@ -1279,6 +1288,7 @@
                 var self = this;
                 var events = detail.response;
 
+                console.log('loaded: ' + events.length)
                 if (events.length > 0) {
                     events.forEach(function (event) {
                         self.parseEvent(event);
@@ -1288,7 +1298,8 @@
                         var contain = false;
                         for (var j = 0; j < this.events.length; j++) {
                             if (events[i].id == this.events[j].id) {
-                                contain = true;
+                                if (!events[i].repeated || events[i].repeated_number == this.events[j].repeated_number)
+                                    contain = true;
                                 break;
                             }
                         }
@@ -1321,6 +1332,8 @@
                     }
                 }
 
+
+                console.log('after loaded: ' + this.events.length)
                 if (type == 1)
                     this.loadingMoreNewerEvents = false;
                 else if (type == 2)
