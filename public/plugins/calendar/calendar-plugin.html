@@ -877,8 +877,7 @@
                                             <span class="label-text">Comments</span>
                                         </div>  
                                         <br>
-                                        <thread-element key="calendar/{{selected.id}}"></thread-element>
-                                        
+                                        <thread-element key="calendar/{{selected.id}}/{{selected.repeated_number}}"></thread-element>
                                     </template>
                                 </div>
                             </div>
@@ -1469,7 +1468,6 @@
             }, 
 
             updateSummary: function(event) {
-                console.log(event)
                 if (!event.repeated) return 'None';
                 var summary = "", frequencyOne, frequencyMultiple;
                 frequencyOne = event.repeated_type;
