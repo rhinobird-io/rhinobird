@@ -4,7 +4,7 @@
 <link rel="import" href="time-picker.html">
 
 
-<polymer-element name="time-input" attributes="time label disabled">
+<polymer-element name="time-input" attributes="time label disabled floatingLabel">
     <template>
         <style>
             .time {
@@ -16,7 +16,7 @@
                 font-size: 9px;
             }
         </style>
-        <paper-input-decorator floatingLabel label="{{label}}" disabled="{{disabled}}">
+        <paper-input-decorator id="decorator" label="{{label}}" disabled="{{disabled}}">
             <div layout horizontal>
                 <div class="time" on-tap="{{openTimeDialog}}">
                     <div>{{time | date('HH:mm')}}</div>
@@ -30,6 +30,9 @@
     </template>
     <script>
         Polymer({
+            ready: function() {
+                this.$.decorator.floatingLabel = this.floatingLabel;
+            },
             openTimeDialog: function () {
                 if (!this.disabled) {
                     this.$.timeDialog.open();

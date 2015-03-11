@@ -18,6 +18,12 @@
     </template>
     <script>
         Polymer({
+            ready: function() {
+                var self = this;
+                setInterval(function() {
+                    self.result = self.compute(self.from, self.to, self.full_day, self.period, self.with_message, self.threshold);
+                }, 60000);
+            },
             computed: {
                 result: 'compute(from, to, full_day, period, with_message, threshold)'
             },
@@ -27,6 +33,7 @@
                 var with_message = with_message || false;
                 var threshold = threshold || 0;
                 if (threshold == 0) threshold = Number.POSITIVE_INFINITY;
+                else if (threshold == -1) threshold = Number.NEGATIVE_INFINITY;
                 this.show_tooltip = true;
 
                 if (full_day == undefined || period == undefined) {
@@ -40,6 +47,13 @@
                     var from_date = new Date(from);
                     var to_date = new Date(to);
 
+                    var format;
+                    if (full_day) {
+                        format = "YYYY-MM-DD"
+                    } else {
+                        format = "HH:mm YYYY-MM-DD"
+                    }
+
                     if (now < from_date && from_date - now < threshold) {
                         time_range = from_date - now;
                         message_prefix = "Starting in ";
@@ -52,12 +66,7 @@
                         message_suffix = " ago";
                     } else {
                         this.show_tooltip = false;
-                        var format;
-                        if (full_day) {
-                            format = "YYYY-MM-DD"
-                        } else {
-                            format = "HH:mm YYYY-MM-DD"
-                        }
+                        
 
                         var result = "";
                         if (!period) {
@@ -70,7 +79,7 @@
                                 result = moment(from).format('HH:mm') + " " + moment(from).format("YYYY-MM-DD") + "~" + moment(to).format("HH:mm") + " " + moment(to).format("YYYY-MM-DD");
                             }
                         }
-                        this.datetime_result = result;
+
                         return result;
                     }
 
@@ -108,6 +117,9 @@
                             result += seconds + " seconds"; 
                         }
                     }
+
+                    if (this.show_tooltip)
+                        this.datetime_result = moment(from).format(format);
 
                     if (with_message)
                         result += message_suffix;

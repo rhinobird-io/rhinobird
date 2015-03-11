@@ -11,6 +11,7 @@
 <link rel="import" href="../../elements/smart-time-display/smart-time-display.html">
 <link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/core-selector/core-selector.html">
 <link rel="import" href="../../bower_components/core-pages/core-pages.html">
 <link rel="import" href="../../bower_components/core-style/core-style.html">
 <link rel="import" href="../../bower_components/core-scroll-threshold/core-scroll-threshold.html">
@@ -44,6 +45,7 @@
 
     :host {
         background-color: white;
+        font-family: 'Open Sans', sans-serif;
     }
 
     div#emptyNotification {
@@ -55,11 +57,10 @@
 
     div.container {
         display: block;
-        padding: 45px 0;
-        padding-bottom: 60px;      
+        padding: 50px 0;     
         width: 100%;
         height: 100%;  
-        overflow-y: auto;
+        overflow-y: hidden;
         overflow-x: hidden;
     }
     
@@ -83,7 +84,7 @@
     }
 
     core-list {
-        overflow-y: visible;
+        *overflow-y: visible;
     }
     
     .content {
@@ -104,6 +105,10 @@
         margin-top: 4px;
     }
 
+    time-input {
+        margin-left: 12px;
+    }
+
     p.description {
         margin-bottom: 0;
     }
@@ -122,6 +127,10 @@
 
     .tabs, .pages, .fullday {
         max-width: 320px;
+    }
+
+    .pages {
+        margin-top: 0.75em;
     }
 
     .fullday {
@@ -171,10 +180,6 @@
         background-color: {{g.theme.accentBgColor}};
     }
 
-    time-input.upper {
-        margin-top: -35px;
-    }
-
     date-input {
         z-index: 1;
     }
@@ -193,10 +198,6 @@
         left: 16px;
         top: -20px;
         z-index: 1;
-    }
-
-    .list {
-        *margin-top: 20px;
     }
 
     .subTitle {
@@ -313,20 +314,9 @@
         font-size: 24px;
         font-weight: 600;
         margin-top: 10%;
-
         font-family: 'Open Sans';
     }
 
-    .spinner {
-        z-index: 1;
-        position: absolute;
-        border-radius: 50%;
-        background-color: white;
-        left: 50%;
-        margin-left: -25px;
-        width: 50px;
-        height: 50px;
-    }
     
     core-list {
         padding-left: 16px;
@@ -357,9 +347,63 @@
     }
 
     .floated-content {
-        margin: 0.5em 0 0.25em;
+        margin: 0.5em 0 0.5em;
         padding: 0.25em 0;
         border-bottom: 1px dashed #757575;
+    }
+
+    #repeatEventDialog {
+        font-size: 0.8em;
+        max-width: 90%;
+        width: 500px;
+        height: 60%;
+        min-height: 460px;
+    }
+
+    #repeatEventDialogContent > div{
+        padding: 12px 8px;
+    }
+
+    #repeatEventDialogContent core-label {
+        font-weight: bold;
+    }
+
+    paper-input#repeatedTimes /deep/ paper-input-decorator,
+    paper-input#repeatedFrequency /deep/ paper-input-decorator,
+    date-input /deep/ paper-input-decorator,
+    time-input /deep/ paper-input-decorator {
+        margin: 0;
+        padding: 0;
+    }
+
+    paper-input#repeatedTimes /deep/ paper-input-decorator input,
+    paper-input#repeatedFrequency /deep/ paper-input-decorator input,
+    date-input /deep/ paper-input-decorator *,
+    time-input /deep/ paper-input-decorator * {
+        margin: 0;
+        padding: 0;
+    }
+
+    paper-input#repeatedTimes /deep/ paper-input-decorator input,
+    paper-input#repeatedFrequency /deep/ paper-input-decorator input {
+        width: 48px;
+        text-align: center;
+    }
+
+    .item {
+        cursor: pointer;
+        padding: 6px 8px;
+        *font-size: 0.8em;
+        vertical-align: middle;
+        box-sizing: border-box;
+        background: {{g.theme.thirdBgColor}};
+    }
+
+    .item.core-selected {
+        color: white;
+        *padding: 8px;
+        background: {{g.theme.mainBgColor}};
+
     }
 
     @media screen and (min-width: 960px) {
@@ -439,6 +483,17 @@
         <core-style ref="calendar"></core-style>
 
         <style>
+            .spinner {
+                z-index: 1;
+                position: absolute;
+                border-radius: 50%;
+                background-color: white;
+                left: 50%;
+                margin-left: -{{25 + spinnerXOffset}}px;
+                width: 50px;
+                height: 50px;
+            }
+
             .bottom-spinner {
                 top: {{bottomSpinnerTop}}px;
                 -webkit-transition: top 0.3s linear;
@@ -451,7 +506,7 @@
 
             div.timeline {
                 position: relative;
-                padding: 10px 0px;
+                *padding: 10px 0px;
                 height: 100%;
                 display: block;
             }
@@ -474,23 +529,24 @@
             <div flex vertical layout class="list">
                 <core-animated-pages selected="0" transitions="cross-fade-all" id="pages" flex>
                     <section>
-                        <core-scroll-threshold id="threshold" 
-                            scrolltarget="{{$.container}}" 
-                            lowerthreshold="30" 
-                            on-lower-trigger="{{ loadMoreNewerEvents }}"
-                            upperThreshold="30" 
-                            on-upper-trigger="{{ loadMoreOlderEvents }}">
-                        </core-scroll-threshold>
+                        
                         
                         <div class="container" id="container">
                             <div id="emptyNotification" hidden?="{{events == null || events.length != 0}}">Empty Calendar</div>
                             <div class="timeline" vertical layout hidden?="{{events == null || events.length == 0}}">
+                                
                                 <paper-shadow layered id="topSpinner" class="spinner top-spinner" layout center-center horizontal hidden?="{{!loadingMoreOlderEvents}}">
                                     <paper-spinner active></paper-spinner>
                                 </paper-shadow>
                                 <div class="loading top-spinner" hidden?="{{!noMoreOlderEvents}}">No more events.</div>
-                                
-                                <core-list id="eventList" data="{{events}}" groups="{{eventGroups}}" flex style="overflow-y:visible !important;">
+                                <core-list id="eventList" data="{{events}}" groups="{{eventGroups}}" flex>
+                                    <core-scroll-threshold id="threshold" 
+                                        scrolltarget="{{$.container}}" 
+                                        lowerthreshold="30" 
+                                        on-lower-trigger="{{ loadMoreNewerEvents }}"
+                                        upperThreshold="30" 
+                                        on-upper-trigger="{{ loadMoreOlderEvents }}">
+                                    </core-scroll-threshold>
                                     <template>
                                         <div divider class="dayDivider">
                                             <div class="dayDividerLabel {{model.position}} {{model.today}}">
@@ -547,15 +603,134 @@
 
                     </section>
                     <section>
-
                         <!-- Confirmation dialog for event deletion. -->
                         <paper-action-dialog backdrop autoCloseDisabled heading="Sure to delete this event?" layered="false" id="confirmDeleteDialog">
                             <paper-button dismissive>Cancel</paper-button>
                             <paper-button affirmative on-tap="{{doDelete}}">Delete</paper-button>
                         </paper-action-dialog>
 
+                        <!-- Repeated event dialog-->
+                        <paper-action-dialog backdrop autoCloseDisabled heading="Repeat" layered="false" id="repeatEventDialog">
+                            <div vertical layout id="repeatEventDialogContent">
+                                <div horizontal auto-vertical layout>
+                                    <core-label flex>Repeats:</core-label>
+                                    <core-selector 
+                                        selected="{{selected.repeated_type}}"
+                                        on-core-select="{{repeatedTypeChange}}"
+                                        valueattr="label" end-justified>
+                                        <span class="item" label="Daily">Daily</span>
+                                        <span class="item" label="Weekly">Weekly</span>
+                                        <span class="item" label="Monthly">Monthly</span>
+                                        <span class="item" label="Yearly">Yearly</span>
+                                    </core-selector>
+                                </div>
+                                
+                                <div horizontal auto-vertical layout>
+                                    <core-label flex>Repeated Every:</core-label>
+                                    <span>
+                                        <paper-input label="frequency" 
+                                            id="repeatedFrequency" 
+                                            value="{{selected.repeated_frequency}}"
+                                            on-input="{{repeatedFrequencyChange}}">
+                                        </paper-input> 
+
+                                        <template if="{{selected.repeated_type == 'Daily'}}">
+                                            <span>days</span>
+                                        </template>
+
+                                        <template if="{{selected.repeated_type == 'Weekly'}}">
+                                            <span>weeks</span>
+                                        </template>
+
+                                        <template if="{{selected.repeated_type == 'Monthly'}}">
+                                            <span>months</span>
+                                        </template>
+
+                                        <template if="{{selected.repeated_type == 'Yearly'}}">
+                                            <span>years</span>
+                                        </template>
+                                    </span>
+                                </div>
+
+                                <div horizontal layout hidden?="{{selected.repeated_type != 'Monthly'}}">
+                                    <core-label flex>Repeat By:</core-label>
+                                    <span end-justified>
+                                        Day of 
+                                        <core-selector 
+                                            selected="{{selected.repeated_by}}" 
+                                            on-core-select="{{repeatedDayOfMonthChange}}" 
+                                            valueattr="label">
+                                            <span class="item" label="Month">Month</span>
+                                            <span class="item" label="Week">Week</span>
+                                        </core-selector>
+                                    </span>
+                                </div>
+
+                                <div horizontal layout hidden?="{{selected.repeated_type != 'Weekly'}}">
+                                    <core-label flex>Repeat On:</core-label>
+                                    <core-selector 
+                                        selected="{{selected.repeated_on}}" 
+                                        on-core-select="{{repeatedDaysOfWeekChange}}" 
+                                        valueattr="label" multi end-justified>
+                                        <span class="item" label="Sun">Sun</span>
+                                        <span class="item" label="Mon">Mon</span>
+                                        <span class="item" label="Tue">Tue</span>
+                                        <span class="item" label="Wed">Wed</span>
+                                        <span class="item" label="Thu">Thu</span>
+                                        <span class="item" label="Fri">Fri</span>
+                                        <span class="item" label="Sat">Sat</span>
+                                    </core-selector>
+                                </div>
+
+                                <div horizontal layout>
+                                    <core-label flex center>Ends Way:</core-label>
+                                    <core-selector
+                                        selected="{{selected.repeated_end_type}}"
+                                        on-core-select="{{repeatedEndTypeChange}}"
+                                        valueattr="label" end-justified center>
+                                        <span class="item" label="Never">Never</span>
+                                        <span class="item" label="Occurence">Occurence</span>
+                                        <span class="item" label="Date">Date</span>
+                                    </core-selector>
+                                </div>
+
+                                <div horizontal layout hidden?="{{selected.repeated_end_type != 'Occurence'}}">
+                                    <core-label flex></core-label>
+                                    <span style="">
+                                        After 
+                                        <paper-input id="repeatedTimes" label="times" 
+                                            on-input="{{repeatedTimesChange}}"
+                                            value="{{selected.repeated_times}}">
+                                        </paper-input> 
+                                        times
+                                    </span>
+                                </div>
+                                
+                                <div horizontal layout hidden?="{{selected.repeated_end_type != 'Date'}}">
+                                    <core-label flex></core-label>
+                                    <span horizontal layout>
+                                        <span style="padding-right:10px;">Ends On:</span> 
+                                        <date-input
+                                            id="repeatedEndDate" 
+                                            date="{{selected.repeated_end_date}}">
+                                        </date-input>
+                                    </span>
+                                </div>
+
+                                <div horizontal layout>
+                                    <core-label flex>Repeat Summary:</core-label>
+                                    <core-label flex two end-justified style="text-align:right;">{{selected.summary}}</core-label>
+                                </div>
+                            </div>
+                            <paper-button affirmative on-tap="{{confirmRepeatEvent}}">Done</paper-button>
+                            <paper-button dismissive on-tap="{{cancelRepeatEvent}}">Cancel</paper-button>
+                        </paper-action-dialog>
+
+                        <!-- Back button from edit/view to list -->
                         <paper-icon-button icon="arrow-back" class="main-button"
-                                           on-tap="{{main}}"></paper-icon-button>
+                                           on-tap="{{main}}">
+                        </paper-icon-button>
+
                         <div hero hero-id="{{selected.id}}" class="detail" vertical layout fit slide-up>
                             <div class="detail-content" vertical layout>
                                 <div>
@@ -573,6 +748,7 @@
                                         <smart-editor id="textArea" label="Description" value="{{selected.description}}" floatingLabel underline>
                                         </smart-editor>
                                     </template>
+
                                     <template if="{{mode == 'view'}}">
                                         <div class="floated-label">
                                             <span class="label-text">Description</span>
@@ -585,34 +761,62 @@
                                     <template if="{{!modeDisabled}}">
                                         <div center horizontal layout class="fullday">
                                             <div flex>Full Day</div>
-                                            <paper-toggle-button checked="{{selected.full_day}}"
-                                                                 disabled="{{modeDisabled}}"></paper-toggle-button>
+                                            <paper-toggle-button 
+                                                checked="{{selected.full_day}}"
+                                                disabled="{{modeDisabled}}">
+                                            </paper-toggle-button>
                                         </div>
                                         <paper-tabs selected="{{tabSelected}}" class="tabs">
                                             <paper-tab>Period</paper-tab>
                                             <paper-tab>Point</paper-tab>
                                         </paper-tabs>
                                     </template>
+
+                                    <!-- Select from_time and to_time -->
                                     <core-pages selected="{{tabSelected}}" class="pages">
                                         <div class="page">
-                                            <div layout horizontal justified end>
+                                            <div layout horizontal justified>
                                                 <div layout vertical>
-                                                    <date-input label="From" disabled="{{modeDisabled}}"
-                                                                date="{{selected.from_time}}"></date-input>
-                                                    <template if="{{!selected.full_day}}">
-                                                        <time-input class="upper"
-                                                                    disabled="{{modeDisabled}}"
-                                                                    time="{{selected.from_time}}"></time-input>
-                                                    </template>
+                                                    <div class="floated-label">
+                                                        <span class="label-text">From</span>
+                                                    </div>
+                                                    <div layout horizontal>
+                                                        <!-- from_date -->
+                                                        <date-input 
+                                                            label="From" 
+                                                            disabled="{{modeDisabled}}"
+                                                            date="{{selected.from_time}}">
+                                                        </date-input>
+
+                                                        <!-- from_time -->
+                                                        <template if="{{!selected.full_day}}">
+                                                            <time-input 
+                                                                class="upper"
+                                                                disabled="{{modeDisabled}}"
+                                                                time="{{selected.from_time}}">
+                                                            </time-input>
+                                                        </template>
+                                                    </div>
                                                 </div>
                                                 <div layout vertical>
-                                                    <date-input label="To" disabled="{{modeDisabled}}"
-                                                                date="{{selected.to_time}}"></date-input>
-                                                    <template if="{{!selected.full_day}}">
-                                                        <time-input class="upper"
-                                                                    disabled="{{modeDisabled}}"
-                                                                    time="{{selected.to_time}}"></time-input>
-                                                    </template>
+                                                    <div class="floated-label">
+                                                        <span class="label-text">To</span>
+                                                    </div>
+                                                    <div layout horizontal flex end-justified>
+                                                        <!-- to_date -->
+                                                        <date-input label="To" disabled="{{modeDisabled}}"
+                                                                    date="{{selected.to_time}}">
+                                                        </date-input>
+
+                                                        <!-- to_time -->
+                                                        <template if="{{!selected.full_day}}">
+                                                            <time-input 
+                                                                class="upper"
+                                                                disabled="{{modeDisabled}}"
+                                                                time="{{selected.to_time}}">
+                                                            </time-input>
+                                                        </template>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -622,23 +826,55 @@
                                                             date="{{selected.from_time}}"></date-input>
                                                 <template if="{{!selected.full_day}}">
                                                     <time-input label="Time" disabled="{{modeDisabled}}"
-                                                                time="{{selected.from_time}}"></time-input>
+                                                                time="{{selected.from_time}}">
+                                                    </time-input>
                                                 </template>
                                             </div>
                                         </div>
                                     </core-pages>
-                                    <member-select teamsUrl="/platform/teams_users"
-                                                   disabled="{{modeDisabled}}"
-                                                   selected="{{selected.participants}}"
-                                                   label="Participants"
-                                                   adaptive></member-select>
+
+                                    <template if="{{modeDisabled && selected.repeated}}">
+                                        <div style="margin-top:0.75em;">
+                                            <div class="floated-label">
+                                                <span class="label-text">Repeat</span>
+                                            </div>  
+                                            <div class="floated-content">
+                                                <span>{{selected.summary}}</span>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <!-- Repeat event toggle button -->
+                                    <template if="{{!modeDisabled}}">
+                                        <div center horizontal layout class="fullday">
+                                            <div flex>
+                                                Repeat 
+                                                <template if="{{selected.repeated}}">
+                                                    : {{selected.summary}}
+                                                </template>
+                                            </div>
+                                            <paper-toggle-button 
+                                                id="repeatToggle"
+                                                checked="{{selected.repeated}}"
+                                                on-change="{{repeatToggled}}"
+                                                disabled="{{modeDisabled}}">
+                                            </paper-toggle-button>
+                                        </div>
+                                    </template>
+                                    
+                                    <member-select 
+                                        teamsUrl="/platform/teams_users"
+                                        disabled="{{modeDisabled}}"
+                                        selected="{{selected.participants}}"
+                                        label="Participants"
+                                        adaptive>
+                                    </member-select>
                                     <template if="{{mode == 'view'}}">
                                         <div class="floated-label">
                                             <span class="label-text">Comments</span>
                                         </div>  
                                         <br>
-                                        <thread-element key="calendar/{{selected.id}}"></thread-element>
-                                        
+                                        <thread-element key="calendar/{{selected.id}}/{{selected.repeated_number}}"></thread-element>
                                     </template>
                                 </div>
                             </div>
@@ -703,9 +939,33 @@
     </template>
     <script src="../../bower_components/moment/moment.js"></script>
     <script>
+        // Return the number of week days of a month
+        // Eg: 2015/2/1 is the first sunday of February, it will return 1.
+        Date.prototype.weekOfMonth = function() {
+            var date = this.getDate();
+            var result = 1;
+            while (date - 7 >= 0) {
+                result++;
+                date -= 7;
+            }
+            return result;
+        }
+
         Polymer({
             mode: "list",
             isListLoaded: false,
+            daysInWeek: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            months: ['January', 'February', 'March', 'April', 'May', 'June', 
+                     'July', 'Augest', 'September', 'October', 'November', 'December'],
+            daysInWeekMap: {
+                'Sun': 'Sunday',
+                'Mon': 'Monday',
+                'Tue': 'Tuesday',
+                'Wed': 'Wednesday',
+                'Thu': 'Thursday',
+                'Fri': 'Friday',
+                'Sat': 'Saturday'
+            },
             computed:{
                 modeDisabled: 'mode=="view"'
             },
@@ -718,6 +978,7 @@
                 'selected.from_time': 'fromTimeUpdated',
                 'selected.to_time': 'toTimeUpdated',
             },
+
             ready: function() {
                 this.loadingMoreOlderEvents = false;
                 this.loadingMoreNewerEvents = false;
@@ -726,15 +987,16 @@
                 this.noMoreNewerEvents = false;
                 this.noMoreOlderEvents = false;
                 this.initialPosition = "right";
+                
                 var self = this;
                 window.onresize = function(event) {
                     self.refresh();
                 }
 
                 window.onmousewheel = function(event) {
-                    if (self.$.container.scrollTop == 0 && event.wheelDelta > 0 && !self.noMoreOlderEvents && !self.loadingMoreOlderEvents) {
+                    if (self.$.eventList.scrollTop == 0 && event.wheelDelta > 0 && !self.noMoreOlderEvents && !self.loadingMoreOlderEvents) {
                         self.loadMoreOlderEvents();
-                    } else if (self.$.container.scrollTop + self.$.container.clientHeight == self.$.container.scrollHeight &&
+                    } else if (self.$.eventList.scrollTop + self.$.eventList.clientHeight == self.$.eventList.scrollHeight &&
                         event.wheelDelta < 0 && !self.noMoreNewerEvents && !self.loadingMoreNewerEvents) {
                         self.loadMoreNewerEvents();
                     }
@@ -744,7 +1006,8 @@
             refresh: function() {
                 if (this.mode != 'list' || this.events == null) return;
 
-                this.bottomSpinnerTop = -45 + this.$.eventList.scrollHeight + 55;
+                this.bottomSpinnerTop = this.$.eventList.clientHeight;// + 55;
+                //this.spinnerXOffset = (this.$.container.clientWidth - this.$.eventList.clientWidth) / 2;
                 this.events.sort(function(o1, o2) {
                     if (o1.from_time < o2.from_time) return -1;
                     else if (o1.from_time > o2.from_time) return 1;
@@ -788,9 +1051,10 @@
 
                 var self = this;
                 setTimeout(function() {
-                    self.bottomSpinnerTop = -45 + self.$.eventList.scrollHeight + 55;
+                    self.bottomSpinnerTop = self.$.eventList.clientHeight;// + 55;
                 }, 100);
             },
+
             handleEvents: function (event, detail) {
                 var self = this;
                 this.events = detail.response;
@@ -803,17 +1067,15 @@
                 if (this.events.length > 0)
                     this.range = {min: this.events[0].from_time, max: this.events[this.events.length - 1].from_time};
             },
+
             handleSingleEvent: function(event, detail) {
                 this.selected = detail.response;
                 this.parseEvent(this.selected);  
-                var self = this;
-                setTimeout(function () {
-                    // self.$.autogrowArea.update(self.$.textArea);
-                    // self.$.decorator.updateLabelVisibility(self.$.textArea.value);
-                    self.$.pages.selected = 1;
-                }, 100);
+                
+                this.$.pages.selected = 1;
                 this.mode = 'view';
             },
+
             handleSingleEventError: function(event, detail) {
                 console.log(detail)
                 if (detail.xhr.status == 404) {
@@ -822,12 +1084,14 @@
                     this.$.pages.selected = 2;
                 }
             },
+
             changeTab: function (oldV, newV) {
                 this.tabSelected = newV ? 0 : 1;
                 if (newV && !this.selected.to_time) {
                     this.selected.to_time = new Date();
                 }
             },
+
             parseEvent: function(event) {
                 var members = {};
                 members.users = [];
@@ -853,7 +1117,16 @@
                     event.from_time = from_date.toISOString();
                     event.to_time = to_date.toISOString();
                 }
+                if (event.description == undefined || event.description.length == 0)
+                    event.description = ' ';
+                if (event.repeated) {
+                    if (event.repeated_type == 'Weekly' && event.repeated_on != undefined && event.repeated_on != null) {
+                        event.repeated_on = JSON.parse(event.repeated_on);
+                    }
+                    this.updateSummary(event);
+                }
             },
+
             copyEvent: function(event) {
                 var newEvent = {};
                 newEvent.from_time = event.from_time.toISOString();
@@ -869,21 +1142,36 @@
                 newEvent.period = event.period;
                 newEvent.title = event.title;
                 newEvent.description = event.description;
+                newEvent.repeated = event.repeated;
+                
+                if (newEvent.repeated) {
+                    newEvent.repeated_type = event.repeated_type;
+                    newEvent.repeated_on = event.repeated_on;
+                    newEvent.repeated_by = event.repeated_by;
+                    newEvent.repeated_frequency = event.repeated_frequency;
+                    newEvent.repeated_end_type = event.repeated_end_type;
+                    newEvent.repeated_times = event.repeated_times;
+                    newEvent.repeated_end_date = event.repeated_end_date;
+                }
                 return newEvent;
             },
+
             to_time: function (date) {
                 return moment(date).format('HH:mm');
             },
+
             select: function (event, detail, target) {
                 this.selected = target.templateInstance.model.model;
-                //this.selected.selected = {};
-                //this.selected.selected.users = this.selected.participants;
-                //this.selected.selected.teams = [];
-                //console.log(this.selected);
+                
+                if (this.selected.description == undefined || this.selected.description.length == 0)
+                    this.selected.description = ' ';
+
+                console.log(this.selected)
                 var self = this;
                 self.$.pages.selected = 1;
                 this.mode = 'view';
             },
+
             main: function () {
                 this.$.pages.selected = 0;
                 this.mode = 'list';
@@ -894,6 +1182,7 @@
                     if (this.eventId != null) this.eventId = null;
                 }
             },
+
             jumpToAdd: function () {
                 this.selected = {from_time: new Date(), to_time: new Date(), participants: {}, full_day: false, period: true};
                 this.selected.participants.teams = [];
@@ -909,6 +1198,7 @@
                 );
                 this.mode = 'edit';
             },
+
             saveEvent: function(){
                 if (this.selected.title == null || this.selected.title.length == 0) {
                     this.$.titleCannotBeEmpty.show();
@@ -919,6 +1209,7 @@
                 this.eventBody = JSON.stringify(this.copyEvent(this.selected));
                 this.$.postEvent.go();
             },
+
             eventSaved: function(event, detail) {
                 this.mode = 'view';
 
@@ -931,13 +1222,16 @@
                 this.refresh();
 
             },
+
             deleteEvent: function() {
                 this.$.confirmDeleteDialog.toggle();
                 //this.$.deleteEvent.go();
             },
+
             doDelete: function() {
                 this.$.deleteEvent.go();
             },
+
             eventDeleted: function(event, detail) {
                 console.log(this.selected);
                 if (this.events != null) {
@@ -955,36 +1249,46 @@
                 this.$.eventDeletedToast.show();
                 this.refresh();
             },
+
             loadMoreNewerEvents: function() {
                 if (!this.noMoreNewerEvents && this.range != undefined) {
+                    this.spinnerXOffset = (this.$.container.clientWidth - this.$.eventList.clientWidth) / 2;
+
+                    console.log(this.spinnerXOffset)
                     this.loadingMoreNewerEvents = true;
+
                     var self = this;
-                    self.bottomSpinnerTop += 100;
+                    self.bottomSpinnerTop = self.$.eventList.clientHeight + 100;
                     setTimeout(function() {
-                        self.bottomSpinnerTop -= 100;
+                        self.bottomSpinnerTop = self.$.eventList.clientHeight;
                     }, 0);
                     setTimeout(function() {
                         self.$.getMoreNewerEvents.go();
                     }, 500);
                 }
             },
+
             loadMoreOlderEvents: function() {
                 if (!this.noMoreOlderEvents && this.range != undefined) {
+                    this.spinnerXOffset = (this.$.container.clientWidth - this.$.eventList.clientWidth) / 2;
                     this.loadingMoreOlderEvents = true;
+
                     var self = this;
-                    self.topSpinnerTop = -105;
+                    self.topSpinnerTop = -100;
                     setTimeout(function() {
-                        self.topSpinnerTop = -45;
+                        self.topSpinnerTop = -50;
                     }, 0);
                     setTimeout(function() {
                         self.$.getMoreOlderEvents.go();
                     }, 500);
                 }
             },
+
             handleLoadEvents: function(type, event, detail) {
                 var self = this;
                 var events = detail.response;
 
+                console.log('loaded: ' + events.length)
                 if (events.length > 0) {
                     events.forEach(function (event) {
                         self.parseEvent(event);
@@ -994,7 +1298,8 @@
                         var contain = false;
                         for (var j = 0; j < this.events.length; j++) {
                             if (events[i].id == this.events[j].id) {
-                                contain = true;
+                                if (!events[i].repeated || events[i].repeated_number == this.events[j].repeated_number)
+                                    contain = true;
                                 break;
                             }
                         }
@@ -1027,6 +1332,8 @@
                     }
                 }
 
+
+                console.log('after loaded: ' + this.events.length)
                 if (type == 1)
                     this.loadingMoreNewerEvents = false;
                 else if (type == 2)
@@ -1038,9 +1345,11 @@
                     this.$.threshold.clearUpper();
                     
             },
+
             handleLoadNewerEvents: function(event, detail) {
                 this.handleLoadEvents(1, event, detail);
             },
+
             handleLoadOlderEvents: function(event, detail) {
                 this.handleLoadEvents(2, event, detail);
             },
@@ -1055,6 +1364,7 @@
                         this.selected.to_time = newValue;
                     }
                 }
+                this.updateSummary(this.selected)
             },
 
             /*
@@ -1066,8 +1376,180 @@
                     if (newValue < this.selected.from_time) {
                         this.selected.from_time = newValue;
                     }
+                    this.updateSummary(this.selected)
                 }
+            },
+
+            // Event method for repeat paper-toggle-button
+            repeatToggled: function(event, detail, target) {
+                if (target.checked) {
+                    this.$.repeatEventDialog.toggle();
+                    this.selected.repeated = true;
+
+                    // Default repeated type: Daily.
+                    if (this.selected.repeated_type == undefined) {
+                        this.selected.repeated_type = 'Daily';
+                    }
+
+                    // Default repeated end type: Never.
+                    if (this.selected.repeated_end_type == undefined) {
+                        this.selected.repeated_end_type = 'Never';
+                    }
+
+                    // Default repeated times: 10.
+                    if (this.selected.repeated_times == undefined) {
+                        this.selected.repeated_times = 10;
+                    }
+
+                    // Default repeated frequency: 1.
+                    if (this.selected.repeated_frequency == undefined) {
+                        this.selected.repeated_frequency = 1;
+                    }
+
+                    // Default repeated days of a week: 1.
+                    if (this.selected.repeated_on == undefined) {
+                        this.selected.repeated_on = new Array;
+                        var from = new Date(this.selected.from_time);
+                        this.selected.repeated_on.push(this.daysInWeek[from.getDay()]); 
+                    }
+
+                    // When repeated type is Monthly, event can be repeated by day of month of day of week
+                    if (this.selected.repeated_by == undefined) {
+                        this.selected.repeated_by = 'Month';
+                    }
+                }
+            },
+
+            //
+            cancelRepeatEvent: function(event, detail, target) {
+                this.$.repeatToggle.checked = false;
+                this.selected.repeated = false;
+            },
+
+            // Triggered when repeated type is changed.
+            repeatedTypeChange: function(event, detail, target) {
+                this.$.repeatedFrequency.focus();
+                console.log('Repeated type changed.');
+                this.updateSummary(this.selected);
+            },
+
+            // Triggered when repeated days of week are changed.
+            repeatedDaysOfWeekChange: function(event, detail, target) {
+                if (this.selected.repeated_on == undefined || 
+                    !(this.selected.repeated_on instanceof Array) || 
+                    this.selected.repeated_on.length == 0) {
+                    this.selected.repeated_on = new Array;
+                    var from = new Date(this.selected.from_time);
+                    this.selected.repeated_on.push(this.daysInWeek[from.getDay()]); 
+                }
+
+                console.log('Repeated days of week changed.');
+                this.updateSummary(this.selected);
+            },
+
+            repeatedFrequencyChange: function(event, detail, target) {
+                console.log('Repeated frequency changed.');
+                this.updateSummary(this.selected);
+            },
+
+            // Triggered when repeated day of month changed.
+            // When repeated type is monthly, users can decide to repeat by day of month of day of week.
+            repeatedDayOfMonthChange: function(event, detail, target) {
+                console.log('Repeated day of month changed.');
+                this.updateSummary(this.selected);
+            },
+
+            repeatedTimesChange: function(event, detail, target) {
+                console.log('Repeated times changed.');
+                this.updateSummary(this.selected);
+            },
+
+            // Event method for repeated end type change
+            repeatedEndTypeChange: function(event, detail, target) {
+                if (target.selected == 'Occurence') {
+                    this.$.repeatedTimes.focus();
+                } else if (target.selected == 'Date') {
+                    if (this.selected.repeated_end_date == undefined) {
+                        var from = new Date(this.selected.from_time);
+                        var endDate = new Date(from.getTime() + 2592000000);
+                        this.selected.repeated_end_date = endDate;
+                    }
+                }
+                this.updateSummary(this.selected);
+            }, 
+
+            updateSummary: function(event) {
+                if (!event.repeated) return 'None';
+                var summary = "", frequencyOne, frequencyMultiple;
+                frequencyOne = event.repeated_type;
+
+                if (event.repeated_type == 'Daily') {
+                    frequencyMultiple = 'days';
+                } else if (event.repeated_type == 'Weekly') {
+                    frequencyMultiple = 'weeks';
+                } else if (event.repeated_type == 'Monthly') {
+                    frequencyMultiple = 'months'
+                } else if (event.repeated_type == 'Yearly') {
+                    frequencyMultiple = 'years';
+                }
+
+                // Repeat event frequency summary
+                if (event.repeated_frequency == 1) {
+                    summary += frequencyOne;
+                } else if (event.repeated_frequency > 1) {
+                    summary += ("Every " + event.repeated_frequency + " " + frequencyMultiple);
+                } else {
+                    summary += frequencyOne;
+                }
+
+                var from = new Date(event.from_time);
+
+                // Repeat event days summary
+                if (event.repeated_type == 'Weekly') {
+                    summary += ' on ';
+                    for (var i = 0; i < event.repeated_on.length; i++) {
+                        summary += this.daysInWeekMap[event.repeated_on[i]];
+                        if (i != event.repeated_on.length - 1)
+                            summary += ', ';
+                    }
+                } else if (event.repeated_type == 'Monthly') {
+                    summary += ' on ';
+                    if (event.repeated_by == 'Month') {
+                        summary += ' day ' + from.getDate();
+                    } else if (event.repeated_by == 'Week') {
+                        summary += ' the ';
+                        var weekOfMonth = from.weekOfMonth();
+
+                        if (weekOfMonth == 1) {
+                            summary += ' first ';
+                        } else if (weekOfMonth == 2) {
+                            summary += ' second ';
+                        } else if (weekOfMonth == 3) {
+                            summary += ' third ';
+                        } else if (weekOfMonth == 4) {
+                            summary += ' fourth ';
+                        } else if (weekOfMonth == 5) {
+                            summary += ' fifth ';
+                        }
+
+                        summary += this.daysInWeekMap[this.daysInWeek[from.getDay()]];
+                    }
+                } else if (event.repeated_type == 'Yearly') {
+                    summary += ' on ' + this.months[from.getMonth()] + ' ' + from.getDate();
+                }
+
+                // Repeat event ends way summary
+                if (event.repeated_end_type == 'Occurence') {
+                    if (isNaN(event.repeated_times)) event.repeated_times = 1;
+                    else event.repeated_times = Math.floor(event.repeated_times);
+
+                    summary += ", " + event.repeated_times + " times";
+                } else if (event.repeated_end_type == 'Date') {
+                    summary += ", until " + event.repeated_end_date.toDateString();
+                }
+                event.summary = summary;
             }
+            
         });
     </script>
 </polymer-element>
