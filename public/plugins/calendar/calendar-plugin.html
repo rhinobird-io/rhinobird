@@ -201,10 +201,6 @@
         z-index: 1;
     }
 
-    .list {
-        padding-bottom: 40px;
-    }
-
     .subTitle {
         font-size: 21px;
         margin-left: 90px;
@@ -1121,7 +1117,7 @@
                 if (event.description == undefined || event.description.length == 0)
                     event.description = ' ';
                 if (event.repeated) {
-                    if (event.repeated_on != undefined && event.repeated_on != null) {
+                    if (event.repeated_type == 'Weekly' && event.repeated_on != undefined && event.repeated_on != null) {
                         event.repeated_on = JSON.parse(event.repeated_on);
                     }
                     this.updateSummary(event);
