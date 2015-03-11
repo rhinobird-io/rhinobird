@@ -74,7 +74,6 @@
             }
 
             .title {
-                position: absolute;
                 top: 0;
                 left: 64px;
                 height: 64px;
@@ -108,7 +107,6 @@
             #sidebar {
                 background-color: #FBFBFB;
             }
-
         </style>
         <core-scaffold responsiveWidth="1024px">
             <core-header-panel id="sidebar" navigation flex mode="seamed">
@@ -143,10 +141,13 @@
                 </div>
             </core-header-panel>
             <div tool flex horizontal layout center>
-                <div flex>
+                <div >
                     <div class="title">
                         <content select=".title"></content>
                     </div>
+                </div>
+                <div flex>
+                    <content select=".search"></content>
                 </div>
                 <div horizontal end-justified layout>
                     <core-ajax
@@ -225,6 +226,7 @@
                 }
                 this.userMenu && this.userMenu.toggle();
             }
+
         });
     </script>
 </polymer-element>
