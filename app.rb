@@ -536,7 +536,7 @@ class App < Sinatra::Base
         elsif event.repeated_by == 'Week' # E.g: both are the second Monday
           # When monthly repeated by day of month
           # If the day of week is not equal, return false
-          if !(date.wday == from.date.wday && week_day_of_month(date) == week_day_of_month(from_date))
+          if !(date.wday == from_date.wday && week_day_of_month(date) == week_day_of_month(from_date))
             return 0
           end
         end
