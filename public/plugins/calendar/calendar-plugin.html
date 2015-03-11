@@ -1355,6 +1355,7 @@
                         this.selected.to_time = newValue;
                     }
                 }
+                this.updateSummary(this.selected)
             },
 
             /*
@@ -1366,6 +1367,7 @@
                     if (newValue < this.selected.from_time) {
                         this.selected.from_time = newValue;
                     }
+                    this.updateSummary(this.selected)
                 }
             },
 
