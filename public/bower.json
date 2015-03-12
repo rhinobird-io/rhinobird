@@ -27,7 +27,8 @@
     "zxcvbn": "*",
     "event-infinite-scroll": "git@github.com:liuyang1204/event-infinite-scroll.git#simple-without-core-list",
     "highlightjs": "~8.4.0",
-    "sprintf": "~1.0.2"
+    "sprintf": "~1.0.2",
+    "marked": "https://github.com/chjj/marked.git#v0.3.3"
   },
   "resolutions": {
     "polymer": "0.5.4",
