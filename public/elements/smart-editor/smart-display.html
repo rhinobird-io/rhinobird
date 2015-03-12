@@ -82,7 +82,7 @@
                     var codeBlocks = value.match(regex);
                     value = value.replace(regex, "<pre><code class='$1'></code></pre>");
                 }
-                value = value.replace(/(<\/(div|pre)>)\n/g, "$1");
+                value = value.replace(/(<\/pre>)\n?\n/g, "$1");
                 if (this.enableAt) {
                     root.innerHTML = value.replace(/(^|\s)(@\w+)/g, "$1<at>$2</at>");
                     var list = root.querySelectorAll("at");
@@ -111,12 +111,6 @@
                     }
                     value = root.innerHTML;
                 }
-                if (this.enableLink) {
-                    // Replace links and emails
-                    value = value.replace(/(^|\s)((http|ftp)s?:\/\/\S+)/gi,
-                            "$1<a href='$2' target='_blank'>$2</a>");
-                    value = value.replace(EMAIL_REGEX, "$1<a href='mailto:$2'>$2</a>");
-                }
                 if (this.enableCode) {
                     // Re-insert code blocks
                     root.innerHTML = value;
@@ -129,6 +123,12 @@
                     value = root.innerHTML;
                 }
                 value = this.markdown(value);
+                if (this.enableLink) {
+                    // Replace links and emails
+                    value = value.replace(/(^|\s)((http|ftp)s?:\/\/\S+)/gi,
+                            "$1<a href='$2' target='_blank'>$2</a>");
+                    value = value.replace(EMAIL_REGEX, "$1<a href='mailto:$2'>$2</a>");
+                }
                 return value;
             },
 
@@ -137,8 +137,8 @@
                 value = marked(value);
                 return value.replace(/\n<brs>(\n+)<\/brs>\n\n</g, "$1\n<")
                     .replace(/\n<brs>(\n+)<\/brs>\n\n/g, "\n$1\n")
-                    .replace(/\n?(<(li|ul|blockquote)>)\n?/g, "$1")
-                    .replace(/\n?(<\/(li|ul|blockquote)>)\n?/g, "$1");
+                    .replace(/\n?(<(li|ul|ol|blockquote|(h\d\ .*))>)\n?/g, "$1")
+                    .replace(/\n?(<\/(li|ul|ol|blockquote)>)\n?/g, "$1");
             }
         });
 
