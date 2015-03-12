@@ -1,8 +1,10 @@
 <link rel="import" href="../app-globals/app-globals.html">
 <link rel="import" href="../html-echo/html-echo.html">
 <link rel="import" href="../file-display/file-display.html">
+
 <script src="../../bower_components/highlightjs/highlight.pack.js"></script>
 <script src="../../bower_components/sprintf/dist/sprintf.min.js"></script>
+<script src="../../bower_components/marked/marked.min.js"></script>
 
 <polymer-element name="smart-display" attributes="value">
     <template>
@@ -11,7 +13,19 @@
                 white-space: pre-wrap;
                 word-wrap: break-word;
             }
+            .container p {
+                -webkit-margin-before: 0em;
+                -webkit-margin-after: 0em;
+            }
+            .container blockquote {
+                -webkit-margin-start: 0em;
+                -webkit-margin-end: 0em;
+                border-left: 0.5em solid rgba(0,0,0,0.12);
+                color: rgba(0,0,0,0.54);
+                padding: 1em;
+            }
         </style>
+
         <app-globals id="globals"></app-globals>
         <link rel="stylesheet" href="../../bower_components/highlightjs/styles/default.css">
         <template if="{{readyDom}}">
@@ -24,9 +38,7 @@
 
     <script>
         function stripTags(value) {
-            return value.replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;");
+            return value.replace(/&/g, "&amp;").replace(/</g, "&lt;");
         }
 
         Polymer('smart-display', {
@@ -38,6 +50,7 @@
             domReady: function () {
                 this.readyDom = true;
             },
+
             slashTrigger: function (text, plugin, args) {
                 if (args == undefined) args = "";
                 if (plugin.toLowerCase() == "vity") {
@@ -52,9 +65,8 @@
                     display.setAttribute("fileid", args);
                     return display;
                 } else {
-                    // TODO Design the format
                     var link = document.createElement("a");
-                    link.href = "/" + plugin + "/cmd/" + args.replace(",", "/");
+                    link.href = "/" + plugin + "/cmd/" + args;
                     link.innerHTML = text;
                     return link;
                 }
@@ -116,7 +128,17 @@
                     }
                     value = root.innerHTML;
                 }
+                value = this.markdown(value);
                 return value;
+            },
+
+            markdown: function(value) {
+                value = value.replace(/&gt;/g, ">").replace(/\n(\n+)\n([^\n])/g, "\n\n<brs>$1</brs>\n\n$2");
+                value = marked(value);
+                return value.replace(/\n<brs>(\n+)<\/brs>\n\n</g, "$1\n<")
+                    .replace(/\n<brs>(\n+)<\/brs>\n\n/g, "\n$1\n")
+                    .replace(/\n?(<(li|ul|blockquote)>)\n?/g, "$1")
+                    .replace(/\n?(<\/(li|ul|blockquote)>)\n?/g, "$1");
             }
         });
 
