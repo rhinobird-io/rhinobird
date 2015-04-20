@@ -53,11 +53,6 @@ class App < Sinatra::Base
     halt 401 if @userid.nil?
   end
 
-  get '/login' do
-    content_type 'text/html'
-    send_file File.join(settings.public_folder, 'login.html')
-  end
-
   #set notifications to the checked status
   def mark_notification_as_read!
     notification = User.find(@userid).notifications
@@ -67,7 +62,6 @@ class App < Sinatra::Base
   end
 
   get '/' do
-=begin
     if request.websocket?
       request.websocket do |ws|
         ws.onopen do
@@ -83,15 +77,13 @@ class App < Sinatra::Base
           settings.sockets.delete(ws)
         end
       end
-    elsif @userid.nil?
-      redirect "/login"
     else
-=end
       content_type 'text/html'
       erb :index, :locals => {:script_url => 'http://localhost:2992/_assets/main.js'}
-    # end
-
+    end
   end
+
+  namespace 'api' do
 
   before do
     unless request.env['HTTP_X_USER'].nil?
@@ -106,42 +98,6 @@ class App < Sinatra::Base
       unless body.empty?
         @body = JSON.parse(body)
       end
-    end
-  end
-
-  namespace '/home' do
-    get '*' do
-      content_type 'text/html'
-      send_file File.join(settings.public_folder, 'index.html')
-    end
-  end
-
-  namespace '/developer' do
-
-    get '/?' do
-      content_type 'text/html'
-      send_file File.join(settings.public_folder, 'developer/index.html')
-    end
-
-    post '/upload' do
-      plugin = Plugin.load_from_zip(params['file'][:tempfile])
-      plugin.save!
-
-      # Plugin start run a new process and we need to kill it manually.
-      # To avoid development trouble, disable it currently
-      # When we want to test the running plugin, uncomment it
-      p "start plugin"
-      plugin.start
-      p "started plugin"
-      plugin.to_json
-    end
-
-    get '/plugins' do
-      Plugin.all.to_json
-    end
-
-    post '/plugins' do
-      Plugin.create!(@body)
     end
   end
 
@@ -931,6 +887,12 @@ class App < Sinatra::Base
       end
     end
     200
+  end
+  end
+
+
+  get '/*' do
+    erb :index, :locals => {:script_url => 'http://localhost:2992/_assets/main.js'}
   end
 
   # start the server if ruby file executed directly
