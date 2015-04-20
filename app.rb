@@ -67,6 +67,7 @@ class App < Sinatra::Base
   end
 
   get '/' do
+=begin
     if request.websocket?
       request.websocket do |ws|
         ws.onopen do
@@ -85,9 +86,10 @@ class App < Sinatra::Base
     elsif @userid.nil?
       redirect "/login"
     else
+=end
       content_type 'text/html'
-      send_file File.join(settings.public_folder, 'index.html')
-    end
+      erb :index, :locals => {:script_url => 'http://localhost:2992/_assets/main.js'}
+    # end
 
   end
 
