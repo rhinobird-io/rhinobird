@@ -67,6 +67,13 @@ class App < Sinatra::Application
     end
   end
 
+  not_found do
+    unless request.path_info.start_with?('/api/')
+      status 200
+      erb :index, :locals => {:script_url => 'http://localhost:2992/_assets/main.js'}
+    end
+  end
+
   namespace '/api' do
 
     before do
