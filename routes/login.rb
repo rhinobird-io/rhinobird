@@ -1,5 +1,5 @@
 # encoding: utf-8
-class App < Sinatra::Application
+class App < Sinatra::Base
   namespace '/api' do
     post '/login' do
       user = User.find_by(email: @body["email"])

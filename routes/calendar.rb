@@ -1,5 +1,5 @@
 # encoding: utf-8
-class App < Sinatra::Application
+class App < Sinatra::Base
   namespace '/api' do
     # Calculate the day difference of two dates(date_1 - date_2)
     def day_diff(date_1, date_2)

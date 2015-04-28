@@ -1,5 +1,5 @@
 # encoding: utf-8
-class App < Sinatra::Application
+class App < Sinatra::Base
   namespace '/api' do
     get '/teams' do
       Team.all.to_json
