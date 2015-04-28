@@ -1,6 +1,6 @@
 # encoding: utf-8
 require 'gravatar-ultimate'
-class App < Sinatra::Application
+class App < Sinatra::Base
   namespace '/api' do
     #gravatar related
     get '/gravatars/all' do

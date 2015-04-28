@@ -1,4 +1,4 @@
-require 'sinatra'
+require 'sinatra/base'
 require 'sinatra/activerecord'
 require 'sinatra/namespace'
 require 'sinatra-websocket'
@@ -8,8 +8,10 @@ require 'bcrypt'
 require 'date'
 require 'rufus-scheduler'
 
-class App < Sinatra::Application
+class App < Sinatra::Base
 
+  register Sinatra::ActiveRecordExtension
+  register Sinatra::Namespace
   auth_url = ENV['AUTH_URL'] || 'http://localhost:8000/auth'
   set :show_exceptions, :after_handler
   set :bind, '0.0.0.0'
