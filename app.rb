@@ -12,7 +12,7 @@ class App < Sinatra::Base
 
   register Sinatra::ActiveRecordExtension
   register Sinatra::Namespace
-  auth_url = ENV['AUTH_URL'] || 'http://localhost:8000/auth'
+  #auth_url = ENV['AUTH_URL'] || 'http://localhost:8000/auth'
   set :show_exceptions, :after_handler
   set :bind, '0.0.0.0'
   set :server, 'thin'

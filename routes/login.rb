@@ -1,5 +1,6 @@
 # encoding: utf-8
 class App < Sinatra::Base
+  auth_url = ENV['AUTH_URL'] || 'http://localhost:8000/auth'
   namespace '/api' do
     post '/login' do
       user = User.find_by(email: @body["email"])
@@ -23,7 +24,7 @@ class App < Sinatra::Base
       #TODO
     end
 
-    get '/loggedOnUser' do
+    get '/login' do
       if @userid.nil?
         404
       else
