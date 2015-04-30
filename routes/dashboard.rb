@@ -2,7 +2,12 @@
 class App < Sinatra::Base
   namespace '/api' do
     get '/users/:userId/dashboard_records' do
-      User.find(params[:userId]).dashboard_records.to_json
+      before = params[:before]
+      if before.nil?
+        User.find(params[:userId]).dashboard_records.limit(20).to_json
+      else
+        User.find(params[:userId]).dashboard_records.where('id < ?', before).limit(20).to_json
+      end
     end
 
     post '/users/:userId/dashboard_records' do
