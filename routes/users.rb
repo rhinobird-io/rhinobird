@@ -253,6 +253,7 @@ class App < Sinatra::Base
         new_password = Password.create(@body["newPassword"])
         User.update(@userid, :encrypted_password => new_password)
         user.dashboard_records.create!(:content => "Your password has been successfully changed", :from_user_id => user.id)
+        content_type 'text/plain'
         200
       else
         401
@@ -260,9 +261,10 @@ class App < Sinatra::Base
     end
 
     #update user realname
-    post '/user/realname/:new_name' do
-      User.update(@userid, :realname => params[:new_name])
-      200
+    post '/user/info' do
+      user = User.find(@userid)
+      user.update(realname: @body['realname'])
+      user.to_json(except: [:encrypted_password])
     end
 
     # post '/user/:userId' do
