@@ -47,7 +47,14 @@ class App < Sinatra::Base
     end
   end
 
-  get '/' do
+  before do
+    unless request.env['HTTP_X_USER'].nil?
+      @userid = request.env['HTTP_X_USER'].to_i
+    end
+  end
+
+  get '/socket' do
+    login_required!
     if request.websocket?
       request.websocket do |ws|
         ws.onopen do
@@ -63,10 +70,12 @@ class App < Sinatra::Base
           settings.sockets.delete(ws)
         end
       end
-    else
-      content_type 'text/html'
-      erb :index, :locals => {:script_url => 'http://localhost:2992/_assets/main.js'}
     end
+  end
+
+  get '/' do
+    content_type 'text/html'
+    erb :index, :locals => {:script_url => 'http://localhost:2992/_assets/main.js'}
   end
 
   not_found do
@@ -79,10 +88,6 @@ class App < Sinatra::Base
   namespace '/api' do
 
     before do
-      unless request.env['HTTP_X_USER'].nil?
-        @userid = request.env['HTTP_X_USER'].to_i
-      end
-
       login_required! unless (['/api/users', '/api/login', '/'].include?(request.path_info) || request.path_info =~ /\/user\/invitation.*/)
 
       content_type 'application/json'
