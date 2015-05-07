@@ -165,10 +165,10 @@ class App < Sinatra::Base
       }
 
       result = Array.new
-      if today_or_after_events.length >= 5
-        result.concat today_or_after_events.sort! { |a, b| a.from_time <=> b.from_time }.first(5)
+      if today_or_after_events.length >= 10
+        result.concat today_or_after_events.sort! { |a, b| a.from_time <=> b.from_time }.first(10)
       else
-        result.concat old_events.sort! { |a, b| a.from_time <=> b.from_time }.last(5 - today_or_after_events.length)
+        result.concat old_events.sort! { |a, b| a.from_time <=> b.from_time }.last(10 - today_or_after_events.length)
         result.concat today_or_after_events
       end
       result.to_json(json: Event, methods: [:repeated_number], include: {participants: {only: :id}, team_participants: {only: :id}})
