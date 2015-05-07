@@ -3,6 +3,8 @@ class TeamsRelation < ActiveRecord::Base
   validates :team_id, presence: true
   validate :has_circle
 
+  belongs_to :parent_team, class_name: 'Team'
+  belongs_to :team
   def has_circle
 
     reverse_origin = team_id
