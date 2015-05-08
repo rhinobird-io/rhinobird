@@ -7,12 +7,35 @@ namespace :db do
   desc 'Fill database with sample data'
   task :populate => :environment do
     Rake::Task['db:reset'].invoke
+    sh_all = Team.create!({name: 'Shanghai All'})
+    hue = sh_all.teams.create!({name: 'HUE'})
+    ate = sh_all.teams.create!({name: 'ATE'})
+    oss = ate.teams.create!({name:'OSS'})
+    ocrus = ate.teams.create!({name:'OCRUS'})
+    hue.teams.create!({name:'HUE Test'})
+    hue.teams.create!({name:'Magic Paste'})
+    hue.teams.create!({name:'ESS'})
+
+    3.times do
+      realname = Faker::Name.name
+      oss.users.create!({realname: realname, name: Faker::Internet.user_name(realname), email: Faker::Internet.email(realname), encrypted_password: Password.create("123")})
+    end
+
+    3.times do
+      realname = Faker::Name.name
+      ocrus.users.create!({realname: realname, name: Faker::Internet.user_name(realname), email: Faker::Internet.email(realname), encrypted_password: Password.create("123")})
+    end
+    3.times do
+      realname = Faker::Name.name
+      ate.users.create!({realname: realname, name: Faker::Internet.user_name(realname), email: Faker::Internet.email(realname), encrypted_password: Password.create("123")})
+    end
+
     3.times do
       team = Team.create!({name: Faker::Company.name})
       10.times do
         realname = Faker::Name.name
         user = team.users.create!({realname: realname, name: Faker::Internet.user_name(realname), email: Faker::Internet.email(realname), encrypted_password: Password.create("123")})
-        40.times do
+        3.times do
           user.dashboard_records.create!({content: Faker::Lorem.sentence, from_user_id: Random.rand(1..30)})
           user.notifications.create!({content: Faker::Lorem.sentence, from_user_id: Random.rand(1..30)})
         end
