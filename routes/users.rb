@@ -275,7 +275,7 @@ class App < Sinatra::Base
       teams_users = []
       teams = Team.all
       teams.each do |team|
-        member = {:created_at => team.created_at, :updated_at => team.updated_at, :id => team.id, :name => team.name, :users => get_all_users(team.id),
+        member = {:created_at => team.created_at, :updated_at => team.updated_at, :id => team.id, :name => team.name, :users => team.users,
         :teams => team.teams.map{|t| t.id}}
         teams_users << member
       end
