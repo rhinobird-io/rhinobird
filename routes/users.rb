@@ -147,7 +147,7 @@ class App < Sinatra::Base
     end
 
     #remove a user from team( or a user leaves a team)
-    post '/teams/:teamId/users/:userId/remove' do
+    delete '/teams/:teamId/users/:userId' do
       team = Team.find(params[:teamId])
       team.users.delete(params[:userId])
 
@@ -165,7 +165,7 @@ class App < Sinatra::Base
           EM.next_tick { settings.sockets[member.id].send(notify) }
         end
       end
-
+      content_type 'text/plain'
       200
     end
 
