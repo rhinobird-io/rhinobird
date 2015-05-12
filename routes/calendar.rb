@@ -72,11 +72,11 @@ class App < Sinatra::Base
         range_after = 0
 
         # 2. The date should match the repeated type's corresponding date
-        daysInWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        daysInWeek = %w(Sun Mon Tue Wed Thu Fri Sat)
         case event.repeated_type
-          when "Daily"
+          when 'Daily'
             range_after = day_diff(date, from_date)
-          when "Weekly"
+          when 'Weekly'
             # If the week day's of date is not within the repeated setting, return false
             puts daysInWeek
             puts date.wday
@@ -85,7 +85,7 @@ class App < Sinatra::Base
               return 0
             end
             range_after = week_diff(date, from_date)
-          when "Monthly"
+          when 'Monthly'
             if event.repeated_by == 'Month'
               # When monthly repeated by day of month
               # If the day of month is not equal, return false
@@ -95,14 +95,14 @@ class App < Sinatra::Base
             elsif event.repeated_by == 'Week' # E.g: both are the second Monday
               # When monthly repeated by day of month
               # If the day of week is not equal, return false
-              if !(date.wday == from_date.wday && week_day_of_month(date) == week_day_of_month(from_date))
+              unless date.wday == from_date.wday && week_day_of_month(date) == week_day_of_month(from_date)
                 return 0
               end
             end
             range_after = month_diff(date, from_date)
-          when "Yearly"
+          when 'Yearly'
             # If not the same day of years, return false
-            if !(date.month == from_date.month && date.day == from_date.day)
+            unless date.month == from_date.month && date.day == from_date.day
               return 0
             end
             range_after = year_diff(date, from_date)
@@ -171,7 +171,12 @@ class App < Sinatra::Base
         result.concat old_events.sort! { |a, b| a.from_time <=> b.from_time }.last(10 - today_or_after_events.length)
         result.concat today_or_after_events
       end
-      result.to_json(json: Event, methods: [:repeated_number], include: {participants: {only: :id}, team_participants: {only: :id}})
+
+      result.to_json(
+          json: Event,
+          methods: [:repeated_number],
+          include: {participants: {only: :id}, team_participants: {only: :id}}
+      )
     end
 
     get '/events/after/:from_time' do
@@ -184,7 +189,17 @@ class App < Sinatra::Base
         events.concat t.events.where("from_time > ?", from)
       }
 
-      events.sort! { |a, b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+      results = Array.new
+      events.each { |e|
+        e.repeated_number = 1
+      }
+
+      results.sort! { |a, b| a.from_time <=> b.from_time }.
+          first(5).
+          to_json(
+            json: Event,
+            methods: [:repeated_number],
+            include: {participants: {only: :id}, team_participants: {only: :id}})
     end
 
     get '/events/before/:from_time' do
@@ -197,7 +212,16 @@ class App < Sinatra::Base
         events.concat t.events.where("from_time < ?", from)
       }
 
-      events.sort! { |a, b| a.from_time <=> b.from_time }.first(5).to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+      events.each { |e|
+        e.repeated_number = 1
+      }
+
+      events.sort! { |a, b| a.from_time <=> b.from_time }.
+          first(5).
+          to_json(
+              json: Event,
+            methods: [:repeated_number],
+            include: {participants: {only: :id}, team_participants: {only: :id}})
     end
 
     get '/events/:eventId' do
