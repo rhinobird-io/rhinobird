@@ -43,7 +43,7 @@ class App < Sinatra::Base
   def mark_notification_as_read!
     notification = User.find(@userid).notifications
     @received_msg.each do |notify|
-      notification.update(notify["id"], :checked => true);
+      notification.update(notify['id'], :checked => true);
     end
   end
 
@@ -61,7 +61,7 @@ class App < Sinatra::Base
           settings.sockets[@userid] = ws
         end
         ws.onmessage do |msg|
-          if msg != "keep alive"
+          if msg != 'keep alive'
             @received_msg = JSON.parse(msg)
             mark_notification_as_read!
           end
@@ -88,7 +88,7 @@ class App < Sinatra::Base
   namespace '/api' do
 
     before do
-      login_required! unless (['/api/users', '/api/login', '/'].include?(request.path_info) || request.path_info =~ /\/user\/invitation.*/)
+      login_required! unless (%w(/api/users /api/login /).include?(request.path_info) || request.path_info =~ /\/user\/invitation.*/)
 
       content_type 'application/json'
       if request.media_type == 'application/json'

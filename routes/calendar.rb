@@ -1,4 +1,7 @@
 # encoding: utf-8
+class EventParam
+end
+
 class App < Sinatra::Base
   namespace '/api' do
 
@@ -73,16 +76,17 @@ class App < Sinatra::Base
         range_after = 0
 
         # 2. The date should match the repeated type's corresponding date
-        daysInWeek = %w(Sun Mon Tue Wed Thu Fri Sat)
+        days_in_week = %w(Sun Mon Tue Wed Thu Fri Sat)
+
         case event.repeated_type
           when 'Daily'
             range_after = day_diff(date, from_date)
           when 'Weekly'
             # If the week day's of date is not within the repeated setting, return false
-            puts daysInWeek
+            puts days_in_week
             puts date.wday
-            puts event.repeated_on.index(daysInWeek[date.wday])
-            if event.repeated_on.index(daysInWeek[date.wday]).nil?
+            puts event.repeated_on.index(days_in_week[date.wday])
+            if event.repeated_on.index(days_in_week[date.wday]).nil?
               return 0
             end
             range_after = week_diff(date, from_date)
@@ -132,8 +136,8 @@ class App < Sinatra::Base
 
     # Get the $(repeated_number)th event of a repeated one
     def get_repeated_event(event, repeated_number)
-      if event.nil? or !event.repeated
-        event
+      if event.nil?
+        nil
       else
         event.repeated_number = repeated_number
         event
@@ -152,7 +156,6 @@ class App < Sinatra::Base
         all_events.concat t.events
       }
 
-      repeated_events_on_today = Array.new
       today_or_after_events = Array.new
       old_events = Array.new
 
@@ -194,10 +197,10 @@ class App < Sinatra::Base
       from = DateTime.parse(params[:from_time])
 
       events = Array.new
-      events.concat User.find(@userid).events.where("from_time > ?", from)
+      events.concat User.find(@userid).events.where('from_time > ?', from)
 
       User.find(@userid).teams.each { |t|
-        events.concat t.events.where("from_time > ?", from)
+        events.concat t.events.where('from_time > ?', from)
       }
 
       results = Array.new
@@ -217,10 +220,10 @@ class App < Sinatra::Base
       from = DateTime.parse(params[:from_time])
 
       events = Array.new
-      events.concat User.find(@userid).events.where("from_time < ?", from)
+      events.concat User.find(@userid).events.where('from_time < ?', from)
 
       User.find(@userid).teams.each { |t|
-        events.concat t.events.where("from_time < ?", from)
+        events.concat t.events.where('from_time < ?', from)
       }
 
       events.each { |e|
@@ -261,7 +264,7 @@ class App < Sinatra::Base
         team = Team.find(p)
         event.team_participants << team
         team.users.each { |u|
-          if !notified_users.include? u.id
+          unless notified_users.include? u.id
             notified_users << u.id
           end
         }
@@ -269,7 +272,7 @@ class App < Sinatra::Base
 
       @body['participants']['users'].each { |p|
         user = User.find(p)
-        if !notified_users.include? user.id
+        unless notified_users.include? user.id
           notified_users << user.id
           event.participants << user
         end
@@ -277,7 +280,7 @@ class App < Sinatra::Base
 
       # Whether the event creator is also a participant by default?
       user_self = User.find(uid)
-      if !notified_users.include? uid
+      unless notified_users.include? uid
         event.participants << user_self
         notified_users << uid
       end
@@ -285,21 +288,24 @@ class App < Sinatra::Base
 
       event.save!
 
+      event.repeated_number = 1
+
       notified_users.each { |p|
         user = User.find(p)
 
-        message = ''
         if event.creator_id == p
           message = 'You have created an event '
         else
           message = 'Invited you to the event '
         end
-        user.dashboard_records.create!({
-                                           content: message,
-                                           from_user_id: uid,
-                                           has_link: true,
-                                           link_url: '#/calendar/' + event.id.to_s,
-                                           link_title: event.title})
+
+        user.dashboard_records.create!({content: message,
+            from_user_id: uid,
+            has_link: true,
+            link_to: 'event-detail',
+            link_url: 'event-detail',
+            link_param: event.to_json(methods: [:repeated_number], only: [:id]),
+            link_title: event.title})
 
         notification = user.notifications.create!({content: message + event.title, from_user_id: uid})
 
@@ -310,7 +316,11 @@ class App < Sinatra::Base
         end
       }
 
-      event.to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+
+      event.to_json(
+          json: Event,
+          methods: [:repeated_number],
+          include: {participants: {only: :id}, team_participants: {only: :id}})
     end
 
     delete '/events/:eventId' do
@@ -321,7 +331,6 @@ class App < Sinatra::Base
         event.participants.each { |p|
           user = User.find(p.id)
 
-          content = ''
           if event.creator_id == p.id
             content = 'You have canceled the event ' + event.title
           else
