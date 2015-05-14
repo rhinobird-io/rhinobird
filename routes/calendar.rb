@@ -203,12 +203,11 @@ class App < Sinatra::Base
         events.concat t.events.where('from_time > ?', from)
       }
 
-      results = Array.new
       events.each { |e|
         e.repeated_number = 1
       }
 
-      results.sort! { |a, b| a.from_time <=> b.from_time }.
+      events.sort! { |a, b| a.from_time <=> b.from_time }.
           first(5).
           to_json(
             json: Event,
@@ -219,6 +218,9 @@ class App < Sinatra::Base
     get '/events/before/:from_time' do
       from = DateTime.parse(params[:from_time])
 
+      puts 'Great'
+      puts params[:from_time]
+
       events = Array.new
       events.concat User.find(@userid).events.where('from_time < ?', from)
 
@@ -226,14 +228,18 @@ class App < Sinatra::Base
         events.concat t.events.where('from_time < ?', from)
       }
 
+      results = Array.new
       events.each { |e|
-        e.repeated_number = 1
+        if e.from_time < from
+          e.repeated_number = 1
+          results.push(e);
+        end
       }
 
-      events.sort! { |a, b| a.from_time <=> b.from_time }.
+      results.sort! { |a, b| a.from_time <=> b.from_time }.
           first(5).
           to_json(
-              json: Event,
+            json: Event,
             methods: [:repeated_number],
             include: {participants: {only: :id}, team_participants: {only: :id}})
     end
