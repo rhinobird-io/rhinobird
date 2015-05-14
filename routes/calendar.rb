@@ -1,6 +1,7 @@
 # encoding: utf-8
 class App < Sinatra::Base
   namespace '/api' do
+
     # Calculate the day difference of two dates(date_1 - date_2)
     def day_diff(date_1, date_2)
       return date_1.mjd - date_2.mjd
@@ -38,7 +39,7 @@ class App < Sinatra::Base
       date_1.year - date_2.year
     end
 
-    # Return the fisrt copy of repeated event which will happen after $datetime
+    # Return the first copy of repeated event which will happen after $datetime
     # If there's no such copy, return nil
     def first_occur_repeated_event_after(event, datetime)
       nil
@@ -126,6 +127,16 @@ class App < Sinatra::Base
         end
 
         repeated_number
+      end
+    end
+
+    # Get the $(repeated_number)th event of a repeated one
+    def get_repeated_event(event, repeated_number)
+      if event.nil? or !event.repeated
+        event
+      else
+        event.repeated_number = repeated_number
+        event
       end
     end
 
@@ -224,9 +235,20 @@ class App < Sinatra::Base
             include: {participants: {only: :id}, team_participants: {only: :id}})
     end
 
-    get '/events/:eventId' do
-      event = Event.find(params[:eventId])
-      event.to_json(include: {participants: {only: :id}, team_participants: {only: :id}})
+    get '/events/:eventId/:repeatedNumber' do
+      e = Event.find(params[:eventId])
+
+      if e.nil?
+        404
+      else
+        event = get_repeated_event(e, params[:repeatedNumber])
+
+        event.to_json(
+            json: Event,
+            methods: [:repeated_number],
+            include: {participants: {only: :id}, team_participants: {only: :id}})
+      end
+
     end
 
     post '/events' do
