@@ -15,9 +15,41 @@ class App < Sinatra::Base
     end
 
     post '/teams' do
-      team = Team.create!(@body)
-      snapshot = TeamSnapshot.create!({:event_type => "create"})
-      team.team_snapshots << snapshot
+      team = Team.create!({name: @body['name'], creator:@userid})
+      unless @body['teams'].nil?
+        @body['teams'].each do |tid|
+          sub_team = Team.find(tid)
+          team.teams << sub_team
+        end
+      end
+      unless @body['parentTeams'].nil?
+        @body['parentTeams'].each do |tid|
+          parent_team = Team.find(tid)
+          team.parent_teams << parent_team
+        end
+      end
+
+      from_user = User.find(@userid)
+      from_user.dashboard_records.create!(:content => "You have created a new team : " + team.name, :from_user_id => from_user.id)
+
+      unless @body['members'].nil?
+        @body['members'].each do |userId|
+          user = User.find(userId)
+          team.users << user
+
+          unless userId.equal?(from_user.id)
+            user.dashboard_records.create!(:content => from_user.realname + " has added you to team : " + team.name, :from_user_id => from_user.id)
+            notification = user.notifications.create!(:content => from_user.realname + " has added you to team : " + team.name, :from_user_id => from_user.id)
+            notify = notification.to_json(:except => [:user_id])
+            unless settings.sockets[user.id].nil?
+              EM.next_tick { settings.sockets[user.id].send(notify) }
+            end
+          end
+        end
+      end
+
+      content_type 'text/plain'
+      200
     end
 
     def get_all_users(team_id)
@@ -36,33 +68,6 @@ class App < Sinatra::Base
     post '/teams/:teamId/delete' do
       Team.delete(params[:teamId])
       200
-    end
-
-    #create team with initial users
-    post '/teams/users' do
-      team = Team.create!(@body["team"])
-      snapshot = TeamSnapshot.create!({:event_type => "create"})
-      team.team_snapshots << snapshot
-      from_user = User.find(@userid)
-      from_user.dashboard_records.create!(:content => "You have created a new team : " + team.name, :from_user_id => from_user.id)
-
-      @body["user"].each do |userId|
-        user = User.find(userId)
-        team.users << user
-
-        snapshot = TeamSnapshot.create!({:event_type => "add_user", :member_user_id => user.id})
-        team.team_snapshots << snapshot
-
-        unless userId.equal?(from_user.id)
-          user.dashboard_records.create!(:content => from_user.realname + " has added you to team : " + team.name, :from_user_id => from_user.id)
-          notification = user.notifications.create!(:content => from_user.realname + " has added you to team : " + team.name, :from_user_id => from_user.id)
-          notify = notification.to_json(:except => [:user_id])
-          unless settings.sockets[user.id].nil?
-            EM.next_tick { settings.sockets[user.id].send(notify) }
-          end
-        end
-      end
-      team.to_json
     end
 
     #get all users in a team
@@ -108,10 +113,8 @@ class App < Sinatra::Base
       @body.each do |userId|
         user = User.find(userId)
         team.users << user
-
-        snapshot = TeamSnapshot.create!({:event_type => "add_user", :member_user_id => user.id})
-        team.team_snapshots << snapshot
       end
+      content_type 'text/plain'
       200
     end
 
@@ -275,7 +278,7 @@ class App < Sinatra::Base
       teams_users = []
       teams = Team.all
       teams.each do |team|
-        member = {:created_at => team.created_at, :updated_at => team.updated_at, :id => team.id, :name => team.name, :users => team.users,
+        member = {:creator => team.creator, :created_at => team.created_at, :updated_at => team.updated_at, :id => team.id, :name => team.name, :users => team.users,
         :teams => team.teams.map{|t| t.id}}
         teams_users << member
       end
