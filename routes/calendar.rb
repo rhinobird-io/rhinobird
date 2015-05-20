@@ -1,6 +1,4 @@
 # encoding: utf-8
-class EventParam
-end
 
 class App < Sinatra::Base
   namespace '/api' do
