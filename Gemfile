@@ -16,6 +16,8 @@ gem 'pony'
 gem 'rest-client'
 gem 'pg'
 gem 'rufus-scheduler'
+gem 'elasticsearch-model'
+gem 'elasticsearch-rails'
 
 gem 'rake'
 gem 'faker'
