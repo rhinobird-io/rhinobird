@@ -48,24 +48,42 @@ scheduler = Rufus::Scheduler.new
 
 # Check events that are not full day.
 scheduler.every '30s' do
-  now = Time.now
-  half_an_hour = 30 * 60
+  now = DateTime.now
+  half_an_hour = 30.minute
 	half_an_hour_later = now + half_an_hour
 
-  events = Event.where('from_time >= ? and from_time <= ? and full_day = false and repeated = false', now, half_an_hour_later)
-	repeated_events = Event.where('repeated = true')
+  events = Event.where('from_time >= ? and from_time <= ? and full_day = ? and repeated = ?', now, half_an_hour_later, false, false)
+	repeated_events = Event.where('repeated = ?', true)
 
+  repeated_events.each { |e|
+    repeated_number = e.get_repeated_number(Date.today)
+		re = e.get_repeated_event(repeated_number)
+
+    if !re.nil? && re.from_time.to_datetime >= now && re.from_time.to_datetime <= half_an_hour_later
+      e.repeated_number = repeated_number
+      events.push(e)
+    end
+  }
+
+  count = 0
   events.each { |e|
-  	next if e.from_time - now < 1775
-  	
+    puts e.from_time.to_datetime.to_i - now.to_i
+
+		next if e.from_time.to_datetime.to_i - now.to_i < 1775
+
+    unless e.repeated
+      e.repeated_number = 1
+    end
+
   	message = 'Your event will start in half an hour: '
 	  notification_message = "Your event #{e.title} will start in half an hour."
-  	
+
+    count = count + 1
   	send_event_notification(e, message, 'event-detail', notification_message)
   }
 
-  if events.length > 0
-		puts "Info: #{events.length} dashboard records and notifications have been sent."
+  if count > 0
+		puts "Info: #{count} dashboard records and notifications have been sent."
 	end
 end
 
