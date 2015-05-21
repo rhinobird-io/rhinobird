@@ -7,9 +7,8 @@ class App < Sinatra::Base
       events = Event.search(query: {
                                 filtered: {
                                     query: {
-                                        multi_match: {
-                                            query: params[:q],
-                                            fields: %w(title description)
+                                        match: {
+                                            title: params[:q]
                                         }
                                     },
                                     filter: {
