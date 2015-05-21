@@ -110,7 +110,7 @@ class App < Sinatra::Base
 
         if e.nil?
           404
-        else
+        elsif e.repeated
           event = e.get_repeated_event(params[:repeatedNumber])
 
           if event.nil?
@@ -118,6 +118,12 @@ class App < Sinatra::Base
           end
 
           event.to_json(
+              json: Event,
+              methods: [:repeated_number],
+              include: {participants: {only: :id}, team_participants: {only: :id}})
+        else
+          e.repeated_number = 1
+          e.to_json(
               json: Event,
               methods: [:repeated_number],
               include: {participants: {only: :id}, team_participants: {only: :id}})
