@@ -1,5 +1,5 @@
 require 'faker'
-require "bcrypt"
+require 'bcrypt'
 
 include BCrypt
 

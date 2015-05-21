@@ -1,6 +1,5 @@
 
-require 'bcrypt'
-
+require "bcrypt"
 
 class User < ActiveRecord::Base
 
