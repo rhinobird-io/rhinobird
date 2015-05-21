@@ -10,6 +10,14 @@ require 'rufus-scheduler'
 
 class App < Sinatra::Base
 
+  configure :production do
+    set :script_url, '/platform/_assets/main.js'
+    set :css_url, '/platform/_assets/main.css'
+  end
+  configure :development do
+    set :script_url, 'http://localhost:2992/_assets/main.js'
+    set :css_url, ''
+  end
   register Sinatra::ActiveRecordExtension
   register Sinatra::Namespace
   #auth_url = ENV['AUTH_URL'] || 'http://localhost:8000/auth'
@@ -75,13 +83,13 @@ class App < Sinatra::Base
 
   get '/' do
     content_type 'text/html'
-    erb :index, :locals => {:script_url => 'http://localhost:2992/_assets/main.js'}
+    erb :index, :locals => {:script_url => settings.script_url, :css_url => settings.css_url}
   end
 
   not_found do
     unless request.path_info.start_with?('/api/')
       status 200
-      erb :index, :locals => {:script_url => 'http://localhost:2992/_assets/main.js'}
+      erb :index, :locals => {:script_url => settings.script_url, :css_url => settings.css_url}
     end
   end
 
