@@ -62,31 +62,37 @@ class App < Sinatra::Base
   end
 
   get '/socket' do
-    #login_required!
-    if Faye::WebSocket.websocket?(request.env)
-      ws = Faye::WebSocket.new(request.env)
-      ws.on(:open) do |event|
-        puts "open #{@userid}"
-        #settings.sockets[@userid] = ws
-      end
-
-      ws.on(:message) do |msg|
-        if msg != 'keep alive'
-          @received_msg = JSON.parse(msg)
-          mark_notification_as_read!
+    login_required!
+      if Faye::WebSocket.websocket?(request.env)
+        ws = Faye::WebSocket.new(request.env)
+        ws.on(:open) do |event|
+          puts "open #{@userid}"
+          settings.sockets[@userid] = ws
         end
-      end
 
-      ws.on(:error) do |msg|
-        puts msg
-      end
+        ws.on(:message) do |event|
+          msg = event.data
+          puts msg
+          if msg != 'keep alive'
+            begin
+              @received_msg = JSON.parse(msg)
+              mark_notification_as_read!
+            rescue JSON::ParserError => e
+              logger.error e
+            end
+          end
+        end
 
-      ws.on(:close) do |event|
-        puts "close #{@userid}"
-        settings.sockets.delete(ws)
+        ws.on(:error) do |msg|
+          logger.error msg
+        end
+
+        ws.on(:close) do |event|
+          puts "close #{@userid}"
+          settings.sockets.delete(ws)
+        end
+        ws.rack_response
       end
-      ws.rack_response
-    end
   end
 
   get '/' do
