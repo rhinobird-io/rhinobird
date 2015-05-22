@@ -1,12 +1,13 @@
 require 'sinatra/base'
 require 'sinatra/activerecord'
 require 'sinatra/namespace'
-require 'sinatra-websocket'
 require 'rest_client'
 require 'pony'
 require 'bcrypt'
 require 'date'
 require 'rufus-scheduler'
+require 'faye/websocket'
+Faye::WebSocket.load_adapter('thin')
 
 class App < Sinatra::Base
 
@@ -22,7 +23,7 @@ class App < Sinatra::Base
   register Sinatra::Namespace
   set :show_exceptions, :after_handler
   set :bind, '0.0.0.0'
-  set :server, 'thin'
+  set :server, 'puma'
   set :sockets, []
   set :protection, :except => [:json_csrf]
   set :logging, true
@@ -61,22 +62,30 @@ class App < Sinatra::Base
   end
 
   get '/socket' do
-    login_required!
-    if request.websocket?
-      request.websocket do |ws|
-        ws.onopen do
-          settings.sockets[@userid] = ws
-        end
-        ws.onmessage do |msg|
-          if msg != 'keep alive'
-            @received_msg = JSON.parse(msg)
-            mark_notification_as_read!
-          end
-        end
-        ws.onclose do
-          settings.sockets.delete(ws)
+    #login_required!
+    if Faye::WebSocket.websocket?(request.env)
+      ws = Faye::WebSocket.new(request.env)
+      ws.on(:open) do |event|
+        puts "open #{@userid}"
+        #settings.sockets[@userid] = ws
+      end
+
+      ws.on(:message) do |msg|
+        if msg != 'keep alive'
+          @received_msg = JSON.parse(msg)
+          mark_notification_as_read!
         end
       end
+
+      ws.on(:error) do |msg|
+        puts msg
+      end
+
+      ws.on(:close) do |event|
+        puts "close #{@userid}"
+        settings.sockets.delete(ws)
+      end
+      ws.rack_response
     end
   end
 
