@@ -66,7 +66,7 @@ class App < Sinatra::Base
       if Faye::WebSocket.websocket?(request.env)
         ws = Faye::WebSocket.new(request.env)
         ws.on(:open) do |event|
-          puts "open #{@userid}"
+          logger.info "open #{@userid}"
           settings.sockets[@userid] = ws
         end
 
@@ -88,7 +88,7 @@ class App < Sinatra::Base
         end
 
         ws.on(:close) do |event|
-          puts "close #{@userid}"
+          logger.info "close #{@userid}"
           settings.sockets.delete(ws)
         end
         ws.rack_response
