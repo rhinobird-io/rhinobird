@@ -18,23 +18,23 @@ namespace :db do
 
     3.times do
       realname = Faker::Name.name
-      oss.users.create!({realname: realname, name: Faker::Internet.user_name(realname), email: Faker::Internet.email(realname), encrypted_password: Password.create("123")})
+      oss.users.create!({realname: realname, name: Faker::Internet.user_name(realname), email: Faker::Internet.email(realname), encrypted_password: Password.create('123')})
     end
 
     3.times do
       realname = Faker::Name.name
-      ocrus.users.create!({realname: realname, name: Faker::Internet.user_name(realname), email: Faker::Internet.email(realname), encrypted_password: Password.create("123")})
+      ocrus.users.create!({realname: realname, name: Faker::Internet.user_name(realname), email: Faker::Internet.email(realname), encrypted_password: Password.create('123')})
     end
     3.times do
       realname = Faker::Name.name
-      ate.users.create!({realname: realname, name: Faker::Internet.user_name(realname), email: Faker::Internet.email(realname), encrypted_password: Password.create("123")})
+      ate.users.create!({realname: realname, name: Faker::Internet.user_name(realname), email: Faker::Internet.email(realname), encrypted_password: Password.create('123')})
     end
 
     3.times do
       team = Team.create!({name: Faker::Company.name})
       10.times do
         realname = Faker::Name.name
-        user = team.users.create!({realname: realname, name: Faker::Internet.user_name(realname), email: Faker::Internet.email(realname), encrypted_password: Password.create("123")})
+        user = team.users.create!({realname: realname, name: Faker::Internet.user_name(realname), email: Faker::Internet.email(realname), encrypted_password: Password.create('123')})
         3.times do
           user.dashboard_records.create!({content: Faker::Lorem.sentence, from_user_id: Random.rand(1..30)})
           user.notifications.create!({content: Faker::Lorem.sentence, from_user_id: Random.rand(1..30)})
@@ -158,7 +158,7 @@ namespace :db do
                         to_time: Faker::Time.between(3.hours.from_now, 4.hours.from_now),
                         repeated: true,
                         repeated_type: 'Monthly',
-                        repeated_by: "Month",
+                        repeated_by: 'Month',
                         repeated_frequency: Faker::Number.number(1).to_i + 1,
                         repeated_end_type: 'Never'
                     })
@@ -175,7 +175,7 @@ namespace :db do
                         to_time: Faker::Time.between(3.hours.from_now, 4.hours.from_now),
                         repeated: true,
                         repeated_type: 'Monthly',
-                        repeated_by: "Week",
+                        repeated_by: 'Week',
                         repeated_frequency: Faker::Number.number(1).to_i + 1,
                         repeated_end_type: 'Never'
                     })
@@ -202,6 +202,11 @@ namespace :db do
         4.times do
             Appointment.create!(event_id: idx, participant_id: Random.rand(2..30))
         end
+    end
+
+    1.times do
+      realname = 'lalala'
+      oss.users.create!({realname: realname, name: Faker::Internet.user_name(realname), email: 'haha@haha.com', encrypted_password: Password.create('123')})
     end
   end
 end
