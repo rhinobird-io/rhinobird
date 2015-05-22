@@ -1,1 +1,0 @@
-webpackJsonp([6],{672:function(e,t,n){"use strict";var r=n(111),i=n(260).RouteHandler;e.exports=r.createClass({displayName:"index",componentDidMount:function(){this.props.setTitle("Calendar")},render:function(){return r.createElement(i,null)}})}});
