@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150519030024) do
+ActiveRecord::Schema.define(version: 20150521092134) do
 
   create_table "appointments", force: :cascade do |t|
     t.integer "event_id"
@@ -30,7 +30,6 @@ ActiveRecord::Schema.define(version: 20150519030024) do
     t.boolean  "has_link"
     t.string   "link_url"
     t.string   "link_title"
-    t.string   "link_to"
     t.string   "link_param"
   end
 
@@ -52,7 +51,7 @@ ActiveRecord::Schema.define(version: 20150519030024) do
     t.string   "repeated_on"
     t.string   "repeated_by"
     t.integer  "repeated_times"
-    t.integer  "repeated_end_type"
+    t.string   "repeated_end_type"
     t.datetime "repeated_end_date"
   end
 
