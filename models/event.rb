@@ -1,8 +1,8 @@
-require 'elasticsearch/model'
+# require 'elasticsearch/model'
 
 class Event < ActiveRecord::Base
-  include Elasticsearch::Model
-  include Elasticsearch::Model::Callbacks
+  # include Elasticsearch::Model
+  # include Elasticsearch::Model::Callbacks
 
   belongs_to :creator, class_name: :User
   has_many :appointments
@@ -151,4 +151,4 @@ class Event < ActiveRecord::Base
 
 end
 
-Event.import
+# Event.import
