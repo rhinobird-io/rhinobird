@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150521092134) do
+ActiveRecord::Schema.define(version: 20150525063501) do
 
   create_table "appointments", force: :cascade do |t|
     t.integer "event_id"
@@ -53,6 +53,8 @@ ActiveRecord::Schema.define(version: 20150521092134) do
     t.integer  "repeated_times"
     t.string   "repeated_end_type"
     t.datetime "repeated_end_date"
+    t.integer  "status",             default: 0
+    t.integer  "repeated_exclusion"
   end
 
   add_index "events", ["creator_id"], name: "index_events_on_creator_id"
