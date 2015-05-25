@@ -4,6 +4,7 @@ class Event < ActiveRecord::Base
   # include Elasticsearch::Model
   # include Elasticsearch::Model::Callbacks
 
+  enum status:  { created: 0, trashed: 1 }
   belongs_to :creator, class_name: :User
   has_many :appointments
   has_many :team_appointments
@@ -14,7 +15,6 @@ class Event < ActiveRecord::Base
   # Get the $(repeated_number)th event of a repeated one
   def get_repeated_event(repeated_number)
     number = repeated_number.to_i
-    puts "Repeated number: #{number} #{self.repeated_times}"
 
     if self.repeated && number > 0
       self.repeated_number = number
@@ -96,9 +96,6 @@ class Event < ActiveRecord::Base
           range_after = DateHelper.day_diff(date, from_date)
         when 'Weekly'
           # If the week day's of date is not within the repeated setting, return false
-          puts days_in_week
-          puts date.wday
-          puts self.repeated_on.index(days_in_week[date.wday])
           if self.repeated_on.index(days_in_week[date.wday]).nil?
             return 0
           end
