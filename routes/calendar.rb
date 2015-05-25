@@ -161,10 +161,10 @@ class App < Sinatra::Base
       puts params[:from_time]
 
       events = Array.new
-      events.concat User.find(@userid).events.where('from_time < ?', from)
+      events.concat User.find(@userid).events.where('from_time < ? and status <> ?', from, Event.statuses[:trashed])
 
       User.find(@userid).teams.each { |t|
-        events.concat t.events.where('from_time < ?', from)
+        events.concat t.events.where('from_time < ? and status <> ?', from, Event.statuses[:trashed])
       }
 
       results = Array.new
