@@ -89,10 +89,10 @@ class App < Sinatra::Base
       user = User.find(@userid)
 
       all_events = Array.new
-      all_events.concat user.events
+      all_events.concat user.events.where('status <> ?', Event.statuses[:trashed])
 
       user.teams.each { |t|
-        all_events.concat t.events
+        all_events.concat t.events.where('status <> ?', Event.statuses[:trashed])
       }
 
       today_or_after_events = Array.new
@@ -136,10 +136,10 @@ class App < Sinatra::Base
       from = DateTime.parse(params[:from_time])
 
       events = Array.new
-      events.concat User.find(@userid).events.where('from_time > ?', from)
+      events.concat User.find(@userid).events.where('from_time > ? and status <> ?', from, Event.statuses[:trashed])
 
       User.find(@userid).teams.each { |t|
-        events.concat t.events.where('from_time > ?', from)
+        events.concat t.events.where('from_time > ? and status <> ?', from, Event.statuses[:trashed])
       }
 
       events.each { |e|
@@ -161,10 +161,10 @@ class App < Sinatra::Base
       puts params[:from_time]
 
       events = Array.new
-      events.concat User.find(@userid).events.where('from_time < ?', from)
+      events.concat User.find(@userid).events.where('from_time < ? and status <> ?', from, Event.statuses[:trashed])
 
       User.find(@userid).teams.each { |t|
-        events.concat t.events.where('from_time < ?', from)
+        events.concat t.events.where('from_time < ? and status <> ?', from, Event.statuses[:trashed])
       }
 
       results = Array.new
@@ -243,6 +243,7 @@ class App < Sinatra::Base
         notified_users << uid
       end
       event.creator_id = uid
+      event.status = 'created'
 
       event.save!
 
@@ -282,8 +283,8 @@ class App < Sinatra::Base
           include: {participants: {only: :id}, team_participants: {only: :id}})
     end
 
-    delete '/events/:eventId' do
-      event = Event.find(params[:eventId])
+    delete '/events/:event_id' do
+      event = Event.find(params[:event_id])
       if @userid == event.creator_id
         uid = @userid
 
@@ -293,7 +294,7 @@ class App < Sinatra::Base
           if event.creator_id == p.id
             content = 'You have canceled the event ' + event.title
           else
-            content = 'Has canceled the event ' + event.title
+            content = 'has canceled the event ' + event.title
           end
 
           user.dashboard_records.create!({content: content, from_user_id: uid})
@@ -305,8 +306,27 @@ class App < Sinatra::Base
           end
         }
 
-        event.destroy
+        event.status = 'trashed'
+        event.save!
+
+        content_type 'text/plain'
         200
+      else
+        403
+      end
+    end
+
+    put '/events/restore/:event_id' do
+      event = Event.find(params[:event_id])
+      if @userid == event.creator_id
+        event.status = 'created'
+        event.repeated_number = 1
+        event.save!
+
+        event.to_json(
+            json: Event,
+            methods: [:repeated_number],
+            include: {participants: {only: :id}, team_participants: {only: :id}})
       else
         403
       end
