@@ -5,6 +5,9 @@ class Event < ActiveRecord::Base
   # include Elasticsearch::Model::Callbacks
 
   enum status:  { created: 0, trashed: 1 }
+
+  serialize :repeated_exclusion, Array
+
   belongs_to :creator, class_name: :User
   has_many :appointments
   has_many :team_appointments
