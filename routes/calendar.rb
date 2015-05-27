@@ -102,6 +102,14 @@ class App < Sinatra::Base
         e.repeated_number = 1
 
         repeated_number = e.get_repeated_number(today)
+
+        next if e.repeated && e.repeated_exclusion.include?(repeated_number)
+
+        if e.repeated
+          puts "Repeated Event: #{e.title}"
+          puts "Repeated Exclusion: #{e.repeated_exclusion}"
+        end
+
         if e.repeated && e.from_time.to_date != today && repeated_number > 0
           day_diff = DateHelper.day_diff(today, e.from_time.to_date)
           new_event = Marshal::load(Marshal.dump(e))
@@ -109,7 +117,7 @@ class App < Sinatra::Base
           new_event.to_time = e.to_time + day_diff.days
           new_event.repeated_number = repeated_number
           today_or_after_events.push(new_event)
-          today_or_after_events.push(e)
+          #today_or_after_events.push(e)
         elsif e.from_time.to_date >= today
           today_or_after_events.push(e)
         elsif e.from_time.to_date < today
@@ -194,7 +202,7 @@ class App < Sinatra::Base
         elsif e.repeated
           event = e.get_repeated_event(params[:repeatedNumber])
 
-          if event.nil?
+          if event.nil? || event.repeated_exclusion.include?(params[:repeatedNumber].to_i)
             return 404
           end
 
@@ -283,7 +291,7 @@ class App < Sinatra::Base
           include: {participants: {only: :id}, team_participants: {only: :id}})
     end
 
-    delete '/events/:event_id' do
+    delete '/events/:event_id/?:repeated_number?' do
       event = Event.find(params[:event_id])
       if @userid == event.creator_id
         uid = @userid
@@ -306,7 +314,16 @@ class App < Sinatra::Base
           end
         }
 
-        event.status = 'trashed'
+        repeated_number = params[:repeated_number]
+
+        if repeated_number.nil?
+          event.status = 'trashed'
+        else
+          unless event.repeated_exclusion.include?(repeated_number.to_i)
+            event.repeated_exclusion << repeated_number.to_i
+          end
+        end
+
         event.save!
 
         content_type 'text/plain'
@@ -316,20 +333,46 @@ class App < Sinatra::Base
       end
     end
 
-    put '/events/restore/:event_id' do
-      event = Event.find(params[:event_id])
-      if @userid == event.creator_id
-        event.status = 'created'
-        event.repeated_number = 1
-        event.save!
-
-        event.to_json(
-            json: Event,
-            methods: [:repeated_number],
-            include: {participants: {only: :id}, team_participants: {only: :id}})
+    put '/events/restore/:event_id/?:repeated_number?' do
+      if params[:event_id].nil?
+        404
       else
-        403
+        event = Event.find(params[:event_id])
+        if event.nil?
+          return 404
+        end
+
+        if @userid == event.creator_id
+          repeated_number = params[:repeated_number]
+
+          if event.repeated && !repeated_number.nil?
+            if event.repeated_exclusion.include?(repeated_number.to_i)
+              event.repeated_exclusion.delete(repeated_number.to_i)
+              if event.repeated_exclusion.length === 0
+                event.repeated_exclusion = [0]
+              end
+            end
+          else
+            event.status = 'created'
+          end
+
+          event.save!
+
+          if event.repeated && !repeated_number.nil?
+            event = event.get_repeated_event(repeated_number.to_i)
+          else
+            event.repeated_number = 1
+          end
+
+          event.to_json(
+              json: Event,
+              methods: [:repeated_number],
+              include: {participants: {only: :id}, team_participants: {only: :id}})
+        else
+          403
+        end
       end
+
     end
   end
 end

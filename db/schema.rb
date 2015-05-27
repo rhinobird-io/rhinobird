@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150525063501) do
+ActiveRecord::Schema.define(version: 20150527031225) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -57,7 +57,7 @@ ActiveRecord::Schema.define(version: 20150525063501) do
     t.string   "repeated_end_type"
     t.datetime "repeated_end_date"
     t.integer  "status",             default: 0
-    t.integer  "repeated_exclusion"
+    t.text     "repeated_exclusion"
   end
 
   add_index "events", ["creator_id"], name: "index_events_on_creator_id", using: :btree
