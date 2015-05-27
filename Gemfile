@@ -18,7 +18,7 @@ gem 'pg'
 gem 'rufus-scheduler'
 gem 'elasticsearch-model'
 gem 'elasticsearch-rails'
-
+gem 'resque'
 gem 'rake'
 gem 'faker'
 group :development do
