@@ -189,7 +189,7 @@ class App < Sinatra::Base
       else
         e = Event.find(params[:eventId])
 
-        if e.nil?
+        if e.nil? || e.status == 'trashed'
           404
         elsif e.repeated
           event = e.get_repeated_event(params[:repeatedNumber])
