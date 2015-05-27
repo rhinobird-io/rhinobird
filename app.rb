@@ -7,7 +7,11 @@ require 'bcrypt'
 require 'date'
 require 'rufus-scheduler'
 require 'faye/websocket'
+require 'resque'
+require 'mail'
+
 Faye::WebSocket.load_adapter('thin')
+
 
 class App < Sinatra::Base
 
@@ -27,6 +31,18 @@ class App < Sinatra::Base
   set :sockets, []
   set :protection, :except => [:json_csrf]
   set :logging, true
+
+  options = { :address              => 'smtp.gmail.com',
+              :port                 => 587,
+              :domain               => 'www.gmail.com',
+              :user_name            => 'rhinobird.worksap',
+              :password             => 'worksapplication',
+              :authentication       => 'plain',
+              :enable_starttls_auto => true  }
+  Mail.defaults do
+    delivery_method :smtp, options
+  end
+
 
   I18n.config.enforce_available_locales = true
 
