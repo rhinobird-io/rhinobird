@@ -24,7 +24,7 @@ class App < Sinatra::Base
   set :show_exceptions, :after_handler
   set :bind, '0.0.0.0'
   set :server, 'puma'
-  set :sockets, []
+  set :sockets, {}
   set :protection, :except => [:json_csrf]
   set :logging, true
 
@@ -89,7 +89,7 @@ class App < Sinatra::Base
 
         ws.on(:close) do |event|
           logger.info "close #{@userid}"
-          settings.sockets.delete(ws)
+          settings.sockets.delete(@userid)
         end
         ws.rack_response
       end
