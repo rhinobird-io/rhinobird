@@ -15,6 +15,26 @@ class Event < ActiveRecord::Base
   has_many :team_participants, through: :team_appointments
   attr_accessor :repeated_number, :integer
 
+  def participants_summary
+    self.participants.map{|p| p.realname} + self.team_participants.map{|p| p.name}
+  end
+
+  def time_summary
+    if self.period?
+      if self.full_day?
+        return "from #{self.from_time.strftime('%F')} to #{self.to_time.strftime('%F')}"
+      else
+        return "from #{self.from_time.strftime('%c')} to #{self.to_time.strftime('%c')}"
+      end
+    else
+      if self.full_day?
+        return self.from_time.strftime('%F')
+      else
+        return self.from_time.strftime('%c')
+      end
+    end
+  end
+
   # Get the $(repeated_number)th event of a repeated one
   def get_repeated_event(repeated_number)
     number = repeated_number.to_i

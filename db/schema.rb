@@ -13,16 +13,13 @@
 
 ActiveRecord::Schema.define(version: 20150527031225) do
 
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
-
   create_table "appointments", force: :cascade do |t|
     t.integer "event_id"
     t.integer "participant_id"
   end
 
-  add_index "appointments", ["event_id"], name: "index_appointments_on_event_id", using: :btree
-  add_index "appointments", ["participant_id"], name: "index_appointments_on_participant_id", using: :btree
+  add_index "appointments", ["event_id"], name: "index_appointments_on_event_id"
+  add_index "appointments", ["participant_id"], name: "index_appointments_on_participant_id"
 
   create_table "dashboard_records", force: :cascade do |t|
     t.integer  "user_id"
@@ -36,7 +33,7 @@ ActiveRecord::Schema.define(version: 20150527031225) do
     t.string   "link_param"
   end
 
-  add_index "dashboard_records", ["user_id"], name: "index_dashboard_records_on_user_id", using: :btree
+  add_index "dashboard_records", ["user_id"], name: "index_dashboard_records_on_user_id"
 
   create_table "events", force: :cascade do |t|
     t.string   "title"
@@ -60,7 +57,7 @@ ActiveRecord::Schema.define(version: 20150527031225) do
     t.text     "repeated_exclusion"
   end
 
-  add_index "events", ["creator_id"], name: "index_events_on_creator_id", using: :btree
+  add_index "events", ["creator_id"], name: "index_events_on_creator_id"
 
   create_table "invitations", force: :cascade do |t|
     t.string   "email"
@@ -77,7 +74,7 @@ ActiveRecord::Schema.define(version: 20150527031225) do
     t.datetime "updated_at"
   end
 
-  add_index "local_avatars", ["user_id"], name: "index_local_avatars_on_user_id", using: :btree
+  add_index "local_avatars", ["user_id"], name: "index_local_avatars_on_user_id"
 
   create_table "notifications", force: :cascade do |t|
     t.integer  "user_id"
@@ -89,7 +86,7 @@ ActiveRecord::Schema.define(version: 20150527031225) do
     t.string   "url"
   end
 
-  add_index "notifications", ["user_id"], name: "index_notifications_on_user_id", using: :btree
+  add_index "notifications", ["user_id"], name: "index_notifications_on_user_id"
 
   create_table "plugins", force: :cascade do |t|
     t.string   "name"
@@ -100,15 +97,15 @@ ActiveRecord::Schema.define(version: 20150527031225) do
     t.string   "url"
   end
 
-  add_index "plugins", ["name"], name: "index_plugins_on_name", unique: true, using: :btree
+  add_index "plugins", ["name"], name: "index_plugins_on_name", unique: true
 
   create_table "team_appointments", force: :cascade do |t|
     t.integer "event_id"
     t.integer "team_participant_id"
   end
 
-  add_index "team_appointments", ["event_id"], name: "index_team_appointments_on_event_id", using: :btree
-  add_index "team_appointments", ["team_participant_id"], name: "index_team_appointments_on_team_participant_id", using: :btree
+  add_index "team_appointments", ["event_id"], name: "index_team_appointments_on_event_id"
+  add_index "team_appointments", ["team_participant_id"], name: "index_team_appointments_on_team_participant_id"
 
   create_table "team_snapshots", force: :cascade do |t|
     t.string   "event_type",     null: false
@@ -140,8 +137,8 @@ ActiveRecord::Schema.define(version: 20150527031225) do
     t.string   "name"
   end
 
-  add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
-  add_index "users", ["name"], name: "index_users_on_name", unique: true, using: :btree
+  add_index "users", ["email"], name: "index_users_on_email", unique: true
+  add_index "users", ["name"], name: "index_users_on_name", unique: true
 
   create_table "users_teams", force: :cascade do |t|
     t.integer  "user_id",    null: false
@@ -150,6 +147,6 @@ ActiveRecord::Schema.define(version: 20150527031225) do
     t.datetime "updated_at"
   end
 
-  add_index "users_teams", ["user_id"], name: "index_users_teams_on_user_id", using: :btree
+  add_index "users_teams", ["user_id"], name: "index_users_teams_on_user_id"
 
 end

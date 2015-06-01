@@ -282,18 +282,15 @@ class App < Sinatra::Base
                                           link_param: event.to_json(methods: [:repeated_number], only: [:id]),
                                           link_title: event.title})
 
-          notification = user.notifications.create!({content: message + event.title, from_user_id: uid})
-
-          notify = notification.to_json(:except => [:user_id])
-
           if event.creator_id != p
+            notification = user.notifications.create!({content: message + event.title, from_user_id: uid})
+
+            notify = notification.to_json(:except => [:user_id])
             notify(
                 user,
                 notify,
-                "[Rhinobird] #{user_self.realname} invited you to event #{event.title}",
-                "Hello <b>#{user.realname}</b>:<br/>" +
-                  "&ensp;#{user_self.realname} invited you to event #{event.title}." +
-                  "&ensp;You can see details from this <a href='http://www.rhinobird.workslan/platform/calendar/events/#{event.id}/1'>link</a>.")
+                "[RhinoBird] #{user_self.realname} invited you to event #{event.title}",
+                erb(:'email/event_created', locals: {user: user, event: event}))
           end
         }
       end
