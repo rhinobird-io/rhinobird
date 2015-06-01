@@ -9,9 +9,9 @@ require 'rufus-scheduler'
 require 'faye/websocket'
 require 'resque'
 require 'mail'
+require 'sinatra/redis'
 
 Faye::WebSocket.load_adapter('thin')
-
 
 class App < Sinatra::Base
 
