@@ -21,6 +21,7 @@ gem 'elasticsearch-rails'
 gem 'resque'
 gem 'rake'
 gem 'faker'
+
 group :development do
   gem 'sqlite3'
   gem 'shotgun'

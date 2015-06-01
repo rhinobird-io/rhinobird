@@ -1,3 +1,2 @@
 web: bundle exec rackup -p $PORT
-rake -T resque
-QUEUE=notifiers rake resque:work
+resque: env TERM_CHILD=1 bundle exec rake resque:work

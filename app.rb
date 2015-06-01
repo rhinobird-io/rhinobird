@@ -18,17 +18,34 @@ class App < Sinatra::Base
   configure :production do
     set :script_url, '/platform/_assets/main.js'
     set :css_url, '/platform/_assets/main.css'
+
+    redis_url = ENV['REDISCLOUD_URL'] || ENV['OPENREDIS_URL'] || ENV['REDISGREEN_URL'] || ENV['REDISTOGO_URL']
+    uri = URI.parse(redis_url)
+    Resque.redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+    Resque.redis.namespace = 'resque:rhinobird'
+    set :redis, redis_url
   end
+
   configure :development do
     set :script_url, 'http://localhost:2992/_assets/main.js'
     set :css_url, ''
+
+    redis_url = 'redis://localhost:6379'
+    uri = URI.parse(redis_url)
+    Resque.redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+    Resque.redis.namespace = 'resque:rhinobird'
+    set :redis, redis_url
   end
+
+  configure do
+  end
+
   register Sinatra::ActiveRecordExtension
   register Sinatra::Namespace
   set :show_exceptions, :after_handler
   set :bind, '0.0.0.0'
   set :server, 'puma'
-  set :sockets, []
+  set :sockets, {}
   set :protection, :except => [:json_csrf]
   set :logging, true
 
@@ -105,7 +122,7 @@ class App < Sinatra::Base
 
         ws.on(:close) do |event|
           logger.info "close #{@userid}"
-          settings.sockets.delete(ws)
+          settings.sockets.delete(@userid)
         end
         ws.rack_response
       end
