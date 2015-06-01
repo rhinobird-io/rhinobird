@@ -7,6 +7,10 @@ require 'bcrypt'
 require 'date'
 require 'rufus-scheduler'
 require 'faye/websocket'
+require 'resque'
+require 'mail'
+require 'sinatra/redis'
+
 Faye::WebSocket.load_adapter('thin')
 
 class App < Sinatra::Base
@@ -14,11 +18,28 @@ class App < Sinatra::Base
   configure :production do
     set :script_url, '/platform/_assets/main.js'
     set :css_url, '/platform/_assets/main.css'
+
+    redis_url = ENV['REDISCLOUD_URL'] || ENV['OPENREDIS_URL'] || ENV['REDISGREEN_URL'] || ENV['REDISTOGO_URL']
+    uri = URI.parse(redis_url)
+    Resque.redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+    Resque.redis.namespace = 'resque:rhinobird'
+    set :redis, redis_url
   end
+
   configure :development do
     set :script_url, 'http://localhost:2992/_assets/main.js'
     set :css_url, ''
+
+    redis_url = 'redis://localhost:6379'
+    uri = URI.parse(redis_url)
+    Resque.redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+    Resque.redis.namespace = 'resque:rhinobird'
+    set :redis, redis_url
   end
+
+  configure do
+  end
+
   register Sinatra::ActiveRecordExtension
   register Sinatra::Namespace
   set :show_exceptions, :after_handler
@@ -27,6 +48,18 @@ class App < Sinatra::Base
   set :sockets, {}
   set :protection, :except => [:json_csrf]
   set :logging, true
+
+  options = { :address              => 'smtp.gmail.com',
+              :port                 => 587,
+              :domain               => 'www.gmail.com',
+              :user_name            => 'rhinobird.worksap',
+              :password             => 'worksapplication',
+              :authentication       => 'plain',
+              :enable_starttls_auto => true  }
+  Mail.defaults do
+    delivery_method :smtp, options
+  end
+
 
   I18n.config.enforce_available_locales = true
 
