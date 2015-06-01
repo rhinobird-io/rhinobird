@@ -1,42 +1,5 @@
 # encoding: utf-8
 
-def send_event_notification (e, dashboard_message, dashboard_link, notification_message)
-  participants = e.participants
-  team_participants = e.team_participants
-
-  users = Array.new
-
-  participants.each { |p|
-    users << p
-  }
-
-  team_participants.each { |tp|
-    team = Team.find(tp.id)
-    users.concat team.users
-    puts users.size
-  }
-
-  users.each { |u|
-    u.dashboard_records.create!(
-        {
-            content: dashboard_message,
-            from_user_id: u.id,
-            has_link: true,
-            link_url: dashboard_link,
-            link_title: e.title,
-            link_param: e.to_json(methods: [:repeated_number], only: [:id]),
-        }
-    )
-
-    notification = u.notifications.create!({content: notification_message, from_user_id: u.id})
-
-    notify = notification.to_json(:except => [:user_id])
-    socket_id = u.id
-    unless settings.sockets[socket_id].nil?
-      EM.next_tick { settings.sockets[socket_id].send(notify) }
-    end
-  }
-end
 
 class App < Sinatra::Base
   scheduler = Rufus::Scheduler.new
@@ -82,6 +45,52 @@ class App < Sinatra::Base
     end
   end
 
+  def send_event_notification (e, dashboard_message, dashboard_link, notification_message)
+    participants = e.participants
+    team_participants = e.team_participants
+
+    users = Array.new
+
+    participants.each { |p|
+      users << p
+    }
+
+    team_participants.each { |tp|
+      team = Team.find(tp.id)
+      users.concat team.users
+      puts users.size
+    }
+
+    users.each { |u|
+      u.dashboard_records.create!(
+          {
+              content: dashboard_message,
+              from_user_id: u.id,
+              has_link: true,
+              link_url: dashboard_link,
+              link_title: e.title,
+              link_param: e.to_json(methods: [:repeated_number], only: [:id]),
+          }
+      )
+
+      notification = u.notifications.create!({content: notification_message, from_user_id: u.id})
+
+      notify = notification.to_json(:except => [:user_id])
+      socket_id = u.id
+      unless settings.sockets[socket_id].nil?
+        EM.next_tick { settings.sockets[socket_id].send(notify) }
+      end
+    }
+  end
+
+  def notify(user, notify, subject, body)
+    if settings.sockets[user.id].nil?
+      Resque.enqueue(EmailQueue, 'rhinobird.worksap@gmail.com', 'li_ju@worksap.co.jp', subject, body)
+    else
+      settings.sockets[user.id].send(notify)
+    end
+  end
+
   namespace '/api' do
     get '/events' do
       today = Date.today
@@ -102,6 +111,14 @@ class App < Sinatra::Base
         e.repeated_number = 1
 
         repeated_number = e.get_repeated_number(today)
+
+        next if e.repeated && e.repeated_exclusion.include?(repeated_number)
+
+        if e.repeated
+          puts "Repeated Event: #{e.title}"
+          puts "Repeated Exclusion: #{e.repeated_exclusion}"
+        end
+
         if e.repeated && e.from_time.to_date != today && repeated_number > 0
           day_diff = DateHelper.day_diff(today, e.from_time.to_date)
           new_event = Marshal::load(Marshal.dump(e))
@@ -109,7 +126,7 @@ class App < Sinatra::Base
           new_event.to_time = e.to_time + day_diff.days
           new_event.repeated_number = repeated_number
           today_or_after_events.push(new_event)
-          today_or_after_events.push(e)
+          #today_or_after_events.push(e)
         elsif e.from_time.to_date >= today
           today_or_after_events.push(e)
         elsif e.from_time.to_date < today
@@ -189,12 +206,12 @@ class App < Sinatra::Base
       else
         e = Event.find(params[:eventId])
 
-        if e.nil?
+        if e.nil? || e.status == 'trashed'
           404
         elsif e.repeated
           event = e.get_repeated_event(params[:repeatedNumber])
 
-          if event.nil?
+          if event.nil? || event.repeated_exclusion.include?(params[:repeatedNumber].to_i)
             return 404
           end
 
@@ -212,6 +229,7 @@ class App < Sinatra::Base
       end
     end
 
+    # Create Event
     post '/events' do
       uid = @userid
       event = Event.new(@body.except('participants'))
@@ -242,12 +260,10 @@ class App < Sinatra::Base
         event.participants << user_self
         notified_users << uid
       end
+
       event.creator_id = uid
       event.status = 'created'
-
       event.save!
-
-      event.repeated_number = 1
 
       ActiveRecord::Base.transaction do
         notified_users.each { |p|
@@ -256,34 +272,40 @@ class App < Sinatra::Base
           if event.creator_id == p
             message = 'You have created an event '
           else
-            message = 'Invited you to the event '
+            message = 'Invited you to event '
           end
 
           user.dashboard_records.create!({content: message,
-              from_user_id: uid,
-              has_link: true,
-              link_url: 'event-detail',
-              link_param: event.to_json(methods: [:repeated_number], only: [:id]),
-              link_title: event.title})
+                                          from_user_id: uid,
+                                          has_link: true,
+                                          link_url: 'event-detail',
+                                          link_param: event.to_json(methods: [:repeated_number], only: [:id]),
+                                          link_title: event.title})
 
           notification = user.notifications.create!({content: message + event.title, from_user_id: uid})
 
           notify = notification.to_json(:except => [:user_id])
-          socket_id = p
 
-          unless settings.sockets[socket_id].nil? || p == uid
-            EM.next_tick { settings.sockets[socket_id].send(notify) }
+          if event.creator_id != p
+            notify(
+                user,
+                notify,
+                "[Rhinobird] #{user_self.realname} invited you to event #{event.title}",
+                "Hello <b>#{user.realname}</b>:<br/>" +
+                  "&ensp;#{user_self.realname} invited you to event #{event.title}." +
+                  "&ensp;You can see details from this <a href='http://www.rhinobird.workslan/platform/calendar/events/#{event.id}/1'>link</a>.")
           end
         }
       end
 
+      event.repeated_number = 1
       event.to_json(
           json: Event,
           methods: [:repeated_number],
           include: {participants: {only: :id}, team_participants: {only: :id}})
     end
 
-    delete '/events/:event_id' do
+    delete '/events/:event_id/?:repeated_number?' do
       event = Event.find(params[:event_id])
       if @userid == event.creator_id
         uid = @userid
@@ -306,7 +328,16 @@ class App < Sinatra::Base
           end
         }
 
-        event.status = 'trashed'
+        repeated_number = params[:repeated_number]
+
+        if repeated_number.nil?
+          event.status = 'trashed'
+        else
+          unless event.repeated_exclusion.include?(repeated_number.to_i)
+            event.repeated_exclusion << repeated_number.to_i
+          end
+        end
+
         event.save!
 
         content_type 'text/plain'
@@ -316,20 +347,46 @@ class App < Sinatra::Base
       end
     end
 
-    put '/events/restore/:event_id' do
-      event = Event.find(params[:event_id])
-      if @userid == event.creator_id
-        event.status = 'created'
-        event.repeated_number = 1
-        event.save!
-
-        event.to_json(
-            json: Event,
-            methods: [:repeated_number],
-            include: {participants: {only: :id}, team_participants: {only: :id}})
+    put '/events/restore/:event_id/?:repeated_number?' do
+      if params[:event_id].nil?
+        404
       else
-        403
+        event = Event.find(params[:event_id])
+        if event.nil?
+          return 404
+        end
+
+        if @userid == event.creator_id
+          repeated_number = params[:repeated_number]
+
+          if event.repeated && !repeated_number.nil?
+            if event.repeated_exclusion.include?(repeated_number.to_i)
+              event.repeated_exclusion.delete(repeated_number.to_i)
+              if event.repeated_exclusion.length === 0
+                event.repeated_exclusion = [0]
+              end
+            end
+          else
+            event.status = 'created'
+          end
+
+          event.save!
+
+          if event.repeated && !repeated_number.nil?
+            event = event.get_repeated_event(repeated_number.to_i)
+          else
+            event.repeated_number = 1
+          end
+
+          event.to_json(
+              json: Event,
+              methods: [:repeated_number],
+              include: {participants: {only: :id}, team_participants: {only: :id}})
+        else
+          403
+        end
       end
+
     end
   end
 end

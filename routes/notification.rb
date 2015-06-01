@@ -12,14 +12,14 @@ class App < Sinatra::Base
       notifications = User.find(params[:userId]).notifications
       if params[:startIndex] == 0
         if notifications.where(checked: false).count < params[:limit]
-          return_obj["notifications"] = notifications.limit(params[:limit]).offset(0)
+          return_obj['notifications'] = notifications.limit(params[:limit]).offset(0)
         else
-          return_obj["notifications"] = notifications.where(checked: false)
+          return_obj['notifications'] = notifications.where(checked: false)
         end
       else
-        return_obj["notifications"] = notifications.limit(params[:limit]).offset(params[:startIndex])
+        return_obj['notifications'] = notifications.limit(params[:limit]).offset(params[:startIndex])
       end
-      return_obj["total"] = notifications.count
+      return_obj['total'] = notifications.count
       return_obj.to_json
     end
 
