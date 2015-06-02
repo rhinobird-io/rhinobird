@@ -1,7 +1,9 @@
 # encoding: utf-8
+require 'erb'
 
 def notify(user, notify, subject, body)
   if settings.sockets[user.id].nil?
+    puts 'Email Notification'
     Resque.enqueue(EmailQueue, 'rhinobird.worksap@gmail.com', 'li_ju@worksap.co.jp', subject, body)
   else
     settings.sockets[user.id].send(notify)
@@ -48,10 +50,10 @@ def send_event_notifications(e, dashboard_message, dashboard_link, notification_
     notify = notification.to_json(:except => [:user_id])
 
     notify(
-        user,
+        u,
         notify,
-        "[RhinoBird] #{user_self.realname} invited you to event #{event.title}",
-        erb(:'email/event_created', locals: {user: user, event: event}))
+        "[RhinoBird] Your event #{e.title} will start in half an hour.",
+        ERB.new('Hello').result())
   }
 end
 
@@ -60,12 +62,13 @@ class App < Sinatra::Base
 
   # Check events that are not full day.
   scheduler.every '30s' do
+
     now = DateTime.now
     half_an_hour = 30.minute
     half_an_hour_later = now + half_an_hour
 
-    events = Event.where('from_time >= ? and from_time <= ? and full_day = ? and repeated = ?', now, half_an_hour_later, false, false)
-    repeated_events = Event.where('repeated = ?', true)
+    events = Event.where('from_time >= ? and from_time <= ? and full_day = ? and repeated = ? and status <> ?', now, half_an_hour_later, false, false, Event.statuses[:trashed])
+    repeated_events = Event.where('repeated = ? and status <> ?', true, Event.statuses[:trashed])
 
     repeated_events.each { |e|
       repeated_number = e.get_repeated_number(Date.today)
@@ -79,7 +82,7 @@ class App < Sinatra::Base
 
     count = 0
     events.each { |e|
-      puts e.from_time.to_datetime.to_i - now.to_i
+      #puts e.from_time.to_datetime.to_i - now.to_i
 
       next if e.from_time.to_datetime.to_i - now.to_i < 1775
 
@@ -95,7 +98,7 @@ class App < Sinatra::Base
     }
 
     if count > 0
-      puts "Info: #{count} dashboard records and notifications have been sent."
+      #puts "Info: #{count} dashboard records and notifications have been sent."
     end
   end
 
@@ -258,8 +261,8 @@ class App < Sinatra::Base
 
       @body['participants']['users'].each do |p|
         user = User.find(p)
-        if notified_users[u.id].nil?
-          notified_users[u.id] = u.id
+        if notified_users[user.id].nil?
+          notified_users[user.id] = user.id
           event.participants << user
         end
       end
@@ -327,11 +330,14 @@ class App < Sinatra::Base
           end
 
           user.dashboard_records.create!({content: content, from_user_id: uid})
-          notification = user.notifications.create!({content: content, from_user_id: uid})
-          notify = notification.to_json(:except => uid)
-          socket_id = p.id
-          unless settings.sockets[socket_id].nil?
-            EM.next_tick { settings.sockets[socket_id].send(notify) }
+
+          if event.creator_id != p.id
+            notification = user.notifications.create!({content: content, from_user_id: uid})
+            notify = notification.to_json(:except => uid)
+            socket_id = p.id
+            unless settings.sockets[socket_id].nil?
+              EM.next_tick { settings.sockets[socket_id].send(notify) }
+            end
           end
         }
 
