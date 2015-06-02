@@ -46,10 +46,12 @@ def send_event_notifications(e, dashboard_message, dashboard_link, notification_
     notification = u.notifications.create!({content: notification_message, from_user_id: u.id})
 
     notify = notification.to_json(:except => [:user_id])
-    socket_id = u.id
-    unless settings.sockets[socket_id].nil?
-      EM.next_tick { settings.sockets[socket_id].send(notify) }
-    end
+
+    notify(
+        user,
+        notify,
+        "[RhinoBird] #{user_self.realname} invited you to event #{event.title}",
+        erb(:'email/event_created', locals: {user: user, event: event}))
   }
 end
 
@@ -108,8 +110,6 @@ class App < Sinatra::Base
 
       teams = user.get_all_teams
 
-      puts 'Teams:'
-      puts teams.length
       teams.each { |t|
         all_events.concat t.events.where('status <> ?', Event.statuses[:trashed])
       }
@@ -157,10 +157,14 @@ class App < Sinatra::Base
     get '/events/after/:from_time' do
       from = DateTime.parse(params[:from_time])
 
-      events = Array.new
-      events.concat User.find(@userid).events.where('from_time > ? and status <> ?', from, Event.statuses[:trashed])
+      user = User.find(@userid)
 
-      User.find(@userid).teams.each { |t|
+      events = Array.new
+      events.concat user.events.where('from_time > ? and status <> ?', from, Event.statuses[:trashed])
+
+      teams = user.get_all_teams
+
+      teams.each { |t|
         events.concat t.events.where('from_time > ? and status <> ?', from, Event.statuses[:trashed])
       }
 
@@ -179,13 +183,14 @@ class App < Sinatra::Base
     get '/events/before/:from_time' do
       from = DateTime.parse(params[:from_time])
 
-      puts 'Great'
-      puts params[:from_time]
+      user = User.find(@userid)
 
       events = Array.new
-      events.concat User.find(@userid).events.where('from_time < ? and status <> ?', from, Event.statuses[:trashed])
+      events.concat user.events.where('from_time < ? and status <> ?', from, Event.statuses[:trashed])
 
-      User.find(@userid).teams.each { |t|
+      teams = user.get_all_teams
+
+      teams.each { |t|
         events.concat t.events.where('from_time < ? and status <> ?', from, Event.statuses[:trashed])
       }
 
