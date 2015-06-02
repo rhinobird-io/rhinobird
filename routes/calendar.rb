@@ -1,60 +1,60 @@
 # encoding: utf-8
 
-class App < Sinatra::Base
-  scheduler = Rufus::Scheduler.new
+def notify(user, notify, subject, body)
+  if settings.sockets[user.id].nil?
+    Resque.enqueue(EmailQueue, 'rhinobird.worksap@gmail.com', 'li_ju@worksap.co.jp', subject, body)
+  else
+    settings.sockets[user.id].send(notify)
+  end
+end
 
-  def get_team_participants(team, user_ids)
-    users = []
-    team.users.each { |u|
+def send_event_notifications(e, dashboard_message, dashboard_link, notification_message)
+  participants = e.participants
+  team_participants = e.team_participants
+
+  users = Array.new
+
+  user_ids = {}
+  participants.each { |p|
+    users << p
+    user_ids[p.id] = true
+  }
+
+  team_participants.each { |tp|
+    team = Team.find(tp.id)
+    team_users = team.get_all_users
+    team_users.each { |u|
       unless user_ids[u.id]
         users.push(u)
         user_ids[u.id] = true
       end
     }
-    team.teams.each { |t|
-      users.concat get_team_participants(t, user_ids)
-    }
-    users
-  end
+  }
 
-  def send_event_notification (e, dashboard_message, dashboard_link, notification_message)
-    participants = e.participants
-    team_participants = e.team_participants
+  users.each { |u|
+    u.dashboard_records.create!(
+        {
+            content: dashboard_message,
+            from_user_id: u.id,
+            has_link: true,
+            link_url: dashboard_link,
+            link_title: e.title,
+            link_param: e.to_json(methods: [:repeated_number], only: [:id]),
+        }
+    )
 
-    users = Array.new
+    notification = u.notifications.create!({content: notification_message, from_user_id: u.id})
 
-    user_ids = {}
-    participants.each { |p|
-      users << p
-      user_ids[p.id] = true
-    }
+    notify = notification.to_json(:except => [:user_id])
+    socket_id = u.id
+    unless settings.sockets[socket_id].nil?
+      EM.next_tick { settings.sockets[socket_id].send(notify) }
+    end
+  }
+end
 
-    team_participants.each { |tp|
-      team = Team.find(tp.id)
-      users.concat get_team_participants(team, user_ids)
-    }
-
-    users.each { |u|
-      u.dashboard_records.create!(
-          {
-              content: dashboard_message,
-              from_user_id: u.id,
-              has_link: true,
-              link_url: dashboard_link,
-              link_title: e.title,
-              link_param: e.to_json(methods: [:repeated_number], only: [:id]),
-          }
-      )
-
-      notification = u.notifications.create!({content: notification_message, from_user_id: u.id})
-
-      notify = notification.to_json(:except => [:user_id])
-      socket_id = u.id
-      unless settings.sockets[socket_id].nil?
-        EM.next_tick { settings.sockets[socket_id].send(notify) }
-      end
-    }
-  end
+class App < Sinatra::Base
+  scheduler = Rufus::Scheduler.new
 
   # Check events that are not full day.
   scheduler.every '30s' do
@@ -89,19 +89,11 @@ class App < Sinatra::Base
       notification_message = "Your event #{e.title} will start in half an hour."
 
       count = count + 1
-      send_event_notification(e, message, 'event-detail', notification_message)
+      send_event_notifications(e, message, 'event-detail', notification_message)
     }
 
     if count > 0
       puts "Info: #{count} dashboard records and notifications have been sent."
-    end
-  end
-
-  def notify(user, notify, subject, body)
-    if settings.sockets[user.id].nil?
-      Resque.enqueue(EmailQueue, 'rhinobird.worksap@gmail.com', 'li_ju@worksap.co.jp', subject, body)
-    else
-      settings.sockets[user.id].send(notify)
     end
   end
 
@@ -131,11 +123,6 @@ class App < Sinatra::Base
         repeated_number = e.get_repeated_number(today)
 
         next if e.repeated && e.repeated_exclusion.include?(repeated_number)
-
-        if e.repeated
-          puts "Repeated Event: #{e.title}"
-          puts "Repeated Exclusion: #{e.repeated_exclusion}"
-        end
 
         if e.repeated && e.from_time.to_date != today && repeated_number > 0
           day_diff = DateHelper.day_diff(today, e.from_time.to_date)
@@ -252,31 +239,31 @@ class App < Sinatra::Base
       uid = @userid
       event = Event.new(@body.except('participants'))
 
-      notified_users = Array.new
+      notified_users = {}
 
       @body['participants']['teams'].each { |p|
         team = Team.find(p)
         event.team_participants << team
-        team.users.each { |u|
-          unless notified_users.include? u.id
-            notified_users << u.id
+        team.get_all_users.each { |u|
+          if notified_users[u.id].nil?
+            notified_users[u.id] = u.id
           end
         }
       }
 
       @body['participants']['users'].each do |p|
         user = User.find(p)
-        unless notified_users.include? user.id
-          notified_users << user.id
+        if notified_users[u.id].nil?
+          notified_users[u.id] = u.id
           event.participants << user
         end
       end
 
       # Whether the event creator is also a participant by default?
       user_self = User.find(uid)
-      unless notified_users.include? uid
+      if notified_users[user_self.id].nil?
+        notified_users[user_self.id] = user_self.id
         event.participants << user_self
-        notified_users << uid
       end
 
       event.creator_id = uid
@@ -284,7 +271,7 @@ class App < Sinatra::Base
       event.save!
 
       ActiveRecord::Base.transaction do
-        notified_users.each { |p|
+        notified_users.values.each { |p|
           user = User.find(p)
 
           if event.creator_id == p
