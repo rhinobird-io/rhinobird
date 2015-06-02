@@ -5,8 +5,18 @@ class App < Sinatra::Base
   scheduler = Rufus::Scheduler.new
 
 
-  def get_team_participants(team, team_ids)
-
+  def get_team_participants(team, user_ids)
+    users = []
+    team.users.each { |u|
+      unless user_ids[u.id]
+        users.push(u)
+        user_ids[u.id] = true
+      end
+    }
+    team.teams.each { |t|
+      users.concat get_team_participants(t, user_ids)
+    }
+    users
   end
 
   def send_event_notification (e, dashboard_message, dashboard_link, notification_message)
@@ -23,8 +33,7 @@ class App < Sinatra::Base
 
     team_participants.each { |tp|
       team = Team.find(tp.id)
-      users.concat team.users
-      puts users.size
+      users.concat get_team_participants(team, user_ids)
     }
 
     users.each { |u|
