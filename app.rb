@@ -37,11 +37,9 @@ class App < Sinatra::Base
     set :redis, redis_url
   end
 
-  configure do
-  end
-
   register Sinatra::ActiveRecordExtension
   register Sinatra::Namespace
+
   set :show_exceptions, :after_handler
   set :bind, '0.0.0.0'
   set :server, 'puma'
@@ -59,7 +57,6 @@ class App < Sinatra::Base
   Mail.defaults do
     delivery_method :smtp, options
   end
-
 
   I18n.config.enforce_available_locales = true
 
