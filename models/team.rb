@@ -38,8 +38,8 @@ class Team < ActiveRecord::Base
     self.teams.each { |t|
       team_ids[t.id] = true
       teams.push(t)
-      un_direct_subs = t.get_all_sub_teams
-      un_direct_subs.each { |p|
+      indirect_subs = t.get_all_sub_teams
+      indirect_subs.each { |p|
         unless team_ids[p.id]
           teams.push(p)
           team_ids[p.id] = true
@@ -55,8 +55,8 @@ class Team < ActiveRecord::Base
     self.parent_teams.each { |t|
       team_ids[t.id] = true
       teams.push(t)
-      un_direct_parents = t.get_all_parent_teams
-      un_direct_parents.each { |p|
+      indirect_parents = t.get_all_parent_teams
+      indirect_parents.each { |p|
         unless team_ids[p.id]
           teams.push(p)
           team_ids[p.id] = true
