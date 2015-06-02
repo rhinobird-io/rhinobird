@@ -1,9 +1,7 @@
 # encoding: utf-8
 
-
 class App < Sinatra::Base
   scheduler = Rufus::Scheduler.new
-
 
   def get_team_participants(team, user_ids)
     users = []
@@ -99,36 +97,12 @@ class App < Sinatra::Base
     end
   end
 
-
   def notify(user, notify, subject, body)
     if settings.sockets[user.id].nil?
       Resque.enqueue(EmailQueue, 'rhinobird.worksap@gmail.com', 'li_ju@worksap.co.jp', subject, body)
     else
       settings.sockets[user.id].send(notify)
     end
-  end
-
-  def get_teams(team, team_ids)
-    teams = []
-    team.parent_teams.each{ |t|
-      unless team_ids[t.id]
-        teams.push(t);
-        team_ids[t.id] = true
-      end
-      teams.concat get_teams(t, team_ids)
-    }
-    teams
-  end
-
-  def get_teams_of_user(user)
-    teams = Array.new
-    team_ids = {}
-    user.teams.each { |t|
-      teams.push(t)
-      team_ids[t.id] = true
-      teams.concat get_teams(t, team_ids)
-    }
-    teams
   end
 
   namespace '/api' do
@@ -140,7 +114,8 @@ class App < Sinatra::Base
       all_events = Array.new
       all_events.concat user.events.where('status <> ?', Event.statuses[:trashed])
 
-      teams = get_teams_of_user(user)
+      teams = user.get_all_teams
+
       puts 'Teams:'
       puts teams.length
       teams.each { |t|
