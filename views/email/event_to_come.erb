@@ -1,0 +1,19 @@
+<div style="max-width: 600px; margin: 0 auto;">
+    <h2 style="color: rgb(42,178,123);">Hi <%= user.realname %>:</h2>
+    <div style="font-size: 1.2em">
+        <strong><%= user.realname %></strong> invited you to event <a href='http://rhinobird.workslan/platform/calendar/events/<%= event.id %>/1'><%= event.title %></a>.
+        <hr/>
+        <table style="">
+            <tbody>
+                <tr>
+                    <td>Time:</td>
+                    <td><%= event.time_summary %></td>
+                </tr>
+                <tr>
+                    <td>Participants:</td>
+                    <td><%= event.participants_summary %></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
