@@ -2,4 +2,4 @@ development:
   url: localhost:8000/platform
 
 production:
-  url: www.rhinobird.workslan/platform
+  url: rhinobird.workslan/platform
