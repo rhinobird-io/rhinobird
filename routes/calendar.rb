@@ -3,7 +3,7 @@ require 'erb'
 
 def notify(user, notify, subject, body)
   if settings.sockets[user.id].nil?
-    puts 'Email Notification'
+    # puts 'Email Notification'
     Resque.enqueue(EmailQueue, 'rhinobird.worksap@gmail.com', 'li_ju@worksap.co.jp', subject, body)
   else
     settings.sockets[user.id].send(notify)
