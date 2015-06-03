@@ -1,5 +1,6 @@
 <style>
 	table tr td {
+		font-size: 0.9em;
 		padding: 4px 8px;
 	}
 	table tr td.title {
@@ -12,7 +13,7 @@
   <div style="font-size: 1.2em">
 	Your event
 	  <a style="color: rgb(255, 64, 129); font-weight: 600;"
-					 href='http://www.rhinobird.workslan/platform/calendar/events/<%= event.id %>/<%= event.repeated_number %>'>
+					 href='http://<%= url%>/calendar/events/<%= event.id %>/<%= event.repeated_number %>'>
 		<%= event.title %>
 	  </a>
 	  will begin within 30 minutes.
