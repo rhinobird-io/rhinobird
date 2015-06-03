@@ -1,6 +1,19 @@
 # encoding: utf-8
 require 'erb'
 
+class EventToComeEmailContent
+  attr_reader :user, :event
+
+  def initialize(user, event)
+    @user = user
+    @event = event
+  end
+
+  def get_binding
+    binding
+  end
+end
+
 def notify(user, notify, subject, body)
   if settings.sockets[user.id].nil?
     # puts 'Email Notification'
@@ -49,11 +62,13 @@ def send_event_notifications(e, dashboard_message, dashboard_link, notification_
 
     notify = notification.to_json(:except => [:user_id])
 
+
+    controller = EventToComeEmailContent.new(u, e)
     notify(
         u,
         notify,
         "[RhinoBird] Your event #{e.title} will start in half an hour.",
-        ERB.new('Hello').result())
+        ERB.new(File.read('./views/email/event_to_come.erb')).result(controller.get_binding))
   }
 end
 
