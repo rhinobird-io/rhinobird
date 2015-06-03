@@ -18,6 +18,7 @@ class App < Sinatra::Base
   configure :production do
     set :script_url, '/platform/_assets/main.js'
     set :css_url, '/platform/_assets/main.css'
+    set :platform_url, 'www.rhinobird.workslan/platform'
 
     redis_url = ENV['REDISCLOUD_URL'] || ENV['OPENREDIS_URL'] || ENV['REDISGREEN_URL'] || ENV['REDISTOGO_URL']
     uri = URI.parse(redis_url)
@@ -29,6 +30,7 @@ class App < Sinatra::Base
   configure :development do
     set :script_url, 'http://localhost:2992/_assets/main.js'
     set :css_url, ''
+    set :platform_url, 'localhost:8000/platform'
 
     redis_url = 'redis://localhost:6379'
     uri = URI.parse(redis_url)

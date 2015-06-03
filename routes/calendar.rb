@@ -303,7 +303,7 @@ class App < Sinatra::Base
                 user,
                 notify,
                 "[RhinoBird] #{user_self.realname} invited you to event #{event.title}",
-                erb(:'email/event_created', locals: {user: user, event: event}))
+                erb(:'email/event_created', locals: {creator: user_self, user: user, event: event}))
           end
         }
       end
