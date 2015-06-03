@@ -10,6 +10,8 @@ require 'faye/websocket'
 require 'resque'
 require 'mail'
 require 'sinatra/redis'
+require 'week_of_month'
+require 'json'
 
 Faye::WebSocket.load_adapter('thin')
 

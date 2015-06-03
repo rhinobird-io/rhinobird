@@ -22,6 +22,7 @@ gem 'elasticsearch-rails'
 gem 'resque'
 gem 'rake'
 gem 'faker'
+gem 'week_of_month', '~> 1.2.3.2'
 
 group :development do
   gem 'sqlite3'
