@@ -13,35 +13,35 @@
   <div style="font-size: 1.2em">
     <strong><%= creator.realname %></strong> invited you to event
     <a style="color: rgb(255, 64, 129); font-weight: 600;"
-       href='<%= "#{request.env['rack.url_scheme']}://#{settings.platform_url}"%>/calendar/events/<%= event.id %>/1'><%= event.title %></a>.
-    <hr/>
-    <table>
-      <tbody>
-        <tr>
-          <td class="title">Time</td>
-          <td><%= event.time_summary %></td>
-        </tr>
-        <tr>
-          <td class="title">Details</td>
-          <td><%= event.description %></td>
-        </tr>
-        <tr>
-          <td class="title">Participants</td>
-          <td><%= event.participants_summary %></td>
-        </tr>
-        <%
-           if event.repeated
-        %>
+       href='<%= "#{request.env['rack.url_scheme']}://#{settings.url}"%>/calendar/events/<%= event.id %>/1'><%= event.title %></a>.
+  </div>
+  <br/>
+  <table>
+    <tbody>
+    <tr>
+      <td class="title">Time</td>
+      <td><%= event.time_summary %></td>
+    </tr>
+    <tr>
+      <td class="title">Details</td>
+      <td><%= event.description %></td>
+    </tr>
+    <tr>
+      <td class="title">Participants</td>
+      <td><%= event.participants_summary %></td>
+    </tr>
+    <%
+       if event.repeated
+    %>
         <tr>
           <td class="title">Will Repeat</td>
           <td><%= event.get_repeated_summary %></td>
         </tr>
-        <%
-           end
-        %>
-      </tbody>
-    </table>
-    <hr>
-    <p style="text-align: center;">Made by ATE-Shanghai, © Works Applications Co.,Ltd.</p>
-  </div>
+    <%
+       end
+    %>
+    </tbody>
+  </table>
+  <hr>
+  <p style="text-align: center;">Made by ATE-Shanghai, © Works Applications Co.,Ltd.</p>
 </div>

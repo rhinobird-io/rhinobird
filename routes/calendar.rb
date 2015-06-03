@@ -2,11 +2,12 @@
 require 'erb'
 
 class EventToComeEmailContent
-  attr_reader :user, :event
+  attr_reader :user, :event, :url
 
-  def initialize(user, event)
+  def initialize(user, event, url)
     @user = user
     @event = event
+    @url = url
   end
 
   def get_binding
@@ -63,7 +64,7 @@ def send_event_notifications(e, dashboard_message, dashboard_link, notification_
     notify = notification.to_json(:except => [:user_id])
 
 
-    controller = EventToComeEmailContent.new(u, e)
+    controller = EventToComeEmailContent.new(u, e, settings.url)
     notify(
         u,
         notify,
