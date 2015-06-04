@@ -117,6 +117,7 @@ GEM
     websocket-driver (0.5.4)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.2)
+    week_of_month (1.2.3.2)
 
 PLATFORMS
   ruby
@@ -145,3 +146,4 @@ DEPENDENCIES
   sqlite3
   thin
   uuid
+  week_of_month (~> 1.2.3.2)

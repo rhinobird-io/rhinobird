@@ -1,17 +1,90 @@
 # encoding: utf-8
+require 'erb'
 
+class EventToComeEmailContent
+  attr_reader :user, :event, :url
+
+  def initialize(user, event, url)
+    @user = user
+    @event = event
+    @url = url
+  end
+
+  def get_binding
+    binding
+  end
+end
+
+def notify(user, notify, subject, body)
+  if settings.sockets[user.id].nil?
+    # puts 'Email Notification'
+    Resque.enqueue(EmailQueue, 'rhinobird.worksap@gmail.com', 'li_ju@worksap.co.jp', subject, body)
+  else
+    settings.sockets[user.id].send(notify)
+  end
+end
+
+def send_event_notifications(e, dashboard_message, dashboard_link, notification_message)
+  participants = e.participants
+  team_participants = e.team_participants
+
+  users = Array.new
+
+  user_ids = {}
+  participants.each { |p|
+    users << p
+    user_ids[p.id] = true
+  }
+
+  team_participants.each { |tp|
+    team = Team.find(tp.id)
+    team_users = team.get_all_users
+    team_users.each { |u|
+      unless user_ids[u.id]
+        users.push(u)
+        user_ids[u.id] = true
+      end
+    }
+  }
+
+  users.each { |u|
+    u.dashboard_records.create!(
+        {
+            content: dashboard_message,
+            from_user_id: u.id,
+            has_link: true,
+            link_url: dashboard_link,
+            link_title: e.title,
+            link_param: e.to_json(methods: [:repeated_number], only: [:id]),
+        }
+    )
+
+    notification = u.notifications.create!({content: notification_message, from_user_id: u.id})
+
+    notify = notification.to_json(:except => [:user_id])
+
+
+    controller = EventToComeEmailContent.new(u, e, settings.url)
+    notify(
+        u,
+        notify,
+        "[RhinoBird] Your event #{e.title} will start in half an hour.",
+        ERB.new(File.read('./views/email/event_to_come.erb')).result(controller.get_binding))
+  }
+end
 
 class App < Sinatra::Base
   scheduler = Rufus::Scheduler.new
 
   # Check events that are not full day.
   scheduler.every '30s' do
+
     now = DateTime.now
     half_an_hour = 30.minute
     half_an_hour_later = now + half_an_hour
 
-    events = Event.where('from_time >= ? and from_time <= ? and full_day = ? and repeated = ?', now, half_an_hour_later, false, false)
-    repeated_events = Event.where('repeated = ?', true)
+    events = Event.where('from_time >= ? and from_time <= ? and full_day = ? and repeated = ? and status <> ?', now, half_an_hour_later, false, false, Event.statuses[:trashed])
+    repeated_events = Event.where('repeated = ? and status <> ?', true, Event.statuses[:trashed])
 
     repeated_events.each { |e|
       repeated_number = e.get_repeated_number(Date.today)
@@ -25,7 +98,7 @@ class App < Sinatra::Base
 
     count = 0
     events.each { |e|
-      puts e.from_time.to_datetime.to_i - now.to_i
+      #puts e.from_time.to_datetime.to_i - now.to_i
 
       next if e.from_time.to_datetime.to_i - now.to_i < 1775
 
@@ -37,57 +110,11 @@ class App < Sinatra::Base
       notification_message = "Your event #{e.title} will start in half an hour."
 
       count = count + 1
-      send_event_notification(e, message, 'event-detail', notification_message)
+      send_event_notifications(e, message, 'event-detail', notification_message)
     }
 
     if count > 0
-      puts "Info: #{count} dashboard records and notifications have been sent."
-    end
-  end
-
-  def send_event_notification (e, dashboard_message, dashboard_link, notification_message)
-    participants = e.participants
-    team_participants = e.team_participants
-
-    users = Array.new
-
-    participants.each { |p|
-      users << p
-    }
-
-    team_participants.each { |tp|
-      team = Team.find(tp.id)
-      users.concat team.users
-      puts users.size
-    }
-
-    users.each { |u|
-      u.dashboard_records.create!(
-          {
-              content: dashboard_message,
-              from_user_id: u.id,
-              has_link: true,
-              link_url: dashboard_link,
-              link_title: e.title,
-              link_param: e.to_json(methods: [:repeated_number], only: [:id]),
-          }
-      )
-
-      notification = u.notifications.create!({content: notification_message, from_user_id: u.id})
-
-      notify = notification.to_json(:except => [:user_id])
-      socket_id = u.id
-      unless settings.sockets[socket_id].nil?
-        EM.next_tick { settings.sockets[socket_id].send(notify) }
-      end
-    }
-  end
-
-  def notify(user, notify, subject, body)
-    if settings.sockets[user.id].nil?
-      Resque.enqueue(EmailQueue, 'rhinobird.worksap@gmail.com', 'li_ju@worksap.co.jp', subject, body)
-    else
-      settings.sockets[user.id].send(notify)
+      #puts "Info: #{count} dashboard records and notifications have been sent."
     end
   end
 
@@ -100,7 +127,9 @@ class App < Sinatra::Base
       all_events = Array.new
       all_events.concat user.events.where('status <> ?', Event.statuses[:trashed])
 
-      user.teams.each { |t|
+      teams = user.get_all_teams
+
+      teams.each { |t|
         all_events.concat t.events.where('status <> ?', Event.statuses[:trashed])
       }
 
@@ -113,11 +142,6 @@ class App < Sinatra::Base
         repeated_number = e.get_repeated_number(today)
 
         next if e.repeated && e.repeated_exclusion.include?(repeated_number)
-
-        if e.repeated
-          puts "Repeated Event: #{e.title}"
-          puts "Repeated Exclusion: #{e.repeated_exclusion}"
-        end
 
         if e.repeated && e.from_time.to_date != today && repeated_number > 0
           day_diff = DateHelper.day_diff(today, e.from_time.to_date)
@@ -152,10 +176,14 @@ class App < Sinatra::Base
     get '/events/after/:from_time' do
       from = DateTime.parse(params[:from_time])
 
-      events = Array.new
-      events.concat User.find(@userid).events.where('from_time > ? and status <> ?', from, Event.statuses[:trashed])
+      user = User.find(@userid)
 
-      User.find(@userid).teams.each { |t|
+      events = Array.new
+      events.concat user.events.where('from_time > ? and status <> ?', from, Event.statuses[:trashed])
+
+      teams = user.get_all_teams
+
+      teams.each { |t|
         events.concat t.events.where('from_time > ? and status <> ?', from, Event.statuses[:trashed])
       }
 
@@ -174,13 +202,14 @@ class App < Sinatra::Base
     get '/events/before/:from_time' do
       from = DateTime.parse(params[:from_time])
 
-      puts 'Great'
-      puts params[:from_time]
+      user = User.find(@userid)
 
       events = Array.new
-      events.concat User.find(@userid).events.where('from_time < ? and status <> ?', from, Event.statuses[:trashed])
+      events.concat user.events.where('from_time < ? and status <> ?', from, Event.statuses[:trashed])
 
-      User.find(@userid).teams.each { |t|
+      teams = user.get_all_teams
+
+      teams.each { |t|
         events.concat t.events.where('from_time < ? and status <> ?', from, Event.statuses[:trashed])
       }
 
@@ -188,7 +217,7 @@ class App < Sinatra::Base
       events.each { |e|
         if e.from_time < from
           e.repeated_number = 1
-          results.push(e);
+          results.push(e)
         end
       }
 
@@ -234,31 +263,31 @@ class App < Sinatra::Base
       uid = @userid
       event = Event.new(@body.except('participants'))
 
-      notified_users = Array.new
+      notified_users = {}
 
       @body['participants']['teams'].each { |p|
         team = Team.find(p)
         event.team_participants << team
-        team.users.each { |u|
-          unless notified_users.include? u.id
-            notified_users << u.id
+        team.get_all_users.each { |u|
+          if notified_users[u.id].nil?
+            notified_users[u.id] = u.id
           end
         }
       }
 
       @body['participants']['users'].each do |p|
         user = User.find(p)
-        unless notified_users.include? user.id
-          notified_users << user.id
+        if notified_users[user.id].nil?
+          notified_users[user.id] = user.id
           event.participants << user
         end
       end
 
       # Whether the event creator is also a participant by default?
       user_self = User.find(uid)
-      unless notified_users.include? uid
+      if notified_users[user_self.id].nil?
+        notified_users[user_self.id] = user_self.id
         event.participants << user_self
-        notified_users << uid
       end
 
       event.creator_id = uid
@@ -266,7 +295,7 @@ class App < Sinatra::Base
       event.save!
 
       ActiveRecord::Base.transaction do
-        notified_users.each { |p|
+        notified_users.values.each { |p|
           user = User.find(p)
 
           if event.creator_id == p
@@ -290,7 +319,7 @@ class App < Sinatra::Base
                 user,
                 notify,
                 "[RhinoBird] #{user_self.realname} invited you to event #{event.title}",
-                erb(:'email/event_created', locals: {user: user, event: event}))
+                erb(:'email/event_created', locals: {creator: user_self, user: user, event: event}))
           end
         }
       end
@@ -317,11 +346,14 @@ class App < Sinatra::Base
           end
 
           user.dashboard_records.create!({content: content, from_user_id: uid})
-          notification = user.notifications.create!({content: content, from_user_id: uid})
-          notify = notification.to_json(:except => uid)
-          socket_id = p.id
-          unless settings.sockets[socket_id].nil?
-            EM.next_tick { settings.sockets[socket_id].send(notify) }
+
+          if event.creator_id != p.id
+            notification = user.notifications.create!({content: content, from_user_id: uid})
+            notify = notification.to_json(:except => uid)
+            socket_id = p.id
+            unless settings.sockets[socket_id].nil?
+              EM.next_tick { settings.sockets[socket_id].send(notify) }
+            end
           end
         }
 

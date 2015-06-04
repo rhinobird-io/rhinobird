@@ -1,0 +1,5 @@
+development:
+  url: localhost:8000/platform
+
+production:
+  url: rhinobird.workslan/platform

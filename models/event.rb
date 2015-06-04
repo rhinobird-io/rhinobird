@@ -169,6 +169,70 @@ class Event < ActiveRecord::Base
     end
   end
 
+  # Return a short summary for repeated events
+  # If the event is not repeated, then return No Repeat
+  def get_repeated_summary
+    if self.repeated
+      summary = ''
+      repeated_frequency = self.repeated_frequency
+      frequency_once = self.repeated_type;
+      frequency_multiple = ''
+      from_time = self.from_time
+      repeated_on = JSON.parse(self.repeated_on)
+      repeated_by = self.repeated_by
+      repeated_end_type = self.repeated_end_type
+      repeated_times = self.repeated_times
+      repeated_end_date = self.repeated_end_date
+
+      if self.repeated_type == 'Daily'
+        frequency_multiple = 'days'
+      elsif self.repeated_type == 'Weekly'
+        frequency_multiple = 'weeks'
+      elsif self.repeated_type == 'Monthly'
+        frequency_multiple = 'months'
+      elsif self.repeated_type == 'Yearly'
+        frequency_multiple = 'years'
+      end
+
+      # Repeat event frequency summary
+      if repeated_frequency > 1
+        summary += frequency_once
+      else
+        summary += "Every #{repeated_frequency} #{frequency_multiple}";
+      end
+
+      # Repeat event days summary
+      if repeated_type == 'Weekly'
+        summary += ' on '
+        repeated_on.each_with_index { |item, index|
+          summary += item
+          unless index == repeated_on.length - 1
+            summary += ', '
+          end
+        }
+      elsif repeated_type == 'Monthly'
+        summary += ' on '
+        if repeated_by == 'Month'
+          summary += " day #{from_time.to_date.day}"
+        elsif repeated_by == 'Week'
+          summary += " the #{from_time.to_date.week_of_month_in_eng.downcase} #{Date::DAYNAMES[from_time.to_date.wday]}";
+        end
+      elsif repeated_type == 'Yearly'
+        summary += " on #{Date::MONTHNAMES[from_time.to_date.month]} #{from_time.to_date.day} "
+      end
+
+      # Repeated ends way
+      if repeated_end_type == 'Occurrence'
+        summary += ", #{repeated_times} times"
+      elsif repeated_end_type == 'Date'
+        summary += ", until #{repeated_end_date.to_date}"
+      end
+
+      summary
+    else
+      'No Repeat'
+    end
+  end
 end
 
 # Event.import
