@@ -217,7 +217,7 @@ class App < Sinatra::Base
       events.each { |e|
         if e.from_time < from
           e.repeated_number = 1
-          results.push(e);
+          results.push(e)
         end
       }
 
