@@ -12,7 +12,7 @@
   <div style="font-size: 1.2em">
     <strong><%= creator.realname %></strong> invited you to event
     <a style="color: rgb(255, 64, 129); font-weight: 600;"
-       href='<%= "#{request.env['rack.url_scheme']}://#{settings.url}"%>/platform/calendar/events/<%= event.id %>/1'><%= event.title %></a>.
+       href='<%= "#{request.env['rack.url_scheme']}://#{settings.hostname}"%>/platform/calendar/events/<%= event.id %>/1'><%= event.title %></a>.
   </div>
   <br/>
   <table>

@@ -14,22 +14,22 @@ class Team < ActiveRecord::Base
   has_many :parent_teams, through: :parent_teams_relations, source: :parent_team
 
   def get_all_users
-    users = []
+    result = []
     user_ids = {}
-    users.each { |u|
-      users.push(u)
+    self.users.each { |u|
+      result.push(u)
       user_ids[u.id] = true
     }
     sub_teams = get_all_sub_teams
     sub_teams.each { |t|
       t.users.each { |u|
         unless user_ids[u.id]
-          users.push(u)
+          result.push(u)
           user_ids[u.id] = true
         end
       }
     }
-    users
+    result
   end
 
   def get_all_sub_teams
