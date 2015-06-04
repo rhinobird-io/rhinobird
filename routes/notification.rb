@@ -25,12 +25,11 @@ class App < Sinatra::Base
 
     # add a notification to one user
     post '/users/:userId/notifications' do
-      notification = User.find(params[:userId]).notifications.create!(@body)
+      user = User.find(params[:userId])
+      notification = user.notifications.create!(@body)
       notify = notification.to_json(:except => [:user_id])
       socket_id = params[:userId].to_i
-      unless settings.sockets[socket_id].nil?
-        EM.next_tick { settings.sockets[socket_id].send(notify) }
-      end
+      notify(user, notify, @body['email_subject'], @body['email_body'])
       200
     end
 
@@ -43,13 +42,11 @@ class App < Sinatra::Base
       unless @body["url"].nil?
         content["url"] = @body["url"]
       end
-
-      users.each do |user|
-        notification = User.find(user.to_i).notifications.create!(content)
+      users.each do |userid|
+        user = User.find(userid.to_i)
+        notification = user.notifications.create!(content)
         notify = notification.to_json(:except => [:user_id])
-        unless settings.sockets[user.to_i].nil?
-          EM.next_tick { settings.sockets[user.to_i].send(notify) }
-        end
+        notify(user, notify, @body['email_subject'], @body['email_body'])
       end
       200
     end
