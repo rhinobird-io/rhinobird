@@ -35,6 +35,7 @@ class App < Sinatra::Base
   configure :development do
     set :script_url, 'http://localhost:2992/_assets/main.js'
     set :css_url, ''
+    set :default_email, 'li_ju@worksap.co.jp'
 
     redis_url = 'redis://localhost:6379'
     uri = URI.parse(redis_url)
