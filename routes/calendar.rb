@@ -1,114 +1,6 @@
 # encoding: utf-8
-require 'erb'
-
-class EventToComeEmailContent
-  attr_reader :user, :event, :hostname
-
-  def initialize(user, event, hostname)
-    @user = user
-    @event = event
-    @hostname = hostname
-  end
-
-  def get_binding
-    binding
-  end
-end
-
-def send_event_notifications(e, dashboard_message, dashboard_link, notification_message)
-  participants = e.participants
-  team_participants = e.team_participants
-
-  users = Array.new
-
-  user_ids = {}
-  participants.each { |p|
-    users << p
-    user_ids[p.id] = true
-  }
-
-  team_participants.each { |tp|
-    team = Team.find(tp.id)
-    team_users = team.get_all_users
-    team_users.each { |u|
-      unless user_ids[u.id]
-        users.push(u)
-        user_ids[u.id] = true
-      end
-    }
-  }
-
-  users.each { |u|
-    u.dashboard_records.create!(
-        {
-            content: dashboard_message,
-            from_user_id: u.id,
-            has_link: true,
-            link_url: dashboard_link,
-            link_title: e.title,
-            link_param: e.to_json(methods: [:repeated_number], only: [:id]),
-        }
-    )
-
-    notification = u.notifications.create!({content: notification_message, from_user_id: u.id})
-
-    notify = notification.to_json(:except => [:user_id])
-
-
-    controller = EventToComeEmailContent.new(u, e, settings.hostname)
-    notify(
-        u,
-        notify,
-        "[RhinoBird] Your event #{e.title} will start in half an hour.",
-        ERB.new(File.read('./views/email/event_to_come.erb')).result(controller.get_binding))
-  }
-end
 
 class App < Sinatra::Base
-  scheduler = Rufus::Scheduler.new
-
-  # Check events that are not full day.
-  scheduler.every '30s' do
-
-    now = DateTime.now
-    half_an_hour = 30.minute
-    half_an_hour_later = now + half_an_hour
-
-    events = Event.where('from_time >= ? and from_time <= ? and full_day = ? and repeated = ? and status <> ?', now, half_an_hour_later, false, false, Event.statuses[:trashed])
-    repeated_events = Event.where('repeated = ? and status <> ?', true, Event.statuses[:trashed])
-
-    repeated_events.each { |e|
-      repeated_number = e.get_repeated_number(Date.today)
-      re = e.get_repeated_event(repeated_number)
-
-      if !re.nil? && re.from_time.to_datetime >= now && re.from_time.to_datetime <= half_an_hour_later
-        e.repeated_number = repeated_number
-        events.push(e)
-      end
-    }
-
-    count = 0
-    events.each { |e|
-      #puts e.from_time.to_datetime.to_i - now.to_i
-
-      next if e.from_time.to_datetime.to_i - now.to_i < 1775
-
-      unless e.repeated
-        e.repeated_number = 1
-      end
-
-      message = 'Your event will start in half an hour: '
-      notification_message = "Your event #{e.title} will start in half an hour."
-
-      count = count + 1
-      send_event_notifications(e, message, 'event-detail', notification_message)
-    }
-
-    if count > 0
-      #puts "Info: #{count} dashboard records and notifications have been sent."
-    end
-  end
-
   namespace '/api' do
     get '/events' do
       today = Date.today
@@ -274,7 +166,6 @@ class App < Sinatra::Base
         end
       end
 
-      # Whether the event creator is also a participant by default?
       user_self = User.find(uid)
       if notified_users[user_self.id].nil?
         notified_users[user_self.id] = user_self.id
@@ -303,7 +194,9 @@ class App < Sinatra::Base
                                           link_title: event.title})
 
           if event.creator_id != p
-            notification = user.notifications.create!({content: message + event.title, from_user_id: uid})
+            notification = user.notifications.create!({content: message + event.title,
+                                                       from_user_id: uid,
+                                                       url: "/platform/calendar/events/#{event.id}/1"})
 
             notify = notification.to_json(:except => [:user_id])
             notify(
