@@ -14,55 +14,14 @@ class Team < ActiveRecord::Base
   has_many :parent_teams, through: :parent_teams_relations, source: :parent_team
 
   def get_all_users
-    users = []
-    user_ids = {}
-    users.each { |u|
-      users.push(u)
-      user_ids[u.id] = true
-    }
-    sub_teams = get_all_sub_teams
-    sub_teams.each { |t|
-      t.users.each { |u|
-        unless user_ids[u.id]
-          users.push(u)
-          user_ids[u.id] = true
-        end
-      }
-    }
-    users
+    (self.users + self.teams.map {|t| t.get_all_users}.flatten).uniq
   end
 
   def get_all_sub_teams
-    teams = []
-    team_ids = {}
-    self.teams.each { |t|
-      team_ids[t.id] = true
-      teams.push(t)
-      indirect_subs = t.get_all_sub_teams
-      indirect_subs.each { |p|
-        unless team_ids[p.id]
-          teams.push(p)
-          team_ids[p.id] = true
-        end
-      }
-    }
-    teams
+    (self.teams + self.teams.map{|t| t.get_all_sub_teams}.flatten).uniq
   end
 
   def get_all_parent_teams
-    teams = []
-    team_ids = {}
-    self.parent_teams.each { |t|
-      team_ids[t.id] = true
-      teams.push(t)
-      indirect_parents = t.get_all_parent_teams
-      indirect_parents.each { |p|
-        unless team_ids[p.id]
-          teams.push(p)
-          team_ids[p.id] = true
-        end
-      }
-    }
-    teams
+    (self.parent_teams + self.parent_teams.map{|t| t.get_all_parent_teams}.flatten).uniq
   end
 end
