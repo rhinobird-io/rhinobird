@@ -35,7 +35,7 @@ def send_event_notification (e, dashboard_message, dashboard_link, notification_
 		)
 
 		notification = u.notifications.create!({content: notification_message, from_user_id: u.id})
-      
+
 		notify = notification.to_json(:except => [:user_id])
 		socket_id = u.id
 		unless settings.sockets[socket_id].nil?

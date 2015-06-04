@@ -1,6 +1,7 @@
 require 'sinatra/base'
 require 'sinatra/activerecord'
 require 'sinatra/namespace'
+require 'sinatra/config_file'
 require 'rest_client'
 require 'pony'
 require 'bcrypt'
@@ -10,10 +11,15 @@ require 'faye/websocket'
 require 'resque'
 require 'mail'
 require 'sinatra/redis'
+require 'sinatra/config_file'
+require 'json'
 
 Faye::WebSocket.load_adapter('thin')
 
 class App < Sinatra::Base
+  register Sinatra::ConfigFile
+
+  config_file './config/platform.yml'
 
   configure :production do
     set :script_url, '/platform/_assets/main.js'
@@ -37,11 +43,9 @@ class App < Sinatra::Base
     set :redis, redis_url
   end
 
-  configure do
-  end
-
   register Sinatra::ActiveRecordExtension
   register Sinatra::Namespace
+
   set :show_exceptions, :after_handler
   set :bind, '0.0.0.0'
   set :server, 'puma'
@@ -59,7 +63,6 @@ class App < Sinatra::Base
   Mail.defaults do
     delivery_method :smtp, options
   end
-
 
   I18n.config.enforce_available_locales = true
 

@@ -18,6 +18,23 @@ class User < ActiveRecord::Base
   has_many :appointments, foreign_key: :participant_id
   has_many :events, through: :appointments
 
+  def get_all_teams
+    teams = []
+    team_ids = {}
+    self.teams.each { |t|
+      teams.push(t)
+      team_ids[t.id] = true
+      parent_teams = t.get_all_parent_teams
+      parent_teams.each { |p|
+        unless team_ids[p.id]
+          teams.push(p)
+          team_ids[p.id] = true
+        end
+      }
+    }
+    teams
+  end
+
   def password
     @password ||= Password.new(encrypted_password)
   end
