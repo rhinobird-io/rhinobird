@@ -35,15 +35,23 @@ class App < Sinatra::Base
 
     # add a notification to many users
     post '/users/notifications' do
-      users = @body["users"]
+      user_ids = @body["users"]
+      team_ids = @body('teams')
       content =@body["content"]
       content["from_user_id"] = @userid
-
+      users = Set.new
       unless @body["url"].nil?
         content["url"] = @body["url"]
       end
-      users.each do |userid|
+      user_ids.each do |userid|
         user = User.find(userid.to_i)
+        users.add(user)
+      end
+      team_ids.each do |teamId|
+        team = Team.find(teamId)
+        users.merge(team.get_all_users)
+      end
+      users.each do |user|
         notification = user.notifications.create!(content)
         notify = notification.to_json(:except => [:user_id])
         notify(user, notify, @body['email_subject'], @body['email_body'])
