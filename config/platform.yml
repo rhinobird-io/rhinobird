@@ -1,5 +1,5 @@
 development:
-  url: localhost:8000/platform
+  hostname: localhost:8000
 
 production:
-  url: rhinobird.workslan/platform
+  hostname: rhinobird.workslan
