@@ -50,10 +50,11 @@ def send_event_notifications(e, dashboard_message, dashboard_link, notification_
         }
     )
 
-    notification = u.notifications.create!({content: notification_message, from_user_id: u.id})
+    notification = u.notifications.create!({content: notification_message,
+                                            from_user_id: u.id,
+                                            url: "/platform/calendar/events/#{e.id}/#{e.repeated_number}"})
 
     notify = notification.to_json(:except => [:user_id])
-
 
     controller = EventToComeEmailContent.new(u, e, settings.hostname)
     notify(
@@ -274,7 +275,6 @@ class App < Sinatra::Base
         end
       end
 
-      # Whether the event creator is also a participant by default?
       user_self = User.find(uid)
       if notified_users[user_self.id].nil?
         notified_users[user_self.id] = user_self.id
@@ -303,7 +303,9 @@ class App < Sinatra::Base
                                           link_title: event.title})
 
           if event.creator_id != p
-            notification = user.notifications.create!({content: message + event.title, from_user_id: uid})
+            notification = user.notifications.create!({content: message + event.title,
+                                                       from_user_id: uid,
+                                                       url: "/platform/calendar/events/#{event.id}/1"})
 
             notify = notification.to_json(:except => [:user_id])
             notify(
