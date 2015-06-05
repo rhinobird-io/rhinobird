@@ -14,7 +14,6 @@ require 'sinatra/redis'
 require 'sinatra/config_file'
 require 'json'
 require 'erb'
-require 'pqueue'
 require 'week_of_month'
 
 Faye::WebSocket.load_adapter('thin')
