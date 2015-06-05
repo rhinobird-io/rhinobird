@@ -110,6 +110,7 @@ class App < Sinatra::Base
     set :redis, redis_url
   end
 
+  puts ENV['DISABLE_RUFUS']
   unless ENV['DISABLE_RUFUS'] == 'TRUE'
     scheduler = Rufus::Scheduler.new
 
