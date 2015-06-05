@@ -13,7 +13,9 @@ class Event < ActiveRecord::Base
   has_many :team_appointments
   has_many :participants, through: :appointments
   has_many :team_participants, through: :team_appointments
-  attr_accessor :repeated_number, :integer
+  attr_accessor :repeated_number
+  validates :repeated_type, inclusion: {in: %w(Daily Weekly Monthly Yearly), allow_nil: true}
+  validates :repeated_by, inclusion: {in: %w(Month Week), allow_nil: true}
 
   def participants_summary
     self.participants.map{|p| p.realname} + self.team_participants.map{|p| p.name}
@@ -32,6 +34,133 @@ class Event < ActiveRecord::Base
       else
         return self.from_time.strftime('%c')
       end
+    end
+  end
+
+  def next_occurrence(date)
+    from_time = self.from_time
+    repeated_end_type = self.repeated_end_type
+    case self.repeated_type
+      when 'Daily'
+        gap = date - from_time.to_date
+        quotient, modulus = gap.divmod(self.repeated_frequency)
+        quotient += 1 if modulus > 0
+        if repeated_end_type == 'Occurrence' and quotient + 1 > self.repeated_times
+          return nil
+        end
+        result = from_time + (quotient * self.repeated_frequency).days
+        if repeated_end_type == 'Date' and result.to_date > self.repeated_end_date.to_date
+          return nil
+        end
+        return result
+      when 'Weekly'
+        gap = date.beginning_of_week.to_date - from_time.beginning_of_week.to_date
+        quotient, modulus = gap.divmod(self.repeated_frequency * 7)
+        quotient += 1 if modulus > 0
+        if repeated_end_type == 'Occurrence' and quotient + 1 > self.repeated_times
+          return nil
+        end
+        wday_hash = {'Sun' => 0, 'Mon' => 1, 'Tue' => 2, 'Wed' => 3, 'Thu' => 4, 'Fri' => 5, 'Sat' => 6}
+        repeated_on = JSON.parse(self.repeated_on).map{|r| wday_hash[r]}
+        day = repeated_on.find {|d| d >= date.wday}
+        gap = 0
+        if day.nil?
+          if repeated_end_type == 'Occurrence' and quotient > self.repeated_times
+            return nil
+          end
+          day = repeated_on.first
+          gap += 7 * self.repeated_frequency
+        end
+        gap += day - from_time.wday
+        result = from_time + (quotient * self.repeated_frequency * 7 + gap).days
+        if repeated_end_type == 'Date' and result.to_date > self.repeated_end_date.to_date
+          return nil
+        end
+        return result
+      when 'Monthly'
+        gap = month_diff(date, from_time)
+        quotient, modulus = gap.divmod(self.repeated_frequency)
+        quotient += 1 if modulus > 0
+        if repeated_end_type == 'Occurrence' and quotient + 1 > self.repeated_times
+          return nil
+        end
+        if self.repeated_by == 'Month'    # Monthly repeat by day of month
+          if date.day > from_time.day
+            if repeated_end_type == 'Occurrence' and quotient > self.repeated_times
+              return nil
+            end
+            quotient += 1
+          end
+          result = from_time >> (quotient * self.repeated_frequency)
+          if repeated_end_type == 'Date' and result.to_date > self.repeated_end_date.to_date
+            return nil
+          end
+          return result
+        elsif self.repeated_by == 'Week'  # Monthly repeat by day of week
+          wday = from_time.wday
+          weekdays = from_time.week_split.map{|d| d[wday]}.compact
+          idx = weekdays.find_index{|d| d == from_time.day}
+          current_weekdays = (from_time >> (quotient * self.repeated_frequency)).week_split.map{|d| d[wday]}.compact
+          target_day = current_weekdays[idx] || current_weekdays.last
+          if target_day.to_date > date.to_date
+            if repeated_end_type == 'Occurrence' and quotient > self.repeated_times
+              return nil
+            end
+            quotient += 1
+          end
+          current_weekdays = (from_time >> (quotient * self.repeated_frequency)).week_split.map{|d| d[wday]}.compact
+          target_day = current_weekdays[idx] || current_weekdays.last
+          result = from_time >> (quotient * self.repeated_frequency).change({day: target_day})
+          if repeated_end_type == 'Date' and result.to_date > self.repeated_end_date.to_date
+            return nil
+          end
+          return result
+        else
+          raise 'Unexpected repeated_by'
+        end
+      when 'Yearly'
+        gap = year_diff(date, from_time)
+        quotient, modulus = gap.divmod(self.repeated_frequency)
+        quotient += 1 if modulus > 0
+        if repeated_end_type == 'Occurrence' and quotient + 1 > self.repeated_times
+          return nil
+        end
+        if date.month < from_time.month or (date.month == from_time.month && date.day < from_time.day)
+          if repeated_end_type == 'Occurrence' and quotient > self.repeated_times
+            return nil
+          end
+          quotient += 1
+        end
+        result = from_time + (quotient * self.repeated_frequency).years
+        if repeated_end_type == 'Date' and result.to_date > self.repeated_end_date.to_date
+          return nil
+        end
+        return result
+    end
+  end
+
+  def get_next_event(date)
+    if !date.nil?
+      if self.repeated
+          from_time = self.from_time
+          next_occurrence = self.next_occurrence(date)
+          if next_occurrence.nil?
+            return nil
+          else
+            gap = next_occurrence - from_time
+            self.from_time += gap
+            self.to_time += gap
+            self
+          end
+      else
+        if date <= self.from_time
+          self
+        else
+          nil
+        end
+      end
+    else
+      nil
     end
   end
 
