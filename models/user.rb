@@ -19,20 +19,7 @@ class User < ActiveRecord::Base
   has_many :events, through: :appointments
 
   def get_all_teams
-    teams = []
-    team_ids = {}
-    self.teams.each { |t|
-      teams.push(t)
-      team_ids[t.id] = true
-      parent_teams = t.get_all_parent_teams
-      parent_teams.each { |p|
-        unless team_ids[p.id]
-          teams.push(p)
-          team_ids[p.id] = true
-        end
-      }
-    }
-    teams
+    (self.teams + self.teams.map{|t| t.get_all_parent_teams}.flatten).uniq
   end
 
   def password

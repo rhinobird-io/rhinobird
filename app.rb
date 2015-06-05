@@ -13,13 +13,14 @@ require 'mail'
 require 'sinatra/redis'
 require 'sinatra/config_file'
 require 'json'
+require 'erb'
+require 'pqueue'
+require 'week_of_month'
 
 Faye::WebSocket.load_adapter('thin')
-require 'erb'
 
 class EventToComeEmailContent
   attr_reader :user, :event, :hostname
-
   def initialize(user, event, hostname)
     @user = user
     @event = event

@@ -1,6 +1,26 @@
 # encoding: utf-8
 
 class App < Sinatra::Base
+  def first_instance_after_date(event, date)
+    from_date = event.from_time.to_date
+    if event.repeated
+    else
+      nil if from_date < date
+
+    end
+  end
+
+  def get_events_after_date(user, date, count)
+    all_events = []
+    teams = user.get_all_teams
+
+    all_events.concat user.events.where('status <> ?', Event.statuses[:trashed])
+
+    teams.each { |t| all_events.concat t.events.where('status <> ?', Event.statuses[:trashed])}
+
+    pq = PQueue.new{|a, b| a.from_time > b.from_time}
+  end
+
   namespace '/api' do
     get '/events' do
       today = Date.today
@@ -70,9 +90,7 @@ class App < Sinatra::Base
         events.concat t.events.where('from_time > ? and status <> ?', from, Event.statuses[:trashed])
       }
 
-      events.each { |e|
-        e.repeated_number = 1
-      }
+      events.each { |e| e.repeated_number = 1 }
 
       events.sort! { |a, b| a.from_time <=> b.from_time }.
           first(5).

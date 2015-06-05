@@ -51,6 +51,7 @@ class Event < ActiveRecord::Base
       repeated_frequency = self.repeated_frequency
 
       from_time = self.from_time
+      from_date = from_time.to_date
       to_time = self.to_time
 
       range = 0
@@ -58,15 +59,29 @@ class Event < ActiveRecord::Base
         when 'Daily'
           range = (repeated_frequency * (number - 1)).day
         when 'Weekly'
+          repeated_on = JSON.parse(self.repeated_on)
 
         when 'Monthly'
-          range = (repeated_frequency * (number - 1)).month
+          if self.repeated_by == 'Month'    # Monthly repeat by day of month
+            range = (repeated_frequency * (number - 1)).month
+          elsif self.repeated_by == 'Week'  # Monthly repeat by day of week
+            temp_from_date = from_date + (repeated_frequency * (number - 1)).month
+            week_of_month = from_date.week_of_month
+            wday = from_time.wday
 
-          # TODO: consider the repeated by week of month
+            temp_week_of_month = temp_from_date.week_of_month
+            temp_wday = temp_from_date.wday
+
+            temp_from_date -= (temp_week_of_month - week_of_month).week
+            temp_from_date -= (temp_wday - wday).day
+            range = (temp_from_date - from_date).day
+          else
+            return nil
+          end
         when 'Yearly'
           range = (repeated_frequency * (number - 1)).year
-        else
-          # type code here
+        else  # Repeated type error, return nil
+          nil
       end
 
       from_time += range
@@ -85,7 +100,7 @@ class Event < ActiveRecord::Base
   end
 
   # Check whether the events will happen on certain date
-  # True, than return the repeated number
+  # If so, than return the repeated number
   # Otherwise, return 0
   def get_repeated_number(date)
     from_date = self.from_time.to_date
@@ -103,7 +118,7 @@ class Event < ActiveRecord::Base
       # 1. The date should not exceed the end date of the repeated event
       # If event's event type is to end on certain date
       if self.repeated_end_type == 'Date'
-        if self.repeated_end_date < date
+        if !self.repeated_end_date.nil? && self.repeated_end_date < date
           return 0
         end
       end
@@ -224,7 +239,7 @@ class Event < ActiveRecord::Base
       # Repeated ends way
       if repeated_end_type == 'Occurrence'
         summary += ", #{repeated_times} times"
-      elsif repeated_end_type == 'Date'
+      elsif repeated_end_type == 'Date' && !repeated_end_date.nil?
         summary += ", until #{repeated_end_date.to_date}"
       end
 
@@ -232,6 +247,14 @@ class Event < ActiveRecord::Base
     else
       'No Repeat'
     end
+  end
+
+  def <(other)
+    self.from_time < other.from_time
+  end
+
+  def >(other)
+    self.from_time > other.from_time
   end
 end
 

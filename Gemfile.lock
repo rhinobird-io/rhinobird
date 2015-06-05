@@ -1,6 +1,7 @@
 GEM
   remote: http://rubygems.org/
   specs:
+    PriorityQueue (0.1.2)
     activemodel (4.2.0)
       activesupport (= 4.2.0)
       builder (~> 3.1)
@@ -59,6 +60,7 @@ GEM
     pg (0.18.1)
     pony (1.11)
       mail (>= 2.0)
+    pqueue (2.1.0)
     rack (1.6.0)
     rack-protection (1.5.3)
       rack
@@ -123,6 +125,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  PriorityQueue (~> 0.1.2)
   activerecord
   bcrypt
   elasticsearch-model
@@ -132,6 +135,7 @@ DEPENDENCIES
   gravatar-ultimate
   pg
   pony
+  pqueue
   rake
   resque
   rest-client
