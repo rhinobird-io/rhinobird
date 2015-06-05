@@ -14,7 +14,7 @@ $ rackup
 
 This is only server side API for the platform. You need at least the folowlling components to develop the web UI:
 
-1. rhinobord-web
+1. [rhinobord-web](https://github.com/rhinobird-io/rhinobird-web)
    The web assets of the platform
 2. mock gateway
    A simple non-prodcution service gateway to distribute API requests
