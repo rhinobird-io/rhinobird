@@ -62,9 +62,27 @@ class Event < ActiveRecord::Base
           wday_hash = {'Sun' => 0, 'Mon' => 1, 'Tue' => 2, 'Wed' => 3, 'Thu' => 4, 'Fri' => 5, 'Sat' => 6};
           repeated_on = JSON.parse(self.repeated_on)
           wday_repeat = Array.new(7, false)
+
           repeated_on.each {|r| wday_repeat[wday_hash[r]] = true}
 
+          # Start day's week day
           wday = from_date.wday
+
+          next_week_number = (number.to_f / repeated_on.length).ceil
+          left_days = number - (next_week_number - 1) * repeated_on.length
+          next_wday = wday
+
+          ((wday)..(wday + 6)).each { |i|
+            if left_days == 0
+              break
+            end
+            if wday_repeat[i % 7]
+              next_wday = i
+              left_days -= 1
+            end
+          }
+
+          range = (repeated_frequency * (next_week_number - 1)).week + (next_wday - wday).day
         when 'Monthly'
           if self.repeated_by == 'Month'    # Monthly repeat by day of month
             range = (repeated_frequency * (number - 1)).month
@@ -82,6 +100,8 @@ class Event < ActiveRecord::Base
             temp_from_date -= (temp_wday - wday).day
 
             # If month has less week than the repeated one, use the last week's day
+            # Eg: the event tend to repeat at fifth Friday of one Month by every 1 month, however,
+            # there's a month doesn't have the fifth Friday, in this case, it will use the last Friday.
             if temp_from_date.month > temp_month
               temp_from_date -= 1.week
             end
