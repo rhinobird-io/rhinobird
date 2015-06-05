@@ -23,6 +23,8 @@ gem 'resque'
 gem 'rake'
 gem 'faker'
 gem 'week_of_month', '~> 1.2.3.2'
+gem 'PriorityQueue', '~> 0.1.2'
+gem 'pqueue'
 
 group :development do
   gem 'sqlite3'
