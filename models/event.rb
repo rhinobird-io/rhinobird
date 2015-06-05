@@ -59,13 +59,19 @@ class Event < ActiveRecord::Base
         when 'Daily'
           range = (repeated_frequency * (number - 1)).day
         when 'Weekly'
+          wday_hash = {'Sun' => 0, 'Mon' => 1, 'Tue' => 2, 'Wed' => 3, 'Thu' => 4, 'Fri' => 5, 'Sat' => 6};
           repeated_on = JSON.parse(self.repeated_on)
+          wday_repeat = Array.new(7, false)
+          repeated_on.each {|r| wday_repeat[wday_hash[r]] = true}
 
+          wday = from_date.wday
         when 'Monthly'
           if self.repeated_by == 'Month'    # Monthly repeat by day of month
             range = (repeated_frequency * (number - 1)).month
           elsif self.repeated_by == 'Week'  # Monthly repeat by day of week
             temp_from_date = from_date + (repeated_frequency * (number - 1)).month
+            temp_month = temp_from_date.month
+
             week_of_month = from_date.week_of_month
             wday = from_time.wday
 
@@ -74,6 +80,11 @@ class Event < ActiveRecord::Base
 
             temp_from_date -= (temp_week_of_month - week_of_month).week
             temp_from_date -= (temp_wday - wday).day
+
+            # If month has less week than the repeated one, use the last week's day
+            if temp_from_date.month > temp_month
+              temp_from_date -= 1.week
+            end
             range = (temp_from_date - from_date).day
           else
             return nil
