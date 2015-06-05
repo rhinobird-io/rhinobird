@@ -148,13 +148,14 @@ class Event < ActiveRecord::Base
             return nil
           else
             gap = next_occurrence - from_time
-            self.from_time += gap
-            self.to_time += gap
-            self
+            result = self.dup
+            result.from_time += gap
+            result.to_time += gap unless result.to_time.nil?
+            result
           end
       else
         if date <= self.from_time
-          self
+          self.dup
         else
           nil
         end
