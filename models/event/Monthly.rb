@@ -1,0 +1,4 @@
+class Monthly < Repeated
+
+
+end

@@ -1,7 +1,11 @@
 
 require_relative 'appointment'
 require_relative 'dashboard_record'
-require_relative 'event'
+require_relative 'event/event'
+require_relative 'event/Daily'
+require_relative 'event/Weekly'
+require_relative 'event/Monthly'
+require_relative 'event/Yearly'
 require_relative 'invitation'
 require_relative 'local_avatar'
 require_relative 'notification'
