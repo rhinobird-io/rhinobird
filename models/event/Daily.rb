@@ -3,7 +3,7 @@ class Daily < Repeated
   def next_occurrence(date)
     from_time = self.from_time
     gap = date - from_time.to_date
-    quotient = gap.fdiv(self.repeated_frequency).ceil
+    quotient = [gap.fdiv(self.repeated_frequency).ceil, 0].max
     from_time + (quotient * self.repeated_frequency).days
   end
 
