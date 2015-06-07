@@ -2,10 +2,16 @@ class Weekly < Repeated
   def next_occurrence(date)
     from_time = self.from_time
     gap = date.beginning_of_week - from_time.to_date.beginning_of_week
-    quotient = gap.fdiv(self.repeated_frequency * 7).ceil
+    quotient = [gap.fdiv(self.repeated_frequency * 7).ceil, 0].max
     wday_hash = {'Sun' => 0, 'Mon' => 1, 'Tue' => 2, 'Wed' => 3, 'Thu' => 4, 'Fri' => 5, 'Sat' => 6}
     repeated_on = JSON.parse(self.repeated_on).map{|r| wday_hash[r]}
-    day = repeated_on.find {|d| d >= date.wday}
+    if gap < 0
+      day = repeated_on.find {|d| d >= from_time.wday}
+    elsif quotient == 0
+      day = repeated_on.find {|d| d >= [date.wday, from_time.wday].max}
+    else
+      day = repeated_on.find {|d| d >= date.wday}
+    end
     gap = 0
     if day.nil?
       day = repeated_on.first
