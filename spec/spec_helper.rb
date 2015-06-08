@@ -17,6 +17,8 @@
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 require_relative '../app'
+connection_info = YAML.load_file('config/database.yml')["test"]
+ActiveRecord::Base.establish_connection(connection_info)
 
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
