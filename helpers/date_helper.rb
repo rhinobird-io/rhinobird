@@ -14,9 +14,9 @@ class DateHelper
   def self.week_diff(date_1, date_2)
     day_diff = day_diff(date_1, date_2)
     if date_1.wday < date_2.wday
-      day_diff / 7 + 1
+      (day_diff / 7).floor + 1
     else
-      day_diff / 7
+      (day_diff / 7).floor
     end
   end
 

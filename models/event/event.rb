@@ -42,7 +42,8 @@ class Event < ActiveRecord::Base
   def get_next_event(date)
     if !date.nil?
         if date <= self.from_time
-          self.dup
+          self.repeated_number = 1
+          Marshal::load(Marshal.dump(self))
         else
           nil
         end
@@ -53,11 +54,13 @@ class Event < ActiveRecord::Base
 
   # Get the $(repeated_number)th event of a repeated one
   def get_repeated_event(repeated_number)
-    number = repeated_number.to_i
+    origin_repeated_number = self.repeated_number.nil? ? 1 : self.repeated_number
+    puts "Origin = #{origin_repeated_number}"
+    number = repeated_number.to_i - origin_repeated_number + 1
 
     if self.repeated && number > 0
-      result = self.dup
-      result.repeated_number = number
+      result = Marshal::load(Marshal.dump(self))
+      result.repeated_number = repeated_number
 
       repeated_end_type = result.repeated_end_type
 
@@ -156,13 +159,18 @@ class Event < ActiveRecord::Base
     from_date = self.from_time.to_date
 
     if !self.repeated
-      date == from_date
+      0
     else
       # When the event is repeated
       if date < from_date
         return 0
       elsif date == from_date
         return 1
+      end
+      repeated_number = 0
+
+      unless self.repeated_number.nil?
+        repeated_number = self.repeated_number
       end
 
       # 1. The date should not exceed the end date of the repeated event
@@ -220,7 +228,46 @@ class Event < ActiveRecord::Base
       end
 
       # The repeated number of the repeated event
-      repeated_number = range_after / self.repeated_frequency + 1
+      if self.repeated_type == 'Weekly'
+        wday_hash = {'Sun' => 0, 'Mon' => 1, 'Tue' => 2, 'Wed' => 3, 'Thu' => 4, 'Fri' => 5, 'Sat' => 6}
+        repeated_on = JSON.parse(self.repeated_on)
+        weekly_repeat_count = 0
+        wday_repeat = Array.new(7, false)
+        repeated_on.each {|r|
+          wday_repeat[wday_hash[r]] = true
+          weekly_repeat_count += 1
+        }
+
+        gap = 0
+        (from_date.wday..(from_date.wday + 6)).each { |w|
+          if wday_repeat[w % 7]
+            gap += 1
+          end
+          if w % 7 == date.wday
+            break
+          end
+        }
+
+        if from_date.wday > date.wday
+          gap -= weekly_repeat_count
+        end
+        # puts "Repeated Previous: #{repeated_number}"
+        # puts "repeated_frequency: #{repeated_frequency}"
+        if repeated_number > 0
+          repeated_number += (range_after / self.repeated_frequency).floor * weekly_repeat_count + gap - 1
+        else
+          repeated_number += (range_after / self.repeated_frequency).floor * weekly_repeat_count + gap
+        end
+
+        puts "#{from_date}"
+        puts "#{date}"
+        puts "range_after = #{range_after}"
+        puts "Repeated Number = #{repeated_number}"
+        puts "weekly_repeat_count = #{weekly_repeat_count}"
+        puts "Gap = #{gap}"
+      else
+        repeated_number += (range_after / self.repeated_frequency).floor + 1
+      end
 
       # 4. The repeated number should not exceed the set repeated times
       # If repeat event will end after certain times
@@ -315,8 +362,6 @@ class Repeated < Event
     self.repeated = true
   end
 
-
-
   def available_occurrence?(time)
     if self.repeated_end_type == 'Never'
       return true
@@ -343,9 +388,11 @@ class Repeated < Event
       nil
     else
       gap = next_occurrence - from_time
-      result = self.dup
+      result = Marshal::load(Marshal.dump(self))
+      result.repeated_number = result.get_repeated_number(next_occurrence.to_date)
       result.from_time += gap
       result.to_time += gap unless result.to_time.nil?
+      puts result.repeated_type
       result
     end
   end
