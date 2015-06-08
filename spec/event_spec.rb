@@ -48,7 +48,7 @@ RSpec.describe Event do
     context 'with end type Occurrence, repeated times 2' do
       evt = event.dup
       evt.repeated_end_type = 'Occurrence'
-      evt.repeated_times = 2
+      evt.repeated_times = 2 * 2
       it 'get next event correctly' do
         expect(evt.get_next_event(Date.parse('2015-8-8')).from_time).to eq(DateTime.parse('2015-9-11 8:00'))
         expect(evt.get_next_event(Date.parse('2015-9-8')).from_time).to eq(DateTime.parse('2015-9-11 8:00'))

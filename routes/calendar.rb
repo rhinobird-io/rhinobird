@@ -190,6 +190,11 @@ class App < Sinatra::Base
 
       event.creator_id = uid
       event.status = 'created'
+
+      if event.repeated && event.repeated_type == 'Weekly' && event.repeated_end_type == 'Occurrence'
+        event.repeated_times = 3 * event.repeated_times
+      end
+
       event.save!
 
       ActiveRecord::Base.transaction do

@@ -56,9 +56,10 @@ class Event < ActiveRecord::Base
     number = repeated_number.to_i
 
     if self.repeated && number > 0
-      self.repeated_number = number
+      result = self.dup
+      result.repeated_number = number
 
-      repeated_end_type = self.repeated_end_type
+      repeated_end_type = result.repeated_end_type
 
       if repeated_end_type == 'Occurrence' && number > self.repeated_times
         return nil
@@ -132,15 +133,17 @@ class Event < ActiveRecord::Base
       end
 
       from_time += range
-      to_time += range
+      unless to_time.nil?
+        to_time += range
+      end
 
       if repeated_end_type == 'Date' && from_time > self.repeated_end_date
         return nil
       end
 
-      self.from_time = from_time
-      self.to_time = to_time
-      self
+      result.from_time = from_time
+      result.to_time = to_time
+      result
     else
       nil
     end
