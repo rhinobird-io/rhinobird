@@ -4,6 +4,8 @@ class Event < ActiveRecord::Base
   # include Elasticsearch::Model
   # include Elasticsearch::Model::Callbacks
 
+  self.inheritance_column = 'repeated_type'
+
   enum status:  { created: 0, trashed: 1 }
 
   serialize :repeated_exclusion, Array
@@ -13,7 +15,8 @@ class Event < ActiveRecord::Base
   has_many :team_appointments
   has_many :participants, through: :appointments
   has_many :team_participants, through: :team_appointments
-  attr_accessor :repeated_number, :integer
+  attr_accessor :repeated_number
+  validates :repeated_type, inclusion: {in: %w(Daily Weekly Monthly Yearly), allow_nil: true}
 
   def participants_summary
     self.participants.map{|p| p.realname} + self.team_participants.map{|p| p.name}
@@ -32,6 +35,19 @@ class Event < ActiveRecord::Base
       else
         return self.from_time.strftime('%c')
       end
+    end
+  end
+
+  # non repeated event
+  def get_next_event(date)
+    if !date.nil?
+        if date <= self.from_time
+          self.dup
+        else
+          nil
+        end
+    else
+      nil
     end
   end
 
@@ -286,6 +302,49 @@ class Event < ActiveRecord::Base
 
   def >(other)
     self.from_time > other.from_time
+  end
+end
+
+class Repeated < Event
+  after_initialize :init
+  validates :repeated_end_type, inclusion: {in: %w(Occurrence Date Never)}
+  def init
+    self.repeated = true
+  end
+
+
+
+  def available_occurrence?(time)
+    if self.repeated_end_type == 'Never'
+      return true
+    end
+    last_occurrence = self.last_occurrence
+    if last_occurrence.nil?
+      return true
+    end
+    last_occurrence.to_date >= time.to_date
+  end
+
+  def last_occurrence
+    if self.repeated_end_type == 'Occurrence'
+      self.last_occurrence_by_times
+    else
+      self.repeated_end_date
+    end
+  end
+
+  def get_next_event(date)
+    from_time = self.from_time
+    next_occurrence = self.next_occurrence(date)
+    if next_occurrence.nil? or !self.available_occurrence?(next_occurrence)
+      nil
+    else
+      gap = next_occurrence - from_time
+      result = self.dup
+      result.from_time += gap
+      result.to_time += gap unless result.to_time.nil?
+      result
+    end
   end
 end
 
