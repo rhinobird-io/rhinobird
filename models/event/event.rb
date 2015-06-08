@@ -307,7 +307,7 @@ end
 
 class Repeated < Event
   after_initialize :init
-
+  validates :repeated_end_type, inclusion: {in: %w(Occurrence Date Never)}
   def init
     self.repeated = true
   end
@@ -315,6 +315,9 @@ class Repeated < Event
 
 
   def available_occurrence?(time)
+    if self.repeated_end_type == 'Never'
+      return true
+    end
     last_occurrence = self.last_occurrence
     if last_occurrence.nil?
       return true

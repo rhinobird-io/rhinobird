@@ -31,6 +31,13 @@ RSpec.describe Event do
           expect(e.get_next_event(Date.parse('2015-9-16'))).to be_nil
         end
       end
+      context 'with end type Never' do
+        e = evt.dup
+        e.repeated_end_type = 'Never'
+        it 'get next event correctly' do
+          expect(e.get_next_event(Date.parse('2055-9-16')).from_time).to eq(DateTime.parse('2055-9-18 8:00'))
+        end
+      end
     end
   end
 
