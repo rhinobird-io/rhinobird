@@ -23,6 +23,8 @@ class Weekly < Repeated
   end
 
   def last_occurrence_by_times
-    self.get_repeated_event(self.repeated_times).from_time
+    puts "Last: #{self.repeated_times}"
+    puts "Last Occurrence: #{self.get_repeated_event(self.repeated_times).from_time}"
+    self.get_repeated_event(self.repeated_times).from_time.to_date
   end
 end

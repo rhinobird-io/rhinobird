@@ -24,4 +24,8 @@ module EventHelper
     end
     result
   end
+
+  def self.previous_n_events(events, date, num)
+
+  end
 end
