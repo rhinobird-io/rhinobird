@@ -1,5 +1,5 @@
 class Monthly < Repeated
-
+  validates :repeated_by, inclusion: {in: %w(Month Week)}
   def next_occurrence(date)
     from_time = self.from_time
     gap = DateHelper.month_diff(date, from_time)

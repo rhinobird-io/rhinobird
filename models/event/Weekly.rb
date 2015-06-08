@@ -1,4 +1,5 @@
 class Weekly < Repeated
+  validates :repeated_on, presence: true
   def next_occurrence(date)
     from_time = self.from_time
     gap = date.beginning_of_week - from_time.to_date.beginning_of_week

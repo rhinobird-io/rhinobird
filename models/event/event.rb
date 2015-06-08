@@ -17,7 +17,6 @@ class Event < ActiveRecord::Base
   has_many :team_participants, through: :team_appointments
   attr_accessor :repeated_number
   validates :repeated_type, inclusion: {in: %w(Daily Weekly Monthly Yearly), allow_nil: true}
-  validates :repeated_by, inclusion: {in: %w(Month Week), allow_nil: true}
 
   def participants_summary
     self.participants.map{|p| p.realname} + self.team_participants.map{|p| p.name}
