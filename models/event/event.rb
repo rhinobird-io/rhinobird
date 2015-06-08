@@ -4,6 +4,8 @@ class Event < ActiveRecord::Base
   # include Elasticsearch::Model
   # include Elasticsearch::Model::Callbacks
 
+  self.inheritance_column = 'repeated_type'
+
   enum status:  { created: 0, trashed: 1 }
 
   serialize :repeated_exclusion, Array
@@ -13,7 +15,8 @@ class Event < ActiveRecord::Base
   has_many :team_appointments
   has_many :participants, through: :appointments
   has_many :team_participants, through: :team_appointments
-  attr_accessor :repeated_number, :integer
+  attr_accessor :repeated_number
+  validates :repeated_type, inclusion: {in: %w(Daily Weekly Monthly Yearly), allow_nil: true}
 
   def participants_summary
     self.participants.map{|p| p.realname} + self.team_participants.map{|p| p.name}
@@ -35,6 +38,19 @@ class Event < ActiveRecord::Base
     end
   end
 
+  # non repeated event
+  def get_next_event(date)
+    if !date.nil?
+        if date <= self.from_time
+          self.dup
+        else
+          nil
+        end
+    else
+      nil
+    end
+  end
+
   # Get the $(repeated_number)th event of a repeated one
   def get_repeated_event(repeated_number)
     number = repeated_number.to_i
@@ -51,6 +67,7 @@ class Event < ActiveRecord::Base
       repeated_frequency = self.repeated_frequency
 
       from_time = self.from_time
+      from_date = from_time.to_date
       to_time = self.to_time
 
       range = 0
@@ -58,15 +75,60 @@ class Event < ActiveRecord::Base
         when 'Daily'
           range = (repeated_frequency * (number - 1)).day
         when 'Weekly'
+          wday_hash = {'Sun' => 0, 'Mon' => 1, 'Tue' => 2, 'Wed' => 3, 'Thu' => 4, 'Fri' => 5, 'Sat' => 6};
+          repeated_on = JSON.parse(self.repeated_on)
+          wday_repeat = Array.new(7, false)
 
+          repeated_on.each {|r| wday_repeat[wday_hash[r]] = true}
+
+          # Start day's week day
+          wday = from_date.wday
+
+          next_week_number = (number.to_f / repeated_on.length).ceil
+          left_days = number - (next_week_number - 1) * repeated_on.length
+          next_wday = wday
+
+          ((wday)..(wday + 6)).each { |i|
+            if left_days == 0
+              break
+            end
+            if wday_repeat[i % 7]
+              next_wday = i
+              left_days -= 1
+            end
+          }
+
+          range = (repeated_frequency * (next_week_number - 1)).week + (next_wday - wday).day
         when 'Monthly'
-          range = (repeated_frequency * (number - 1)).month
+          if self.repeated_by == 'Month'    # Monthly repeat by day of month
+            range = (repeated_frequency * (number - 1)).month
+          elsif self.repeated_by == 'Week'  # Monthly repeat by day of week
+            temp_from_date = from_date + (repeated_frequency * (number - 1)).month
+            temp_month = temp_from_date.month
 
-          # TODO: consider the repeated by week of month
+            week_of_month = from_date.week_of_month
+            wday = from_time.wday
+
+            temp_week_of_month = temp_from_date.week_of_month
+            temp_wday = temp_from_date.wday
+
+            temp_from_date -= (temp_week_of_month - week_of_month).week
+            temp_from_date -= (temp_wday - wday).day
+
+            # If month has less week than the repeated one, use the last week's day
+            # Eg: the event tend to repeat at fifth Friday of one Month by every 1 month, however,
+            # there's a month doesn't have the fifth Friday, in this case, it will use the last Friday.
+            if temp_from_date.month > temp_month
+              temp_from_date -= 1.week
+            end
+            range = (temp_from_date - from_date).day
+          else
+            return nil
+          end
         when 'Yearly'
           range = (repeated_frequency * (number - 1)).year
-        else
-          # type code here
+        else  # Repeated type error, return nil
+          nil
       end
 
       from_time += range
@@ -85,7 +147,7 @@ class Event < ActiveRecord::Base
   end
 
   # Check whether the events will happen on certain date
-  # True, than return the repeated number
+  # If so, than return the repeated number
   # Otherwise, return 0
   def get_repeated_number(date)
     from_date = self.from_time.to_date
@@ -103,7 +165,7 @@ class Event < ActiveRecord::Base
       # 1. The date should not exceed the end date of the repeated event
       # If event's event type is to end on certain date
       if self.repeated_end_type == 'Date'
-        if self.repeated_end_date < date
+        if !self.repeated_end_date.nil? && self.repeated_end_date < date
           return 0
         end
       end
@@ -224,13 +286,64 @@ class Event < ActiveRecord::Base
       # Repeated ends way
       if repeated_end_type == 'Occurrence'
         summary += ", #{repeated_times} times"
-      elsif repeated_end_type == 'Date'
+      elsif repeated_end_type == 'Date' && !repeated_end_date.nil?
         summary += ", until #{repeated_end_date.to_date}"
       end
 
       summary
     else
       'No Repeat'
+    end
+  end
+
+  def <(other)
+    self.from_time < other.from_time
+  end
+
+  def >(other)
+    self.from_time > other.from_time
+  end
+end
+
+class Repeated < Event
+  after_initialize :init
+  validates :repeated_end_type, inclusion: {in: %w(Occurrence Date Never)}
+  def init
+    self.repeated = true
+  end
+
+
+
+  def available_occurrence?(time)
+    if self.repeated_end_type == 'Never'
+      return true
+    end
+    last_occurrence = self.last_occurrence
+    if last_occurrence.nil?
+      return true
+    end
+    last_occurrence.to_date >= time.to_date
+  end
+
+  def last_occurrence
+    if self.repeated_end_type == 'Occurrence'
+      self.last_occurrence_by_times
+    else
+      self.repeated_end_date
+    end
+  end
+
+  def get_next_event(date)
+    from_time = self.from_time
+    next_occurrence = self.next_occurrence(date)
+    if next_occurrence.nil? or !self.available_occurrence?(next_occurrence)
+      nil
+    else
+      gap = next_occurrence - from_time
+      result = self.dup
+      result.from_time += gap
+      result.to_time += gap unless result.to_time.nil?
+      result
     end
   end
 end
