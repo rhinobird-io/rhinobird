@@ -67,7 +67,7 @@ RSpec.describe Event do
     end
   end
 
-  context "with monthly repeated event start from #{Date.parse('2015-10-10 8:00')}, frequency 2" do
+  context "with monthly repeated event start from #{Date.parse('2015-10-10 8:00')}, frequency 3" do
     event = Monthly.new({from_time: DateTime.parse('2015-10-10 8:00')})
     event.repeated_frequency = 3
     context 'repeated by day of month' do
@@ -121,6 +121,41 @@ RSpec.describe Event do
           expect(ev.get_next_event(Date.parse('2016-1-10')).from_time).to eq(DateTime.parse('2016-4-9 8:00'))
           expect(ev.get_next_event(Date.parse('2016-4-10')).from_time).to eq(DateTime.parse('2016-7-9 8:00'))
           expect(ev.get_next_event(Date.parse('2016-7-10'))).to be_nil
+        end
+      end
+    end
+  end
+
+  context "with yearly repeated event start from #{time}" do
+    event = Yearly.new({from_time: DateTime.parse(time)})
+    context 'with frequency 2' do
+      evt = event.dup
+      evt.repeated_frequency = 2
+      context 'with end type Occurrence, repeated times 3' do
+        e = evt.dup
+        e.repeated_end_type = 'Occurrence'
+        e.repeated_times = 3
+        it 'get next event correctly' do
+          expect(e.get_next_event(Date.parse('2015-1-1')).from_time).to eq(DateTime.parse('2015-9-9 8:00'))
+          expect(e.get_next_event(Date.parse('2015-9-9')).from_time).to eq(DateTime.parse('2015-9-9 8:00'))
+          expect(e.get_next_event(Date.parse('2015-9-10')).from_time).to eq(DateTime.parse('2017-9-9 8:00'))
+          expect(e.get_next_event(Date.parse('2016-9-2')).from_time).to eq(DateTime.parse('2017-9-9 8:00'))
+          expect(e.get_next_event(Date.parse('2017-9-13')).from_time).to eq(DateTime.parse('2019-9-9 8:00'))
+          expect(e.get_next_event(Date.parse('2019-9-16'))).to be_nil
+        end
+      end
+      context 'with end type Date, end date 2022-9-12' do
+        e = evt.dup
+        e.repeated_end_type = 'Date'
+        e.repeated_end_date = Date.parse('2022-9-12')
+        it 'get next event correctly' do
+          expect(e.get_next_event(Date.parse('2015-1-1')).from_time).to eq(DateTime.parse('2015-9-9 8:00'))
+          expect(e.get_next_event(Date.parse('2015-9-9')).from_time).to eq(DateTime.parse('2015-9-9 8:00'))
+          expect(e.get_next_event(Date.parse('2015-9-10')).from_time).to eq(DateTime.parse('2017-9-9 8:00'))
+          expect(e.get_next_event(Date.parse('2016-9-2')).from_time).to eq(DateTime.parse('2017-9-9 8:00'))
+          expect(e.get_next_event(Date.parse('2017-9-13')).from_time).to eq(DateTime.parse('2019-9-9 8:00'))
+          expect(e.get_next_event(Date.parse('2019-9-16')).from_time).to eq(DateTime.parse('2021-9-9 8:00'))
+          expect(e.get_next_event(Date.parse('2022-9-16'))).to be_nil
         end
       end
     end
