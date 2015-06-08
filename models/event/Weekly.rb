@@ -23,6 +23,6 @@ class Weekly < Repeated
   end
 
   def last_occurrence_by_times
-    self.from_time.to_date.end_of_week + ((self.repeated_times - 1) * self.repeated_frequency * 7).days
+    self.get_repeated_event(self.repeated_times).from_time
   end
 end

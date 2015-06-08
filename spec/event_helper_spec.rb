@@ -9,7 +9,7 @@ RSpec.describe EventHelper do
     events << Weekly.new({title: 'Weekly',
                          from_time: DateTime.parse('2015-9-10 8:00'),
                           repeated_on: '["Tue", "Fri"]',
-                         repeated_frequency: 2, repeated_end_type: 'Occurrence', repeated_times: 2})
+                         repeated_frequency: 2, repeated_end_type: 'Occurrence', repeated_times: 2 * 2})
     events << Monthly.new({title: 'Monthly',
                          from_time: DateTime.parse('2015-9-8 7:00'),
                          repeated_frequency: 1, repeated_end_type: 'Never', repeated_by: 'Month'})
