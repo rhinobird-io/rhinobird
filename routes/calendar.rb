@@ -17,8 +17,6 @@ class App < Sinatra::Base
     all_events.concat user.events.where('status <> ?', Event.statuses[:trashed])
 
     teams.each { |t| all_events.concat t.events.where('status <> ?', Event.statuses[:trashed])}
-
-    pq = PQueue.new{|a, b| a.from_time > b.from_time}
   end
 
   namespace '/api' do
