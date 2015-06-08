@@ -1,7 +1,6 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    PriorityQueue (0.1.2)
     activemodel (4.2.0)
       activesupport (= 4.2.0)
       builder (~> 3.1)
@@ -15,6 +14,7 @@ GEM
       minitest (~> 5.1)
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
+    algorithms (0.6.1)
     arel (6.0.0)
     backports (3.6.4)
     bcrypt (3.1.10)
@@ -140,8 +140,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  PriorityQueue (~> 0.1.2)
   activerecord
+  algorithms
   bcrypt
   elasticsearch-model
   elasticsearch-rails
