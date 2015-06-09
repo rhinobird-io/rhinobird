@@ -1,24 +1,6 @@
 # encoding: utf-8
 
 class App < Sinatra::Base
-  def first_instance_after_date(event, date)
-    from_date = event.from_time.to_date
-    if event.repeated
-    else
-      nil if from_date < date
-
-    end
-  end
-
-  def get_events_after_date(user, date, count)
-    all_events = []
-    teams = user.get_all_teams
-
-    all_events.concat user.events.where('status <> ?', Event.statuses[:trashed])
-
-    teams.each { |t| all_events.concat t.events.where('status <> ?', Event.statuses[:trashed])}
-  end
-
   namespace '/api' do
     get '/events' do
       today = Date.today
@@ -35,38 +17,11 @@ class App < Sinatra::Base
       }
 
       result = EventHelper.next_n_events(all_events, today, 10)
-      # today_or_after_events = Array.new
-      # old_events = Array.new
-      #
-      # all_events.each { |e|
-      #   e.repeated_number = 1
-      #
-      #   repeated_number = e.get_repeated_number(today)
-      #
-      #   next if e.repeated && e.repeated_exclusion.include?(repeated_number)
-      #
-      #   if e.repeated && e.from_time.to_date != today && repeated_number > 0
-      #     day_diff = DateHelper.day_diff(today, e.from_time.to_date)
-      #     new_event = Marshal::load(Marshal.dump(e))
-      #     new_event.from_time = e.from_time + day_diff.days
-      #     new_event.to_time = e.to_time + day_diff.days
-      #     new_event.repeated_number = repeated_number
-      #     today_or_after_events.push(new_event)
-      #     #today_or_after_events.push(e)
-      #   elsif e.from_time.to_date >= today
-      #     today_or_after_events.push(e)
-      #   elsif e.from_time.to_date < today
-      #     old_events.push(e)
-      #   end
-      # }
-      #
-      # result = Array.new
-      # if today_or_after_events.length >= 10
-      #   result.concat today_or_after_events.sort! { |a, b| a.from_time <=> b.from_time }.first(10)
-      # else
-      #   result.concat old_events.sort! { |a, b| a.from_time <=> b.from_time }.last(10 - today_or_after_events.length)
-      #   result.concat today_or_after_events
-      # end
+
+      puts "Results: #{result.length}"
+      if result.length < 10
+        result.concat EventHelper.previous_n_events(all_events, today, 10 - result.length)
+      end
 
       result.to_json(
           json: Event,
@@ -81,15 +36,16 @@ class App < Sinatra::Base
       user = User.find(@userid)
 
       events = Array.new
-      events.concat user.events.where('from_time > ? and status <> ?', from, Event.statuses[:trashed])
-
-      teams = user.get_all_teams
-
-      teams.each { |t|
-        events.concat t.events.where('from_time > ? and status <> ?', from, Event.statuses[:trashed])
-      }
-
-      events.each { |e| e.repeated_number = 1 }
+      #
+      # events.concat user.events.where('from_time > ? and status <> ?', from, Event.statuses[:trashed])
+      #
+      # teams = user.get_all_teams
+      #
+      # teams.each { |t|
+      #   events.concat t.events.where('from_time > ? and status <> ?', from, Event.statuses[:trashed])
+      # }
+      #
+      # events.each { |e| e.repeated_number = 1 }
 
       events.sort! { |a, b| a.from_time <=> b.from_time }.
           first(5).
@@ -114,12 +70,12 @@ class App < Sinatra::Base
       }
 
       results = Array.new
-      events.each { |e|
-        if e.from_time < from
-          e.repeated_number = 1
-          results.push(e)
-        end
-      }
+      # events.each { |e|
+      #   if e.from_time < from
+      #     e.repeated_number = 1
+      #     results.push(e)
+      #   end
+      # }
 
       results.sort! { |a, b| a.from_time <=> b.from_time }.
           first(5).

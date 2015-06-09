@@ -55,7 +55,7 @@ class Event < ActiveRecord::Base
   # Get the $(repeated_number)th event of a repeated one
   def get_repeated_event(repeated_number)
     origin_repeated_number = self.repeated_number.nil? ? 1 : self.repeated_number
-    puts "Origin = #{origin_repeated_number}"
+    # puts "Origin = #{origin_repeated_number}"
     number = repeated_number.to_i - origin_repeated_number + 1
 
     if self.repeated && number > 0
@@ -259,12 +259,12 @@ class Event < ActiveRecord::Base
           repeated_number += (range_after / self.repeated_frequency).floor * weekly_repeat_count + gap
         end
 
-        puts "#{from_date}"
-        puts "#{date}"
-        puts "range_after = #{range_after}"
-        puts "Repeated Number = #{repeated_number}"
-        puts "weekly_repeat_count = #{weekly_repeat_count}"
-        puts "Gap = #{gap}"
+        # puts "#{from_date}"
+        # puts "#{date}"
+        # puts "range_after = #{range_after}"
+        # puts "Repeated Number = #{repeated_number}"
+        # puts "weekly_repeat_count = #{weekly_repeat_count}"
+        # puts "Gap = #{gap}"
       else
         repeated_number += (range_after / self.repeated_frequency).floor + 1
       end
@@ -392,9 +392,12 @@ class Repeated < Event
       result.repeated_number = result.get_repeated_number(next_occurrence.to_date)
       result.from_time += gap
       result.to_time += gap unless result.to_time.nil?
-      puts result.repeated_type
       result
     end
+  end
+
+  def self.get_events_by_date(date)
+
   end
 end
 
