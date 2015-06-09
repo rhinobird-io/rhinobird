@@ -55,18 +55,20 @@ class Event < ActiveRecord::Base
   # Get the $(repeated_number)th event of a repeated one
   def get_repeated_event(repeated_number)
     origin_repeated_number = self.repeated_number.nil? ? 1 : self.repeated_number
-    # puts "Origin = #{origin_repeated_number}"
-    number = repeated_number.to_i - origin_repeated_number + 1
+    number = repeated_number.to_i - origin_repeated_number
 
-    if self.repeated && number > 0
+    puts "#{self.title}: #{self.repeated_number} #{repeated_number}"
+    puts self.from_time.to_date
+    puts number
+    if self.repeated
       result = Marshal::load(Marshal.dump(self))
+      #
+      # if repeated_end_type == 'Occurrence' && repeated_number > self.repeated_times
+      #   return nil
+      # end
+
       result.repeated_number = repeated_number
-
       repeated_end_type = result.repeated_end_type
-
-      if repeated_end_type == 'Occurrence' && number > self.repeated_times
-        return nil
-      end
 
       repeated_frequency = self.repeated_frequency
 
@@ -77,7 +79,7 @@ class Event < ActiveRecord::Base
       range = 0
       case self.repeated_type
         when 'Daily'
-          range = (repeated_frequency * (number - 1)).day
+          range = (repeated_frequency * number).day
         when 'Weekly'
           wday_hash = {'Sun' => 0, 'Mon' => 1, 'Tue' => 2, 'Wed' => 3, 'Thu' => 4, 'Fri' => 5, 'Sat' => 6};
           repeated_on = JSON.parse(self.repeated_on)
@@ -88,8 +90,13 @@ class Event < ActiveRecord::Base
           # Start day's week day
           wday = from_date.wday
 
-          next_week_number = (number.to_f / repeated_on.length).ceil
-          left_days = number - (next_week_number - 1) * repeated_on.length
+          if number >= 0
+            next_week_number = (number.to_f / repeated_on.length).ceil
+          else
+            next_week_number = (number.to_f / repeated_on.length).floor
+          end
+
+          left_days = number - next_week_number * repeated_on.length
           next_wday = wday
 
           ((wday)..(wday + 6)).each { |i|
@@ -102,12 +109,14 @@ class Event < ActiveRecord::Base
             end
           }
 
-          range = (repeated_frequency * (next_week_number - 1)).week + (next_wday - wday).day
+          gap = (next_wday - wday).abs
+
+          range = (repeated_frequency * next_week_number).week + gap.day
         when 'Monthly'
           if self.repeated_by == 'Month'    # Monthly repeat by day of month
-            range = (repeated_frequency * (number - 1)).month
+            range = (repeated_frequency * number - 1).month
           elsif self.repeated_by == 'Week'  # Monthly repeat by day of week
-            temp_from_date = from_date + (repeated_frequency * (number - 1)).month
+            temp_from_date = from_date + (repeated_frequency * number - 1).month
             temp_month = temp_from_date.month
 
             week_of_month = from_date.week_of_month
@@ -130,7 +139,7 @@ class Event < ActiveRecord::Base
             return nil
           end
         when 'Yearly'
-          range = (repeated_frequency * (number - 1)).year
+          range = (repeated_frequency * number).year
         else  # Repeated type error, return nil
           nil
       end
@@ -159,7 +168,7 @@ class Event < ActiveRecord::Base
     from_date = self.from_time.to_date
 
     if !self.repeated
-      0
+      1
     else
       # When the event is repeated
       if date < from_date
@@ -251,20 +260,12 @@ class Event < ActiveRecord::Base
         if from_date.wday > date.wday
           gap -= weekly_repeat_count
         end
-        # puts "Repeated Previous: #{repeated_number}"
-        # puts "repeated_frequency: #{repeated_frequency}"
+
         if repeated_number > 0
           repeated_number += (range_after / self.repeated_frequency).floor * weekly_repeat_count + gap - 1
         else
           repeated_number += (range_after / self.repeated_frequency).floor * weekly_repeat_count + gap
         end
-
-        # puts "#{from_date}"
-        # puts "#{date}"
-        # puts "range_after = #{range_after}"
-        # puts "Repeated Number = #{repeated_number}"
-        # puts "weekly_repeat_count = #{weekly_repeat_count}"
-        # puts "Gap = #{gap}"
       else
         repeated_number += (range_after / self.repeated_frequency).floor + 1
       end
@@ -366,11 +367,22 @@ class Repeated < Event
     if self.repeated_end_type == 'Never'
       return true
     end
+
+    first_occurrence = self.first_occurrence
+
+    if first_occurrence.nil? || first_occurrence > time
+      return false
+    end
+
     last_occurrence = self.last_occurrence
     if last_occurrence.nil?
       return true
     end
     last_occurrence.to_date >= time.to_date
+  end
+
+  def first_occurrence
+    self.get_occurrence(1)
   end
 
   def last_occurrence
@@ -396,8 +408,20 @@ class Repeated < Event
     end
   end
 
-  def self.get_events_by_date(date)
-
+  def get_previous_event(date)
+    from_time = self.from_time
+    previous_occurrence = self.previous_occurrence(date)
+    # puts previous_occurrence
+    if previous_occurrence.nil? or !self.available_occurrence?(previous_occurrence)
+      nil
+    else
+      gap = previous_occurrence - from_time
+      result = Marshal::load(Marshal.dump(self))
+      result.repeated_number = result.get_repeated_number(previous_occurrence.to_date)
+      result.from_time += gap
+      result.to_time += gap unless result.to_time.nil?
+      result
+    end
   end
 end
 
