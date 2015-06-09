@@ -1,26 +1,19 @@
 # encoding: utf-8
 
 class App < Sinatra::Base
+
   namespace '/api' do
     get '/events' do
       today = Date.today
 
       user = User.find(@userid)
-
-      all_events = Array.new
-      all_events.concat user.events.where('status <> ?', Event.statuses[:trashed])
-
-      teams = user.get_all_teams
-
-      teams.each { |t|
-        all_events.concat t.events.where('status <> ?', Event.statuses[:trashed])
-      }
+      all_events = user.get_all_not_trashed_events
 
       result = EventHelper.next_n_events(all_events, today, 10)
 
       puts "Results: #{result.length}"
       if result.length < 10
-        result.concat EventHelper.previous_n_events(all_events, today, 10 - result.length)
+        result.concat EventHelper.previous_n_events(all_events, today - 1, 10 - result.length)
       end
 
       result.to_json(
@@ -34,20 +27,11 @@ class App < Sinatra::Base
       from = DateTime.parse(params[:from_time])
 
       user = User.find(@userid)
+      all_events = user.get_all_not_trashed_events
 
-      events = Array.new
-      #
-      # events.concat user.events.where('from_time > ? and status <> ?', from, Event.statuses[:trashed])
-      #
-      # teams = user.get_all_teams
-      #
-      # teams.each { |t|
-      #   events.concat t.events.where('from_time > ? and status <> ?', from, Event.statuses[:trashed])
-      # }
-      #
-      # events.each { |e| e.repeated_number = 1 }
+      result = EventHelper.next_n_events(all_events, from.to_date + 1, 5)
 
-      events.sort! { |a, b| a.from_time <=> b.from_time }.
+      result.sort! { |a, b| a.from_time <=> b.from_time }.
           first(5).
           to_json(
             json: Event,
@@ -59,30 +43,16 @@ class App < Sinatra::Base
       from = DateTime.parse(params[:from_time])
 
       user = User.find(@userid)
+      all_events = user.get_all_not_trashed_events
 
-      events = Array.new
-      events.concat user.events.where('from_time < ? and status <> ?', from, Event.statuses[:trashed])
+      result = EventHelper.previous_n_events(all_events, from.to_date - 1, 5)
 
-      teams = user.get_all_teams
-
-      teams.each { |t|
-        events.concat t.events.where('from_time < ? and status <> ?', from, Event.statuses[:trashed])
-      }
-
-      results = Array.new
-      # events.each { |e|
-      #   if e.from_time < from
-      #     e.repeated_number = 1
-      #     results.push(e)
-      #   end
-      # }
-
-      results.sort! { |a, b| a.from_time <=> b.from_time }.
+      result.sort! { |a, b| a.from_time <=> b.from_time }.
           first(5).
           to_json(
-            json: Event,
-            methods: [:repeated_number],
-            include: {participants: {only: :id}, team_participants: {only: :id}})
+              json: Event,
+              methods: [:repeated_number],
+              include: {participants: {only: :id}, team_participants: {only: :id}})
     end
 
     get '/events/:eventId/:repeatedNumber' do

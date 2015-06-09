@@ -22,6 +22,10 @@ class User < ActiveRecord::Base
     (self.teams + self.teams.map{|t| t.get_all_parent_teams}.flatten).uniq
   end
 
+  def get_all_not_trashed_events
+    (self.events.where('status <> ?', Event.statuses[:trashed]) + self.get_all_teams.map { |t| t.events.where('status <> ?', Event.statuses[:trashed]) }.flatten).uniq
+  end
+
   def password
     @password ||= Password.new(encrypted_password)
   end
