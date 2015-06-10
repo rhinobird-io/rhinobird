@@ -72,7 +72,11 @@ RSpec.describe Event do
 
       last = evt.get_next_event(Date.parse('2015-9-23'))
       it 'get previous event before certain date correctly' do
-        expect(last.get_previous_event(Date.parse('2015-9-26')).from_time).to eq(DateTime.parse('2015-9-25 8:00'))
+        expect(last.get_previous_event(Date.parse('2015-9-28')).from_time).to eq(DateTime.parse('2015-9-25 8:00'))
+        expect(last.get_previous_event(Date.parse('2015-9-25')).from_time).to eq(DateTime.parse('2015-9-25 8:00'))
+        expect(last.get_previous_event(Date.parse('2015-9-23')).from_time).to eq(DateTime.parse('2015-9-22 8:00'))
+        expect(last.get_previous_event(Date.parse('2015-9-12')).from_time).to eq(DateTime.parse('2015-9-11 8:00'))
+        expect(last.get_previous_event(Date.parse('2015-9-9'))).to be_nil
       end
     end
     context "with end type Date, end date #{Date.parse('2015-9-24')}" do
