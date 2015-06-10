@@ -412,11 +412,18 @@ class Repeated < Event
     result.repeated_number = repeated_number + 1
     result.from_time += gap
     result.to_time += gap unless result.to_time.nil?
-    result
+    if result.available_occurrence?(result.from_time)
+      result
+    else
+      nil
+    end
   end
 
   def get_previous_occurrence
     repeated_number = self.repeated_number.nil? ? 1 : self.repeated_number
+    if repeated_number <= 1
+      return nil
+    end
     previous_occurrence = self.get_occurrence(repeated_number - 1)
 
     gap = previous_occurrence - self.from_time
@@ -445,7 +452,7 @@ class Repeated < Event
   def get_previous_event(date)
     from_time = self.from_time
     previous_occurrence = self.previous_occurrence(date)
-    puts "Previous: #{previous_occurrence}"
+
     if previous_occurrence.nil? or !self.available_occurrence?(previous_occurrence)
       nil
     else
