@@ -76,7 +76,7 @@ class Event < ActiveRecord::Base
 
       repeated_end_type = result.repeated_end_type
 
-      if repeated_end_type == 'Occurrence' && repeated_number > self.repeated_times
+      if repeated_end_type == 'Occurrence' && repeated_number.to_i > self.repeated_times
         return nil
       end
 
@@ -388,7 +388,7 @@ class Repeated < Event
     if last_occurrence.nil?
       return true
     end
-    last_occurrence.to_date >= time.to_date
+    last_occurrence >= time
   end
 
   def first_occurrence

@@ -29,7 +29,7 @@ class App < Sinatra::Base
       user = User.find(@userid)
       all_events = user.get_all_not_trashed_events
 
-      result = EventHelper.next_n_events(all_events, from.to_date + 1, 5)
+      result = EventHelper.next_n_events(all_events, from.to_date, 5, from)
 
       result.sort! { |a, b| a.from_time <=> b.from_time }.
           first(5).
@@ -45,7 +45,7 @@ class App < Sinatra::Base
       user = User.find(@userid)
       all_events = user.get_all_not_trashed_events
 
-      result = EventHelper.previous_n_events(all_events, from.to_date - 1, 5)
+      result = EventHelper.previous_n_events(all_events, from.to_date, 5, from)
 
       result.sort! { |a, b| a.from_time <=> b.from_time }.
           first(5).

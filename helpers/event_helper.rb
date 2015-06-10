@@ -1,7 +1,7 @@
 require 'algorithms'
 
 module EventHelper
-  def self.next_n_events(events, date, num)
+  def self.next_n_events(events, date, num, min_datetime = nil)
     result = []
     pq = Containers::PriorityQueue.new{ |x, y| (x <=> y) == -1 }
     events.each do |evt|
@@ -15,17 +15,20 @@ module EventHelper
       if evt.nil?
         return result
       else
-        result << evt
-        next_event = evt.get_next_occurrence
-        unless next_event.nil?
-          pq.push(next_event, next_event.from_time)
+        if min_datetime.nil? || min_datetime <= evt.from_time
+          result << evt
+          next_event = evt.get_next_occurrence
+          unless next_event.nil?
+            pq.push(next_event, next_event.from_time)
+          end
         end
+
       end
     end
     result
   end
 
-  def self.previous_n_events(events, date, num)
+  def self.previous_n_events(events, date, num, max_datetime = nil)
     result = []
     pq = Containers::PriorityQueue.new{ |x, y| (x <=> y) == 1 }
     events.each do |evt|
@@ -39,10 +42,12 @@ module EventHelper
       if evt.nil?
         return result
       else
-        result << evt
-        previous_event = evt.get_previous_occurrence
-        unless previous_event.nil?
-          pq.push(previous_event, previous_event.from_time)
+        if max_datetime.nil? || max_datetime >= evt.from_time
+          result << evt
+          previous_event = evt.get_previous_occurrence
+          unless previous_event.nil?
+            pq.push(previous_event, previous_event.from_time)
+          end
         end
       end
     end
