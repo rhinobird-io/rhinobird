@@ -15,7 +15,7 @@ module EventHelper
       if evt.nil?
         return result
       else
-        if min_datetime.nil? || min_datetime <= evt.from_time
+        if min_datetime.nil? or min_datetime < evt.from_time
           result << evt
           next_event = evt.get_next_occurrence
           unless next_event.nil?
@@ -42,7 +42,7 @@ module EventHelper
       if evt.nil?
         return result
       else
-        if max_datetime.nil? || max_datetime >= evt.from_time
+        if max_datetime.nil? or max_datetime > evt.from_time
           result << evt
           previous_event = evt.get_previous_occurrence
           unless previous_event.nil?

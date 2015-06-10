@@ -11,7 +11,6 @@ class App < Sinatra::Base
 
       result = EventHelper.next_n_events(all_events, today, 10)
 
-      puts "Results: #{result.length}"
       if result.length < 10
         result.concat EventHelper.previous_n_events(all_events, today - 1, 10 - result.length)
       end
@@ -28,12 +27,9 @@ class App < Sinatra::Base
 
       user = User.find(@userid)
       all_events = user.get_all_not_trashed_events
-
       result = EventHelper.next_n_events(all_events, from.to_date, 5, from)
 
-      result.sort! { |a, b| a.from_time <=> b.from_time }.
-          first(5).
-          to_json(
+      result.to_json(
             json: Event,
             methods: [:repeated_number],
             include: {participants: {only: :id}, team_participants: {only: :id}})
