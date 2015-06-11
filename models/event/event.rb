@@ -388,7 +388,11 @@ class Repeated < Event
     if last_occurrence.nil?
       return true
     end
-    last_occurrence >= time
+    if self.repeated_end_type == 'Date'
+      last_occurrence.to_date >= time.to_date
+    else
+      last_occurrence >= time
+    end
   end
 
   def first_occurrence
