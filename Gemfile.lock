@@ -14,11 +14,13 @@ GEM
       minitest (~> 5.1)
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
+    algorithms (0.6.1)
     arel (6.0.0)
     backports (3.6.4)
     bcrypt (3.1.10)
     builder (3.2.2)
     daemons (1.1.9)
+    diff-lcs (1.2.5)
     elasticsearch (1.0.9)
       elasticsearch-api (= 1.0.9)
       elasticsearch-transport (= 1.0.9)
@@ -68,6 +70,8 @@ GEM
     redis (3.2.1)
     redis-namespace (1.5.2)
       redis (~> 3.0, >= 3.0.4)
+    respec (0.8.2)
+      rspec (>= 2.11)
     resque (1.25.2)
       mono_logger (~> 1.0)
       multi_json (~> 1.0)
@@ -77,6 +81,19 @@ GEM
     rest-client (1.7.2)
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
+    rspec (3.2.0)
+      rspec-core (~> 3.2.0)
+      rspec-expectations (~> 3.2.0)
+      rspec-mocks (~> 3.2.0)
+    rspec-core (3.2.3)
+      rspec-support (~> 3.2.0)
+    rspec-expectations (3.2.1)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.2.0)
+    rspec-mocks (3.2.1)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.2.0)
+    rspec-support (3.2.2)
     rubyzip (1.1.6)
     rufus-scheduler (3.0.9)
       tzinfo
@@ -124,6 +141,7 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord
+  algorithms
   bcrypt
   elasticsearch-model
   elasticsearch-rails
@@ -133,6 +151,7 @@ DEPENDENCIES
   pg
   pony
   rake
+  respec
   resque
   rest-client
   rubyzip
