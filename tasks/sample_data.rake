@@ -95,7 +95,7 @@ namespace :db do
                     })
     end
 
-    # Daily repeated events, ends after several occurences
+    # Daily repeated events, ends after several occurrences
     3.times do
       Event.create!({
                         title: Faker::Lorem.sentence,
@@ -107,7 +107,7 @@ namespace :db do
                         repeated: true,
                         repeated_type: 'Daily',
                         repeated_frequency: Faker::Number.number(1).to_i  + 1,
-                        repeated_end_type: 'Occurence',
+                        repeated_end_type: 'Occurrence',
                         repeated_times: Faker::Number.number(2).to_i 
                     })
     end
@@ -142,7 +142,7 @@ namespace :db do
                         repeated_type: 'Weekly',
                         repeated_on: '["Sun", "Mon", "Fri"]',
                         repeated_frequency: Faker::Number.number(1).to_i  + 1,
-                        repeated_end_type: 'Occurence',
+                        repeated_end_type: 'Occurrence',
                         repeated_times: Faker::Number.number(2).to_i 
                     })
     end
