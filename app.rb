@@ -113,7 +113,7 @@ class App < Sinatra::Base
     scheduler = Rufus::Scheduler.new
 
     # Check events that are not full day.
-    scheduler.every '5s' do
+    scheduler.every '500s' do
       puts 'Scheduler'
       now = DateTime.now
       half_an_hour = 30.minute
