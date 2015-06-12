@@ -16,11 +16,7 @@ class Daily < Repeated
 
   def get_occurrence(number)
     repeated_number = self.repeated_number.nil? ? 1 : self.repeated_number
-    if number <= 0
-      nil
-    else
-      self.from_time + ((number - repeated_number) * self.repeated_frequency).days
-    end
+    self.from_time + ((number - repeated_number) * self.repeated_frequency).days
   end
 
   def last_occurrence_by_times

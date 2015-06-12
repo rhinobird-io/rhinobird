@@ -95,7 +95,7 @@ RSpec.describe Event do
   end
 
   context "with monthly repeated event start from #{Date.parse('2015-10-10 8:00')}, frequency 3" do
-    event = Monthly.new({from_time: DateTime.parse('2015-10-10 8:00')})
+    event = Monthly.new({from_time: Time.parse('2015-10-10 8:00')})
     event.repeated_frequency = 3
     context 'repeated by day of month' do
       evt = event.dup
@@ -105,22 +105,22 @@ RSpec.describe Event do
         ev.repeated_end_type = 'Occurrence'
         ev.repeated_times = 3
         it 'get next event correctly' do
-          expect(ev.get_next_event(Date.parse('2015-6-9')).from_time).to eq(DateTime.parse('2015-10-10 8:00'))
-          expect(ev.get_next_event(Date.parse('2015-10-10')).from_time).to eq(DateTime.parse('2015-10-10 8:00'))
-          expect(ev.get_next_event(Date.parse('2015-10-11')).from_time).to eq(DateTime.parse('2016-1-10 8:00'))
-          expect(ev.get_next_event(Date.parse('2015-10-20')).from_time).to eq(DateTime.parse('2016-1-10 8:00'))
-          expect(ev.get_next_event(Date.parse('2016-1-11')).from_time).to eq(DateTime.parse('2016-4-10 8:00'))
+          expect(ev.get_next_event(Date.parse('2015-6-9')).from_time).to eq(Time.parse('2015-10-10 8:00'))
+          expect(ev.get_next_event(Date.parse('2015-10-10')).from_time).to eq(Time.parse('2015-10-10 8:00'))
+          expect(ev.get_next_event(Date.parse('2015-10-11')).from_time).to eq(Time.parse('2016-1-10 8:00'))
+          expect(ev.get_next_event(Date.parse('2015-10-20')).from_time).to eq(Time.parse('2016-1-10 8:00'))
+          expect(ev.get_next_event(Date.parse('2016-1-11')).from_time).to eq(Time.parse('2016-4-10 8:00'))
           expect(ev.get_next_event(Date.parse('2016-4-11'))).to be_nil
         end
 
         last = ev.get_next_event(Date.parse('2016-1-11'))
         it 'get previous event before certain date correctly' do
-          expect(last.get_previous_event(Date.parse('2016-4-11')).from_time).to eq(DateTime.parse('2016-4-10 8:00'))
-          expect(last.get_previous_event(Date.parse('2016-4-10')).from_time).to eq(DateTime.parse('2016-4-10 8:00'))
-          expect(last.get_previous_event(Date.parse('2016-4-9')).from_time).to eq(DateTime.parse('2016-1-10 8:00'))
-          expect(last.get_previous_event(Date.parse('2016-2-9')).from_time).to eq(DateTime.parse('2016-1-10 8:00'))
-          expect(last.get_previous_event(Date.parse('2016-1-9')).from_time).to eq(DateTime.parse('2015-10-10 8:00'))
-          expect(last.get_previous_event(Date.parse('2015-12-10')).from_time).to eq(DateTime.parse('2015-10-10 8:00'))
+          expect(last.get_previous_event(Date.parse('2016-4-11')).from_time).to eq(Time.parse('2016-4-10 8:00'))
+          expect(last.get_previous_event(Date.parse('2016-4-10')).from_time).to eq(Time.parse('2016-4-10 8:00'))
+          expect(last.get_previous_event(Date.parse('2016-4-9')).from_time).to eq(Time.parse('2016-1-10 8:00'))
+          expect(last.get_previous_event(Date.parse('2016-2-9')).from_time).to eq(Time.parse('2016-1-10 8:00'))
+          expect(last.get_previous_event(Date.parse('2016-1-9')).from_time).to eq(Time.parse('2015-10-10 8:00'))
+          expect(last.get_previous_event(Date.parse('2015-12-10')).from_time).to eq(Time.parse('2015-10-10 8:00'))
           expect(last.get_previous_event(Date.parse('2015-10-9'))).to be_nil
         end
       end
@@ -129,7 +129,7 @@ RSpec.describe Event do
         ev.repeated_end_type = 'Date'
         ev.repeated_end_date = Date.parse('2015-12-24')
         it 'get next event correctly' do
-          expect(ev.get_next_event(Date.parse('2015-6-10')).from_time).to eq(DateTime.parse('2015-10-10 8:00'))
+          expect(ev.get_next_event(Date.parse('2015-6-10')).from_time).to eq(Time.parse('2015-10-10 8:00'))
           expect(ev.get_next_event(Date.parse('2015-10-20'))).to be_nil
         end
       end
@@ -143,9 +143,9 @@ RSpec.describe Event do
         ev.repeated_end_type = 'Occurrence'
         ev.repeated_times = 3
         it 'get next event correctly' do
-          expect(ev.get_next_event(Date.parse('2015-2-8')).from_time).to eq(DateTime.parse('2015-10-10 8:00'))
-          expect(ev.get_next_event(Date.parse('2015-11-9')).from_time).to eq(DateTime.parse('2016-1-9 8:00'))
-          expect(ev.get_next_event(Date.parse('2016-1-10')).from_time).to eq(DateTime.parse('2016-4-9 8:00'))
+          expect(ev.get_next_event(Date.parse('2015-2-8')).from_time).to eq(Time.parse('2015-10-10 8:00'))
+          expect(ev.get_next_event(Date.parse('2015-11-9')).from_time).to eq(Time.parse('2016-1-9 8:00'))
+          expect(ev.get_next_event(Date.parse('2016-1-10')).from_time).to eq(Time.parse('2016-4-9 8:00'))
           expect(ev.get_next_event(Date.parse('2016-4-10'))).to be_nil
         end
       end
@@ -154,10 +154,10 @@ RSpec.describe Event do
         ev.repeated_end_type = 'Date'
         ev.repeated_end_date = Date.parse('2016-8-24')
         it 'get next event correctly' do
-          expect(ev.get_next_event(Date.parse('2015-2-8')).from_time).to eq(DateTime.parse('2015-10-10 8:00'))
-          expect(ev.get_next_event(Date.parse('2015-11-9')).from_time).to eq(DateTime.parse('2016-1-9 8:00'))
-          expect(ev.get_next_event(Date.parse('2016-1-10')).from_time).to eq(DateTime.parse('2016-4-9 8:00'))
-          expect(ev.get_next_event(Date.parse('2016-4-10')).from_time).to eq(DateTime.parse('2016-7-9 8:00'))
+          expect(ev.get_next_event(Date.parse('2015-2-8')).from_time).to eq(Time.parse('2015-10-10 8:00'))
+          expect(ev.get_next_event(Date.parse('2015-11-9')).from_time).to eq(Time.parse('2016-1-9 8:00'))
+          expect(ev.get_next_event(Date.parse('2016-1-10')).from_time).to eq(Time.parse('2016-4-9 8:00'))
+          expect(ev.get_next_event(Date.parse('2016-4-10')).from_time).to eq(Time.parse('2016-7-9 8:00'))
           expect(ev.get_next_event(Date.parse('2016-7-10'))).to be_nil
         end
       end
