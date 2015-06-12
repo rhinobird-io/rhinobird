@@ -10,19 +10,25 @@ module EventHelper
         pq.push(next_event, next_event.from_time)
       end
     end
-    num.times do
+
+    count = 0
+    until pq.empty? do
       evt = pq.pop
       if evt.nil?
         return result
       else
-        if min_datetime.nil? or min_datetime < evt.from_time
+        if min_datetime.nil? or evt.from_time > min_datetime
+          count += 1
           result << evt
-          next_event = evt.get_next_occurrence
-          unless next_event.nil?
-            pq.push(next_event, next_event.from_time)
-          end
         end
 
+        next_event = evt.get_next_occurrence
+        unless next_event.nil?
+          pq.push(next_event, next_event.from_time)
+        end
+      end
+      if count >= num
+        break
       end
     end
     result
@@ -37,20 +43,29 @@ module EventHelper
         pq.push(previous_event, previous_event.from_time)
       end
     end
-    num.times do
+
+    count = 0
+    until pq.empty? do
       evt = pq.pop
       if evt.nil?
         return result
       else
         if max_datetime.nil? or max_datetime > evt.from_time
+          count += 1
+          puts evt.from_time
           result << evt
-          previous_event = evt.get_previous_occurrence
-          unless previous_event.nil?
-            pq.push(previous_event, previous_event.from_time)
-          end
+        end
+
+        previous_event = evt.get_previous_occurrence
+        unless previous_event.nil?
+          pq.push(previous_event, previous_event.from_time)
         end
       end
+      if count >= num
+        break
+      end
     end
+    puts result
     result
   end
 end

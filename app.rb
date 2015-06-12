@@ -124,11 +124,9 @@ class App < Sinatra::Base
 
       repeated_events.each { |e|
         repeated_number = e.get_repeated_number(Date.today)
-        re = e.get_repeated_event(repeated_number)
-
+        re = e.get_event_by_repeated_number(repeated_number.to_i)
         if !re.nil? && re.from_time.to_datetime >= now && re.from_time.to_datetime <= half_an_hour_later
-          e.repeated_number = repeated_number
-          events.push(e)
+          events.push(re)
         end
       }
 

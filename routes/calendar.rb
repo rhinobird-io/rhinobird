@@ -60,7 +60,7 @@ class App < Sinatra::Base
         if e.nil? || e.status == 'trashed'
           404
         elsif e.repeated
-          event = e.get_repeated_event(params[:repeatedNumber])
+          event = e.get_event_by_repeated_number(params[:repeatedNumber].to_i)
 
           if event.nil? || event.repeated_exclusion.include?(params[:repeatedNumber].to_i)
             return 404
@@ -230,7 +230,7 @@ class App < Sinatra::Base
           event.save!
 
           if event.repeated && !repeated_number.nil?
-            event = event.get_repeated_event(repeated_number.to_i)
+            event = event.get_event_by_repeated_number(repeated_number.to_i)
           else
             event.repeated_number = 1
           end

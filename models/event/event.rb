@@ -375,13 +375,13 @@ class Repeated < Event
   end
 
   def available_occurrence?(time)
-    if self.repeated_end_type == 'Never'
-      return true
-    end
-
     first_occurrence = self.first_occurrence
     if first_occurrence.nil? || first_occurrence > time
       return false
+    end
+
+    if self.repeated_end_type == 'Never'
+      return true
     end
 
     last_occurrence = self.last_occurrence
@@ -429,13 +429,31 @@ class Repeated < Event
       return nil
     end
     previous_occurrence = self.get_occurrence(repeated_number - 1)
-
     gap = previous_occurrence - self.from_time
     result = Marshal::load(Marshal.dump(self))
     result.repeated_number = repeated_number - 1
     result.from_time += gap
     result.to_time += gap unless result.to_time.nil?
     result
+  end
+
+  def get_event_by_repeated_number(repeated_number)
+    occurrence = self.get_occurrence(repeated_number)
+
+    if occurrence.nil?
+      return nil
+    end
+
+    gap = occurrence - self.from_time
+    result = Marshal::load(Marshal.dump(self))
+    result.repeated_number = repeated_number
+    result.from_time += gap
+    result.to_time += gap unless result.to_time.nil?
+    if result.available_occurrence?(result.from_time)
+      result
+    else
+      nil
+    end
   end
 
   def get_next_event(date)
@@ -458,6 +476,7 @@ class Repeated < Event
     previous_occurrence = self.previous_occurrence(date)
 
     if previous_occurrence.nil? or !self.available_occurrence?(previous_occurrence)
+      puts "Previous: #{previous_occurrence}"
       nil
     else
       gap = previous_occurrence - from_time
