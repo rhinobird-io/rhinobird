@@ -113,7 +113,7 @@ class App < Sinatra::Base
     scheduler = Rufus::Scheduler.new
 
     # Check events that are not full day.
-    scheduler.every '500s' do
+    scheduler.every '30s' do
       puts 'Scheduler'
       now = DateTime.now
       half_an_hour = 30.minute
@@ -125,10 +125,8 @@ class App < Sinatra::Base
       repeated_events.each { |e|
         repeated_number = e.get_repeated_number(Date.today)
         re = e.get_event_by_repeated_number(repeated_number.to_i)
-
         if !re.nil? && re.from_time.to_datetime >= now && re.from_time.to_datetime <= half_an_hour_later
-          e.repeated_number = repeated_number
-          events.push(e)
+          events.push(re)
         end
       }
 
