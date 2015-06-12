@@ -11,19 +11,19 @@ class Monthly < Repeated
       elsif direction < 0 && gap <= 0 and date.day < from_time.day and gap % self.repeated_frequency == 0
         quotient -= 1
       end
-      from_time >> (quotient * self.repeated_frequency)
+      (from_time.to_datetime >> (quotient * self.repeated_frequency)).to_time
     elsif self.repeated_by == 'Week'  # Monthly repeat by day of week
       wday = from_time.wday
       weekdays = from_time.week_split.map{|d| d[wday]}.compact
       idx = weekdays.find_index{|d| d == from_time.day}
-      current_weekdays = (from_time >> (quotient * self.repeated_frequency)).week_split.map{|d| d[wday]}.compact
+      current_weekdays = (from_time.to_datetime >> (quotient * self.repeated_frequency)).week_split.map{|d| d[wday]}.compact
       target_day = current_weekdays[idx] || current_weekdays.last
       if gap >= 0 and gap % self.repeated_frequency == 0 and target_day < date.day
         quotient += 1
-        current_weekdays = (from_time >> (quotient * self.repeated_frequency)).week_split.map{|d| d[wday]}.compact
+        current_weekdays = (from_time.to_datetime >> (quotient * self.repeated_frequency)).week_split.map{|d| d[wday]}.compact
         target_day = current_weekdays[idx] || current_weekdays.last
       end
-      (from_time >> (quotient * self.repeated_frequency)).change({day: target_day})
+      ((from_time.to_datetime >> (quotient * self.repeated_frequency)).change({day: target_day})).to_time
     else
       raise "Unexpected repeated_by #{self.repeated_by}"
     end
@@ -45,14 +45,14 @@ class Monthly < Repeated
     from_time = self.from_time
     repeated_number = self.repeated_number.nil? ? 1 : self.repeated_number
     if self.repeated_by == 'Month'
-      from_time >> ((number - repeated_number) * self.repeated_frequency)
+      (from_time.to_datetime >> ((number - repeated_number) * self.repeated_frequency)).to_time
     elsif self.repeated_by == 'Week'  # Monthly repeat by day of week
       wday = from_time.wday
       weekdays = from_time.week_split.map{|d| d[wday]}.compact
       idx = weekdays.find_index{|d| d == from_time.day}
-      current_weekdays = (from_time >> ((number - repeated_number) * self.repeated_frequency)).week_split.map{|d| d[wday]}.compact
+      current_weekdays = (from_time.to_datetime >> ((number - repeated_number) * self.repeated_frequency)).week_split.map{|d| d[wday]}.compact
       target_day = current_weekdays[idx] || current_weekdays.last
-      (from_time >> ((number - repeated_number) * self.repeated_frequency)).change({day: target_day})
+      ((from_time.to_datetime >> ((number - repeated_number) * self.repeated_frequency)).change({day: target_day})).to_time
     end
   end
 end
