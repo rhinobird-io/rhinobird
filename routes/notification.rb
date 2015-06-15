@@ -35,8 +35,8 @@ class App < Sinatra::Base
 
     # add a notification to many users
     post '/users/notifications' do
-      user_ids = @body["users"]
-      team_ids = @body['teams']
+      user_ids = @body["users"] || []
+      team_ids = @body['teams'] || []
       content =@body["content"]
       content["from_user_id"] = @userid
       users = Set.new
