@@ -87,6 +87,11 @@ class App < Sinatra::Base
   config_file './config/platform.yml'
 
   configure :production do
+    helpers do
+      def target_email(user)
+        user[:email]
+      end
+    end
     set :script_url, '/platform/_assets/main.js'
     set :css_url, '/platform/_assets/main.css'
 
@@ -98,9 +103,13 @@ class App < Sinatra::Base
   end
 
   configure :development do
+    helpers do
+      def target_email(user)
+        'li_ju@worksap.co.jp'
+      end
+    end
     set :script_url, 'http://localhost:2992/_assets/main.js'
     set :css_url, ''
-    set :default_email, 'li_ju@worksap.co.jp'
 
     redis_url = 'redis://localhost:6379'
     uri = URI.parse(redis_url)
