@@ -1,5 +1,10 @@
 development:
   hostname: localhost:8000
+  script_url: 'http://localhost:2992/_assets/main.js'
+  css_url: ''
+
 
 production:
   hostname: rhinobird.workslan
+  set :script_url: '/platform/_assets/main.js'
+  set :css_url: '/platform/_assets/main.css'

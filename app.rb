@@ -92,8 +92,6 @@ class App < Sinatra::Base
         user[:email]
       end
     end
-    set :script_url, '/platform/_assets/main.js'
-    set :css_url, '/platform/_assets/main.css'
 
     redis_url = ENV['REDISCLOUD_URL'] || ENV['OPENREDIS_URL'] || ENV['REDISGREEN_URL'] || ENV['REDISTOGO_URL']
     uri = URI.parse(redis_url)
@@ -108,9 +106,6 @@ class App < Sinatra::Base
         'li_ju@worksap.co.jp'
       end
     end
-    set :script_url, 'http://localhost:2992/_assets/main.js'
-    set :css_url, ''
-
     redis_url = 'redis://localhost:6379'
     uri = URI.parse(redis_url)
     Resque.redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
