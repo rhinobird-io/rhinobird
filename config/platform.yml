@@ -6,5 +6,5 @@ development:
 
 production:
   hostname: rhinobird.workslan
-  set :script_url: '/platform/_assets/main.js'
-  set :css_url: '/platform/_assets/main.css'
+  script_url: '/platform/_assets/main.js'
+  css_url: '/platform/_assets/main.css'
