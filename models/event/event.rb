@@ -41,7 +41,7 @@ class Event < ActiveRecord::Base
   # non repeated event
   def get_next_event(date)
     if !date.nil?
-      if date <= self.from_time
+      if date.to_time <= self.from_time.to_time
         self.repeated_number = 1
         Marshal::load(Marshal.dump(self))
       else

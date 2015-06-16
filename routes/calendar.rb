@@ -9,8 +9,10 @@ class App < Sinatra::Base
       user = User.find(@userid)
       all_events = user.get_all_not_trashed_events
 
+
       result = EventHelper.next_n_events(all_events, today, 10)
 
+      puts "result #{result.length}"
       if result.length < 10
         result.concat EventHelper.previous_n_events(all_events, today - 1, 10 - result.length)
       end
