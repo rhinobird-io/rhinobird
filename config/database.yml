@@ -5,10 +5,7 @@ development:
   timeout: 5000
 
 production:
-  adapter: sqlite3
-  database: db/development.sqlite3
-  pool: 5
-  timeout: 5000
+  url: postgres://postgres:123456@172.26.142.209:2345/platform
 
 test:
   adapter: sqlite3
