@@ -68,4 +68,14 @@ module EventHelper
     puts result
     result
   end
+
+  # Get all the events of one day
+  def self.get_events_by_date(events, date)
+
+  end
+
+  # Get all the events of one week
+  def self.get_events_by_week(events, date)
+
+  end
 end
