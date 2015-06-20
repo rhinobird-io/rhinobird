@@ -101,15 +101,10 @@ class Weekly < Repeated
       gap -= from_time.wday - day
     end
 
-    puts "From Time: #{from_time}"
-    puts "Quotient: #{quotient}"
-    puts "Gap: #{gap}"
-    puts "Day: #{day}"
     from_time + (quotient * self.repeated_frequency * 7 + gap).days
   end
 
   def previous_occurrence(date)
-    puts "Date: #{date}"
     occurrence(date, -1)
   end
 

@@ -1,5 +1,5 @@
 RSpec.describe EventHelper do
-  context 'With a set of events' do
+  context 'With set 1 of events' do
     events = []
     events << Event.new({title: 'Normal',
                          from_time: DateTime.parse('2015-9-11 9:00')})
@@ -36,6 +36,24 @@ RSpec.describe EventHelper do
       expect(result[8].title).to eq('Weekly')
       expect(result[9].from_time.to_date).to eq(DateTime.parse('2015-9-25'))
       expect(result[9].title).to eq('Daily')
+    end
+  end
+
+  context 'With set 2 of events' do
+    events = []
+    events << Event.new({title: 'Normal',
+                         from_time: DateTime.parse('2015-9-11 9:00')})
+    events << Daily.new({title: 'Daily Repeated Event',
+                         from_time: DateTime.parse('2015-9-11 10:00'),
+                         repeated_frequency: 2, repeated_end_type: 'Never'})
+    events << Weekly.new({title: 'Weekly Repeated Event on Monday Friday',
+                          from_time: DateTime.parse('2015-9-10 11:00'),
+                          repeated_on: '["Mon", "Fri"]',
+                          repeated_frequency: 2, repeated_end_type: 'Occurrence', repeated_times: 2 * 2})
+
+    it 'get events of 2015-9-11 correctly' do
+      result = EventHelper.get_events_by_date(events, Date.parse('2015-9-11'))
+      expect(result.size).to eq(3)
     end
   end
 end

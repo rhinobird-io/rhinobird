@@ -69,9 +69,30 @@ module EventHelper
     result
   end
 
-  # Get all the events of one day
+  # Get all events of one day
   def self.get_events_by_date(events, date)
+    EventHelper.get_events_by_dates(events, [].push(date))
+  end
 
+  # Get all events of several days
+  def self.get_events_by_dates(events, dates)
+    result = []
+    events.each do |evt|
+      dates.each do |date|
+        if !evt.repeated
+          if date == evt.from_time.to_date
+            result.push(evt)
+            break
+          end
+        else
+          repeated_number = evt.get_repeated_number(date)
+          if repeated_number >= 1
+            result.push(evt.get_event_by_repeated_number(repeated_number))
+          end
+        end
+      end
+    end
+    result
   end
 
   # Get all the events of one week
