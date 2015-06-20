@@ -97,6 +97,8 @@ module EventHelper
 
   # Get all the events of one week
   def self.get_events_by_week(events, date)
-
+    weekdays = []
+    (0..6).each{|i| weekdays.push(date + i - date.wday)}
+    EventHelper.get_events_by_dates(events, weekdays)
   end
 end

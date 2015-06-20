@@ -45,15 +45,20 @@ RSpec.describe EventHelper do
                          from_time: DateTime.parse('2015-9-11 9:00')})
     events << Daily.new({title: 'Daily Repeated Event',
                          from_time: DateTime.parse('2015-9-11 10:00'),
-                         repeated_frequency: 2, repeated_end_type: 'Never'})
+                         repeated_frequency: 1, repeated_end_type: 'Never'})
     events << Weekly.new({title: 'Weekly Repeated Event on Monday Friday',
                           from_time: DateTime.parse('2015-9-10 11:00'),
                           repeated_on: '["Mon", "Fri"]',
-                          repeated_frequency: 2, repeated_end_type: 'Occurrence', repeated_times: 2 * 2})
+                          repeated_frequency: 1, repeated_end_type: 'Occurrence', repeated_times: 2 * 2})
 
     it 'get events of 2015-9-11 correctly' do
       result = EventHelper.get_events_by_date(events, Date.parse('2015-9-11'))
       expect(result.size).to eq(3)
+    end
+
+    it 'get events of the week of 2015-9-17 correctly' do
+      result = EventHelper.get_events_by_week(events, Date.parse('2015-9-17'))
+      expect(result.size).to eq(9)
     end
   end
 end
