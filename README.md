@@ -18,7 +18,7 @@ This is only server side API for the platform. You need at least the folowlling 
 
    The web assets of the platform
 
-2. mock gateway
+2. [mock gateway](https://github.com/rhinobird-io/mock-platform)
 
    A simple non-prodcution service gateway to distribute API requests
    
