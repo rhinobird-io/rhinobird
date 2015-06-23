@@ -21,4 +21,6 @@ This is only server side API for the platform. You need at least the folowlling 
 2. mock gateway
 
    A simple non-prodcution service gateway to distribute API requests
+   
+Check the [wiki](https://github.com/rhinobird-io/rhinobird/wiki) for more detail.
 
