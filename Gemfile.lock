@@ -166,6 +166,3 @@ DEPENDENCIES
   thin
   uuid
   week_of_month (~> 1.2.3.2)
-
-BUNDLED WITH
-   1.10.3

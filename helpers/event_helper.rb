@@ -101,4 +101,17 @@ module EventHelper
     (0..6).each{|i| weekdays.push(date + i - date.wday)}
     EventHelper.get_events_by_dates(events, weekdays)
   end
+
+  def self.get_events_by_month(events, date)
+    month_days = []
+    month = date.month
+    (0..30).each{|i|
+      day = date + i - date.day
+      if month == day.month
+        month_days.push(day)
+      end
+    }
+    EventHelper.get_events_by_dates(events, month_days)
+  end
+
 end
