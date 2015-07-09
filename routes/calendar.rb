@@ -253,6 +253,23 @@ class App < Sinatra::Base
       end
     end
 
+    put '/events/:event_id' do
+      event = Event.find(params[:event_id])
+      if event.nil?
+        return 404
+      end
+
+      if @userid == event.creator_id
+        event.title = @body['title'] unless @body['title'].nil?
+        event.description = @body['title'] unless @body['description'].nil?
+        event.save!
+        200
+      else
+        403
+      end
+
+    end
+
     put '/events/restore/:event_id/?:repeated_number?' do
       if params[:event_id].nil?
         404
