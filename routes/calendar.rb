@@ -261,7 +261,10 @@ class App < Sinatra::Base
 
       if @userid == event.creator_id
         event.title = @body['title'] unless @body['title'].nil?
-        event.description = @body['title'] unless @body['description'].nil?
+        event.description = @body['description'] unless @body['description'].nil?
+        event.period = @body['period'] unless @body['period'].nil?
+        event.from_time = @body['from_time'] unless @body['from_time'].nil?
+        event.to_time = @body['to_time'] unless @body['to_time'].nil?
         event.save!
         200
       else
