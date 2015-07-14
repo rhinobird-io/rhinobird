@@ -105,12 +105,13 @@ module EventHelper
   def self.get_events_by_month(events, date)
     month_days = []
     month = date.month
-    (0..30).each{|i|
+    (0..31).each{|i|
       day = date + i - date.day
       if month == day.month
         month_days.push(day)
       end
     }
+    puts month_days
     EventHelper.get_events_by_dates(events, month_days)
   end
 
