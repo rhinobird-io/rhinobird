@@ -263,14 +263,34 @@ class App < Sinatra::Base
         event.title = @body['title'] unless @body['title'].nil?
         event.description = @body['description'] unless @body['description'].nil?
         event.period = @body['period'] unless @body['period'].nil?
+        event.full_day = @body['full_day'] unless @body['full_day'].nil?
         event.from_time = @body['from_time'] unless @body['from_time'].nil?
         event.to_time = @body['to_time'] unless @body['to_time'].nil?
+
+        participants = @body['participants']
+        unless participants.nil?
+          puts "Hello"
+
+          participants['teams'].each { |p|
+            team = Team.find(p)
+            event.team_participants << team
+          }
+
+
+          participants['users'].each do |p|
+            user = User.find(p)
+            event.participants << user
+          end
+        end
         event.save!
-        200
+
+        event.to_json(
+            json: Event,
+            methods: [:repeated_number],
+            include: {participants: {only: :id}, team_participants: {only: :id}})
       else
         403
       end
-
     end
 
     put '/events/restore/:event_id/?:repeated_number?' do
