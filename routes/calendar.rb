@@ -53,6 +53,53 @@ class App < Sinatra::Base
               include: {participants: {only: :id}, team_participants: {only: :id}})
     end
 
+    get '/events/day/:date' do
+      date = Date.parse(params[:date])
+
+      user = User.find(@userid)
+      all_events = user.get_all_not_trashed_events
+
+      result = EventHelper.get_events_by_date(all_events, date)
+
+      result.sort! { |a, b| a.from_time <=> b.from_time }.
+          to_json(
+              json: Event,
+              methods: [:repeated_number],
+              include: {participants: {only: :id}, team_participants: {only: :id}})
+    end
+
+    get '/events/week/:date' do
+      date = Date.parse(params[:date])
+
+      user = User.find(@userid)
+      all_events = user.get_all_not_trashed_events
+
+      result = EventHelper.get_events_by_week(all_events, date)
+
+      result.sort! { |a, b| a.from_time <=> b.from_time }.
+          to_json(
+              json: Event,
+              methods: [:repeated_number],
+              include: {participants: {only: :id}, team_participants: {only: :id}})
+    end
+
+
+    get '/events/month/:date' do
+      date = Date.parse(params[:date])
+
+      user = User.find(@userid)
+      all_events = user.get_all_not_trashed_events
+
+      result = EventHelper.get_events_by_month(all_events, date)
+
+      result.sort! { |a, b| a.from_time <=> b.from_time }.
+          to_json(
+              json: Event,
+              methods: [:repeated_number],
+              include: {participants: {only: :id}, team_participants: {only: :id}})
+    end
+
+
     get '/events/:eventId/:repeatedNumber' do
       if params[:eventId].nil? || params[:repeatedNumber].nil?
         404
@@ -201,6 +248,46 @@ class App < Sinatra::Base
 
         content_type 'text/plain'
         200
+      else
+        403
+      end
+    end
+
+    put '/events/:event_id' do
+      event = Event.find(params[:event_id])
+      if event.nil?
+        return 404
+      end
+
+      if @userid == event.creator_id
+        event.title = @body['title'] unless @body['title'].nil?
+        event.description = @body['description'] unless @body['description'].nil?
+        event.period = @body['period'] unless @body['period'].nil?
+        event.full_day = @body['full_day'] unless @body['full_day'].nil?
+        event.from_time = @body['from_time'] unless @body['from_time'].nil?
+        event.to_time = @body['to_time'] unless @body['to_time'].nil?
+
+        participants = @body['participants']
+        unless participants.nil?
+          puts "Hello"
+
+          participants['teams'].each { |p|
+            team = Team.find(p)
+            event.team_participants << team
+          }
+
+
+          participants['users'].each do |p|
+            user = User.find(p)
+            event.participants << user
+          end
+        end
+        event.save!
+
+        event.to_json(
+            json: Event,
+            methods: [:repeated_number],
+            include: {participants: {only: :id}, team_participants: {only: :id}})
       else
         403
       end

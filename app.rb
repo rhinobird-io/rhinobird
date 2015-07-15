@@ -152,7 +152,7 @@ class App < Sinatra::Base
       }
 
       if count > 0
-        #puts "Info: #{count} dashboard records and notifications have been sent."
+        puts "Info: #{count} dashboard records and notifications have been sent."
       end
     end
   end
