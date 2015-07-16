@@ -269,7 +269,8 @@ class App < Sinatra::Base
 
         participants = @body['participants']
         unless participants.nil?
-          puts "Hello"
+          event.team_participants = []
+          event.participants = []
 
           participants['teams'].each { |p|
             team = Team.find(p)
