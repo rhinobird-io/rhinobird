@@ -12,7 +12,7 @@ echo "development:
 production:
 	hostname: rhinobird.workslan
 	script_url: '/platform/_assets/main$filename.js'
-	css_url: '/platform/_assets/main$filename.css'"
+	css_url: '/platform/_assets/main$filename.css'" > "config/platform.yml"
 
 git add config/platform.yml
 git add public
