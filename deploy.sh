@@ -7,7 +7,8 @@ mv public/_assets/main.css public/_assets/main$filename.css
 echo "development:
   hostname: localhost:8000
   script_url: 'http://localhost:2992/_assets/main$filename.js'
-  css_url: ''	
+  css_url: ''
+
 
 production:
   hostname: rhinobird.workslan
