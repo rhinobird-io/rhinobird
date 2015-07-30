@@ -18,5 +18,5 @@ production:
 git add config/platform.yml
 git add public
 git commit -m 'add assets'
-git push deis deploy:master -f
+git push dokku deploy:master -f
 git checkout master
