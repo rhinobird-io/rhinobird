@@ -83,6 +83,20 @@ class App < Sinatra::Base
               include: {participants: {only: :id}, team_participants: {only: :id}})
     end
 
+    get '/events/fourDays/:date' do
+      date = Date.parse(params[:date])
+
+      user = User.find(@userid)
+      all_events = user.get_all_not_trashed_events
+
+      result = EventHelper.get_events_by_four_days(all_events, date)
+
+      result.sort! { |a, b| a.from_time <=> b.from_time }.
+          to_json(
+              json: Event,
+              methods: [:repeated_number],
+              include: {participants: {only: :id}, team_participants: {only: :id}})
+    end
 
     get '/events/month/:date' do
       date = Date.parse(params[:date])

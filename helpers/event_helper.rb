@@ -102,6 +102,13 @@ module EventHelper
     EventHelper.get_events_by_dates(events, weekdays)
   end
 
+  # Get all the events of four days starting from the date
+  def self.get_events_by_four_days(events, date)
+    weekdays = []
+    (0..3).each{|i| weekdays.push(date + i)}
+    EventHelper.get_events_by_dates(events, weekdays)
+  end
+
   def self.get_events_by_month(events, date)
     month_days = []
     month = date.month
