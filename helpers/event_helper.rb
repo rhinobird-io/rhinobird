@@ -118,8 +118,31 @@ module EventHelper
         month_days.push(day)
       end
     }
-    puts month_days
     EventHelper.get_events_by_dates(events, month_days)
   end
 
+  def self.get_events_by_calendar_month(events, date)
+    calendar_month_days = []
+    month = date.month
+    first_month_day = date - date.day + 1
+    last_month_day = first_month_day
+    (0..(first_month_day.wday - 1)).each{|d|
+      day = first_month_day + d - first_month_day.wday
+      calendar_month_days.push(day)
+    }
+    (0..32).each{|i|
+      day = first_month_day + i
+      if month == day.month
+        calendar_month_days.push(day)
+      else
+        last_month_day = day - 1
+        break
+      end
+    }
+    ((last_month_day.wday + 1)..6).each{|d|
+      day = last_month_day + d - last_month_day.wday
+      calendar_month_days.push(day)
+    }
+    EventHelper.get_events_by_dates(events, calendar_month_days)
+  end
 end
