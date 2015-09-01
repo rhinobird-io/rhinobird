@@ -287,13 +287,14 @@ class App < Sinatra::Base
     end
 
     put '/events/:event_id/register/:uid' do
+      event = Event.find(params[:event_id])
+      if event.nil?
+        return 404
+      end
       if @userid == event.creator_id || @secret_call
-        event = Event.find(params[:event_id])
-        if event.nil?
-          return 404
-        end
         unless event.participants.include? params[:uid]
-          event.participants.push(params[:uid])
+          user = User.find(params[:uid])
+          event.participants.push(user)
         end
         event.save!
         200
@@ -303,13 +304,14 @@ class App < Sinatra::Base
     end
 
     put '/events/:event_id/unregister/:uid' do
+      event = Event.find(params[:event_id])
+      if event.nil?
+        return 404
+      end
       if @userid == event.creator_id || @secret_call
-        event = Event.find(params[:event_id])
-        if event.nil?
-          return 404
-        end
-        if event.participants.include? params[:uid]
-          event.participants.delete(params[:uid])
+        user = User.find(params[:uid])
+        if event.participants.include? user
+          event.participants.delete(user)
         end
         event.save!
         200

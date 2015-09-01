@@ -210,10 +210,10 @@ class App < Sinatra::Base
       @userid = request.env['HTTP_X_USER'].to_i
     end
 
-    if request.env['secret_key'].nil?
+    if request.env['HTTP_SECRET_KEY'].nil?
       @secret_call = false
     else
-      @secret_call = request.env['secret_key'] == 'secret_key'
+      @secret_call = request.env['HTTP_SECRET_KEY'] == 'secret_key'
     end
   end
 
