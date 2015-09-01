@@ -286,6 +286,22 @@ class App < Sinatra::Base
       end
     end
 
+    put '/events/:event_id/register/:uid' do
+      if @userid == event.creator_id || @secret_call
+        event = Event.find(params[:event_id])
+        if event.nil?
+          return 404
+        end
+        unless event.participants.include? params[:uid]
+          event.participants.push(params[:uid])
+        end
+        event.save!
+        200
+      else
+        403
+      end
+    end
+
     put '/events/:event_id' do
       event = Event.find(params[:event_id])
       if event.nil?
