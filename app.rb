@@ -209,6 +209,12 @@ class App < Sinatra::Base
     unless request.env['HTTP_X_USER'].nil?
       @userid = request.env['HTTP_X_USER'].to_i
     end
+
+    if request.env['secret_key'].nil?
+      @secret_call = false
+    else
+      @secret_call = request.env['secret_key'] == 'secret_key'
+    end
   end
 
   get '/socket' do

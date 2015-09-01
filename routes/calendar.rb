@@ -191,7 +191,9 @@ class App < Sinatra::Base
         event.participants << user_self
       end
 
-      event.creator_id = uid
+      unless @secret_call
+        event.creator_id = uid
+      end
       event.status = 'created'
 
       if event.repeated && event.repeated_type == 'Weekly' && event.repeated_end_type == 'Occurrence'
