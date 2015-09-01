@@ -243,7 +243,7 @@ class App < Sinatra::Base
 
     delete '/events/:event_id/?:repeated_number?' do
       event = Event.find(params[:event_id])
-      if @userid == event.creator_id
+      if @userid == event.creator_id || @secret_call
         uid = @userid
 
         event.participants.each { |p|
