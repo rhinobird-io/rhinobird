@@ -213,7 +213,7 @@ class App < Sinatra::Base
     if request.env['HTTP_SECRET_KEY'].nil?
       @secret_call = false
     else
-      @secret_call = request.env['HTTP_SECRET_KEY'] == 'secret_key'
+      @secret_call = request.env['HTTP_SECRET_KEY'] == ENV['SECRET_KEY']
     end
   end
 
