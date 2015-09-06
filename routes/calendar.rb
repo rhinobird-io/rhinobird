@@ -191,7 +191,9 @@ class App < Sinatra::Base
         event.participants << user_self
       end
 
-      event.creator_id = uid
+      unless @secret_call
+        event.creator_id = uid
+      end
       event.status = 'created'
 
       if event.repeated && event.repeated_type == 'Weekly' && event.repeated_end_type == 'Occurrence'
@@ -241,7 +243,7 @@ class App < Sinatra::Base
 
     delete '/events/:event_id/?:repeated_number?' do
       event = Event.find(params[:event_id])
-      if @userid == event.creator_id
+      if @userid == event.creator_id || @secret_call
         uid = @userid
 
         event.participants.each { |p|
@@ -278,6 +280,40 @@ class App < Sinatra::Base
         event.save!
 
         content_type 'text/plain'
+        200
+      else
+        403
+      end
+    end
+
+    put '/events/:event_id/register/:uid' do
+      event = Event.find(params[:event_id])
+      if event.nil?
+        return 404
+      end
+      if @userid == event.creator_id || @secret_call
+        unless event.participants.include? params[:uid]
+          user = User.find(params[:uid])
+          event.participants.push(user)
+        end
+        event.save!
+        200
+      else
+        403
+      end
+    end
+
+    put '/events/:event_id/unregister/:uid' do
+      event = Event.find(params[:event_id])
+      if event.nil?
+        return 404
+      end
+      if @userid == event.creator_id || @secret_call
+        user = User.find(params[:uid])
+        if event.participants.include? user
+          event.participants.delete(user)
+        end
+        event.save!
         200
       else
         403
