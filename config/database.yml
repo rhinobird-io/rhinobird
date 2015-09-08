@@ -5,7 +5,7 @@ development:
   timeout: 5000
 
 production:
-  url: postgres://postgres:123456@172.26.142.72:2345/platform
+  url: postgres://localhost:5432/platform
 
 test:
   adapter: sqlite3
