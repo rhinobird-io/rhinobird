@@ -6,6 +6,7 @@ class Event < ActiveRecord::Base
 
   self.inheritance_column = 'repeated_type'
 
+  TIME_ZONE = 'Asia/Shanghai'
   enum status:  { created: 0, trashed: 1 }
 
   serialize :repeated_exclusion, Array
@@ -26,15 +27,15 @@ class Event < ActiveRecord::Base
   def time_summary
     if self.period?
       if self.full_day?
-        return "from #{self.from_time.strftime('%F')} to #{self.to_time.strftime('%F')}"
+        return "from #{self.from_time.in_time_zone(TIME_ZONE).strftime('%F %Z')} to #{self.to_time.in_time_zone(TIME_ZONE).strftime('%F %Z')}"
       else
-        return "from #{self.from_time.strftime('%c')} to #{self.to_time.strftime('%c')}"
+        return "from #{self.from_time.in_time_zone(TIME_ZONE).strftime('%c %Z')} to #{self.to_time.in_time_zone(TIME_ZONE).strftime('%c %Z')}"
       end
     else
       if self.full_day?
-        return self.from_time.strftime('%F')
+        return self.from_time.in_time_zone(TIME_ZONE).strftime('%F %Z')
       else
-        return self.from_time.strftime('%c')
+        return self.from_time.in_time_zone(TIME_ZONE).strftime('%c %Z')
       end
     end
   end
