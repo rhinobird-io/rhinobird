@@ -1,4 +1,4 @@
-git co -B deploy
+git checkout -B deploy
 
 filename=$(date +'%s')
 mv public/_assets/main.js public/_assets/main$filename.js
