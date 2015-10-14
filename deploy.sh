@@ -1,3 +1,7 @@
+#!/bin/bash
+
+set -e
+
 git checkout -B deploy
 
 filename=$(date +'%s')
