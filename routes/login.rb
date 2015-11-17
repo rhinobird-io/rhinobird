@@ -31,5 +31,11 @@ class App < Sinatra::Base
         User.find(@userid).to_json(:except => [:encrypted_password])
       end
     end
+
+    post '/signup' do
+        user = User.create!(realname: @body['name'], name: @body['uniqueName'], email: "#{@body['email']}@worksap.co.jp", encrypted_password: Password.create(@body['password']))
+        Team.find_by_name('Guest').users << user
+        user.to_json(:except => :encrypted_password)
+    end
   end
 end
