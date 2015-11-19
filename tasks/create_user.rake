@@ -22,8 +22,9 @@ namespace :db do
         err = nil
         begin
             User.create!(realname: username, name: username, email: account['address'], encrypted_password: Password.create(username))
+            MyLogger.info('Account created successfully for email ' + account['address'])
         rescue ActiveRecord::RecordInvalid => error
-            puts 'Failed to create account ' + account['address'] + ', ' + error.record.errors.full_messages.join(",")
+            MyLogger.error('Failed to create account for ' + account['address'] + ', ' + error.record.errors.full_messages.join(","))
             err = error
         end
         next if err
@@ -35,8 +36,7 @@ namespace :db do
           content_type 'text/html; charset=UTF-8'
           body 'hello world'
         end
-
-        puts 'Create account and send email successfully for ' + account['email']
+        MyLogger.info('Send account data email successfully for ' + account['email'])
     }
   end
 end
