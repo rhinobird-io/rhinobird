@@ -1,7 +1,9 @@
 require 'logger'
 
 class MyLogger
-    @@logger = Logger.new('rhinobird.log', 10, 10240000)
+    log_file = '/tmp/rhinobird.log'
+
+    @@logger = Logger.new(log_file, 10, 10240000)
 
     @@logger.level = Logger::INFO
 
