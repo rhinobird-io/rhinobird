@@ -1,6 +1,7 @@
 require 'faker'
 require 'bcrypt'
 require 'json'
+require 'erb'
 
 include BCrypt
 
@@ -29,14 +30,28 @@ namespace :db do
         end
         next if err
 
+        controller = AccountBinding.new(username, username, account['address'])
         Mail.deliver do
           from "rhinobird.worksap@gmail.com"
           to account['address']
-          subject 'test email'
+          subject 'Your RhinoBird account has been created!'
           content_type 'text/html; charset=UTF-8'
-          body 'hello world'
+          body ERB.new(File.read('./views/email/account_created.erb')).result(controller.get_binding)
         end
-        MyLogger.info('Send account data email successfully for ' + account['email'])
+        MyLogger.info('Send account data email successfully for ' + account['address'])
     }
+  end
+
+  class AccountBinding
+    attr_reader :username, :password, :email
+    def initialize(username, password, email)
+      @username = username
+      @password = password
+      @email = email
+    end
+
+    def get_binding
+      binding
+    end
   end
 end
