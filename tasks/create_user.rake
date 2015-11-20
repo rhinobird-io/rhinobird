@@ -13,7 +13,7 @@ namespace :db do
     end
   end
 
-  task :test_email, [:file] => :environment do |t, args|
+  task :batch_import, [:file] => :environment do |t, args|
     json_file = File.read(args[:file])
     data_parsed = JSON.parse(json_file)
     data_parsed.each { |account|
