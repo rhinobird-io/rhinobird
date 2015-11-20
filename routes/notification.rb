@@ -58,5 +58,34 @@ class App < Sinatra::Base
       end
       200
     end
+
+    # batch add notifications
+    post '/users/notifications/batch' do
+      notifications = @body["notifications"] || []
+      notifications.each do |n|
+        user_ids = n["users"] || []
+        team_ids = n['teams'] || []
+        content = n["content"]
+        content["from_user_id"] = @userid
+        users = Set.new
+        unless n["url"].nil?
+          content["url"] = n["url"]
+        end
+        user_ids.each do |userid|
+          user = User.find(userid.to_i)
+          users.add(user)
+        end
+        team_ids.each do |teamId|
+          team = Team.find(teamId)
+          users.merge(team.get_all_users)
+        end
+        users.each do |user|
+          notification = user.notifications.create!(content)
+          notify = notification.to_json(:except => [:user_id])
+          notify(user, notify, n['email_subject'], n['email_body'])
+        end
+      end
+      200
+    end
   end
 end
