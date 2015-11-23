@@ -1,14 +1,7 @@
 require 'logger'
-require 'fileutils'
 
 class MyLogger
-    log_file = './tmp/rhinobird.log'
-    dirname = File.dirname(log_file)
-    unless File.directory?(dirname)
-      FileUtils.mkdir_p(dirname)
-    end
-
-    @@logger = Logger.new(log_file, 10, 10240000)
+    @@logger = Logger.new(STDOUT)
 
     @@logger.level = Logger::INFO
 
