@@ -20,15 +20,14 @@ namespace :db do
         # Create account
         username = account['address'].split("@").first
 
-        err = nil
         begin
             User.create!(realname: username, name: username, email: account['address'], encrypted_password: Password.create(username))
             MyLogger.info('Account created successfully for email ' + account['address'])
         rescue ActiveRecord::RecordInvalid => error
             MyLogger.error('Failed to create account for ' + account['address'] + ', ' + error.record.errors.full_messages.join(","))
-            err = error
+            next
         end
-        next if err
+
 
         controller = AccountBinding.new(username, username, account['address'])
         Mail.deliver do
