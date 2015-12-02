@@ -13,6 +13,14 @@ namespace :db do
     end
   end
 
+  task :init_password, [:name] => :environment do |t, args|
+    ActiveRecord::Base.transaction do
+      User.find_by_name(args[:name]).update(encrypted_password: Password.create(args[:name]))
+      puts 'init password finished successfully'
+    end
+  end
+
+
   task :batch_import, [:file] => :environment do |t, args|
     json_file = File.read(args[:file])
     data_parsed = JSON.parse(json_file)
