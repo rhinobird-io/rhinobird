@@ -138,7 +138,7 @@ class App < Sinatra::Base
       events.each { |e|
         #puts e.from_time.to_datetime.to_i - now.to_i
 
-        next if e.from_time.to_datetime.to_i - now.to_i < 1775
+        next if e.from_time.to_datetime.to_i - now.to_i < 1770
 
         unless e.repeated
           e.repeated_number = 1
