@@ -12,12 +12,15 @@ echo "development:
   hostname: localhost:8000
   script_url: 'http://localhost:2992/_assets/main$filename.js'
   css_url: ''
+  email: 'rhinobird.worksap.test@gmail.com'
 
 
 production:
   hostname: rhinobird.workslan
   script_url: '/platform/_assets/main$filename.js'
-  css_url: '/platform/_assets/main$filename.css'" > "config/platform.yml"
+  css_url: '/platform/_assets/main$filename.css'
+  email: 'rhinobird.worksap@gmail.com'" > "config/platform.yml"
+
 
 git add config/platform.yml
 git add public

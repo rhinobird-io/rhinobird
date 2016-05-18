@@ -2,9 +2,11 @@ development:
   hostname: localhost:8000
   script_url: 'http://localhost:2992/_assets/main.js'
   css_url: ''
+  email: 'rhinobird.worksap.test@gmail.com'
 
 
 production:
   hostname: rhinobird.workslan
   script_url: '/platform/_assets/main.js'
   css_url: '/platform/_assets/main.css'
+  email: 'rhinobird.worksap@gmail.com'

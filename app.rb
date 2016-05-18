@@ -170,8 +170,8 @@ class App < Sinatra::Base
   options = { :address              => 'smtp.gmail.com',
               :port                 => 587,
               :domain               => 'www.gmail.com',
-              :user_name            => 'rhinobird.worksap',
-              :password             => 'worksapplication',
+              :user_name            => settings.email,
+              :password             => ENV['EMAIL_PASSWORD'],
               :authentication       => 'plain',
               :enable_starttls_auto => true  }
   Mail.defaults do
