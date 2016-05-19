@@ -15,8 +15,8 @@ end
 
 def notify(user, notify, subject, body)
   if settings.sockets[user.id].nil?
-    email = user.email
-    Resque.enqueue(EmailQueue, 'rhinobird.worksap@gmail.com', email, subject, body)
+    to = user.email
+    Resque.enqueue(EmailQueue, settings.email, to, subject, body)
   else
     settings.sockets[user.id].send(notify)
   end
