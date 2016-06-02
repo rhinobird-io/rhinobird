@@ -9,7 +9,10 @@ namespace :db do
   desc 'Create a user'
   task :create_user, [:name] => :environment do |t, args|
     ActiveRecord::Base.transaction do
-        User.create!(realname: args[:name], name: args[:name], email: "#{args[:name]}@worksap.co.jp", encrypted_password: Password.create(args[:name]))
+        u = User.create!(realname: args[:name], name: args[:name], email: "#{args[:name]}@worksap.co.jp", encrypted_password: Password.create(args[:name]))
+        t = Team.find_by_name("Guest")
+        t.users << u
+        t.save!
     end
   end
 
