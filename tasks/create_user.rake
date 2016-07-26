@@ -27,12 +27,14 @@ namespace :db do
   task :batch_import, [:file] => :environment do |t, args|
     json_file = File.read(args[:file])
     data_parsed = JSON.parse(json_file)
+    t = Team.find_by_name("Guest")
     data_parsed.each { |account|
         # Create account
         username = account['address'].split("@").first
 
         begin
-            User.create!(realname: username, name: username, email: account['address'], encrypted_password: Password.create(username))
+            u = User.create!(realname: username, name: username, email: account['address'], encrypted_password: Password.create(username))
+            t.users << u
             MyLogger.info('Account created successfully for email ' + account['address'])
         rescue ActiveRecord::RecordInvalid => error
             MyLogger.error('Failed to create account for ' + account['address'] + ', ' + error.record.errors.full_messages.join(","))
@@ -50,6 +52,7 @@ namespace :db do
         end
         MyLogger.info('Send account data email successfully for ' + account['address'])
     }
+    t.save!
   end
 
   class AccountBinding
