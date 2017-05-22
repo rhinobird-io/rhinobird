@@ -33,3 +33,5 @@ end
 group :test do
   gem 'respec'
 end
+
+gem 'httparty'
