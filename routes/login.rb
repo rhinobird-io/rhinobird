@@ -1,6 +1,5 @@
 # encoding: utf-8
 class App < Sinatra::Base
-  include HTTParty
   auth_url = ENV['AUTH_URL'] || 'http://localhost:8000/auth'
   namespace '/api' do
     post '/login' do
@@ -28,7 +27,7 @@ class App < Sinatra::Base
 
     get '/mc_login_call' do
       if verify_sign(params[:ticket], params[:sign])
-        response = self.post('http://mcenter.internal.worksap.com/auth', body: {app_id: 'rhinobird', ticket: params[:ticket], sign: auth_sign(params[:ticket])}).parsed_response
+        response = HTTParty.post('http://mcenter.internal.worksap.com/auth', body: {app_id: 'rhinobird', ticket: params[:ticket], sign: auth_sign(params[:ticket])}).parsed_response
         email = reponse["email_prefix"] + "@worksap.co.jp"
         user = User.find_by(email: email)
         if user.nil?
@@ -69,14 +68,13 @@ class App < Sinatra::Base
     end
   end
 
-end
 
-def verify_sign(ticket, sign)
-  sign == DIgest::MD5.hexdigest("#{ticket}-#{ENV['RHINOBIRD_CRENDENTIAL']}")
-end
+  def verify_sign(ticket, sign)
+    sign == DIgest::MD5.hexdigest("#{ticket}-#{ENV['RHINOBIRD_CRENDENTIAL']}")
+  end
 
 
-def auth_sign(ticket)
-  Digest::MD5.hexdigest("rhinobird-#{ticket}-#{ENV['RHINOBIRD_CREDENTIAL']}")
+  def auth_sign(ticket)
+    Digest::MD5.hexdigest("rhinobird-#{ticket}-#{ENV['RHINOBIRD_CREDENTIAL']}")
   end
 end
