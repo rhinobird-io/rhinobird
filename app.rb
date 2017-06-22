@@ -167,11 +167,11 @@ class App < Sinatra::Base
   set :protection, :except => [:json_csrf]
   set :logging, true
 
-  options = { :address              => 'smtp.gmail.com',
-              :port                 => 587,
-              :domain               => 'www.gmail.com',
-              :user_name            => settings.email,
-              :password             => ENV['EMAIL_PASSWORD'],
+  options = { :address              => ENV['SMTP_SERVER'],
+              :port                 => ENV['SMTP_PORT'] || 25,
+              :domain               => ENV['SMTP_DOMAIN'] || ENV['SMTP_SERVER'],
+              :user_name            => ENV['AUTH_EMAIL'],
+              :password             => ENV['AUTH_EMAIL_PASSWORD'],
               :authentication       => 'plain',
               :enable_starttls_auto => true  }
   Mail.defaults do
