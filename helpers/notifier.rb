@@ -15,8 +15,9 @@ end
 
 def notify(user, notify, subject, body)
   if settings.sockets[user.id].nil?
+    from = ENV['NOTIFY_EMAIL'] || settings.email
     to = user.email
-    Resque.enqueue(EmailQueue, settings.email, to, subject, body)
+    Resque.enqueue(EmailQueue, from, to, subject, body)
   else
     settings.sockets[user.id].send(notify)
   end
