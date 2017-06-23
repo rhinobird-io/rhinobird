@@ -266,7 +266,7 @@ class App < Sinatra::Base
   namespace '/api' do
 
     before do
-      login_required! unless (%w(/api/users /api/login /).include?(request.path_info) || request.path_info =~ /\/user\/invitation.*/)
+      login_required! unless (%w(/api/genius_coming /api/users /api/login /).include?(request.path_info) || request.path_info =~ /\/user\/invitation.*/)
 
       content_type 'application/json'
       if request.media_type == 'application/json'
