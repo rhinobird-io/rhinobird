@@ -4,9 +4,7 @@ class App < Sinatra::Base
   namespace '/api' do
     post '/genius_coming' do
       if valid_sign?(@body['ticket'], genius_config['GENIUS_APP_SECRET'], @body['sign'])
-        puts 'valid_sign'
         if user_info = fetch_user_json(@body['ticket'])
-          puts user_info
           auto_register_user(user_info) unless User.find_by(email: user_info['email'])
           user = User.find_by(email: user_info['email'])
           token = SecureRandom.hex
