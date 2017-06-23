@@ -1,9 +1,10 @@
 # encoding: utf-8
 class App < Sinatra::Base
   auth_url = ENV['AUTH_URL'] || 'http://localhost:8000/auth'
+
   namespace '/api' do
     post '/genius_coming' do
-      if valid_sign?(@body['ticket'], genius_config['GENIUS_APP_SECRET'], @body['sign'])
+      if valid_ticket?(@body['ticket'], @body['sign'])
         if user_info = fetch_user_json(@body['ticket'])
           auto_register_user(user_info) unless User.find_by(email: user_info['email'])
           user = User.find_by(email: user_info['email'])
@@ -14,10 +15,13 @@ class App < Sinatra::Base
               :httponly => false,
               :path => '/'
           })
-          return user.to_json(except: :encrypted_password)
+          user.to_json(except: :encrypted_password)
+        else
+          status 404
         end
+      else
+        status 406
       end
-      status 401
     end
 
     post '/login' do
@@ -58,13 +62,8 @@ class App < Sinatra::Base
   end
 
   def fetch_user_json(ticket)
-    app_id = genius_config['APP_ID']
-    secret = genius_config['GENIUS_APP_SECRET']
-    got = RestClient.post(genius_config['FETCH_GENIUS_URL'],
-                          {
-                              app_id: genius_config['APP_ID'],
-                              ticket: ticket,
-                              sign: md5_sign(app_id, ticket, secret)},
+    got = RestClient.post(ENV['GENIUS_QUERY_URL'],
+                          {app_id: ENV['GENIUS_APP_ID'], ticket: ticket, sign: app_sign(ticket)},
                           :content_type => :json)
     json = JSON.parse(got.body)
     return unless json && json['status'] && json['status']['code'].to_i == 0
@@ -79,21 +78,13 @@ class App < Sinatra::Base
     default_team.save!
   end
 
-  def valid_sign?(*params, expected)
-    md5_sign(params) == expected
+  def valid_ticket?(ticket, got_sign)
+    query_to_sign = "#{ticket}-#{ENV['GENIUS_APP_SECRET']}"
+    Digest::MD5::hexdigest(query_to_sign) == got_sign
   end
 
-  def md5_sign(*info)
-    Digest::MD5::hexdigest(info.join('-'))
-  end
-
-  def genius_config
-    return @gconf if @gconf
-    @gconf = {}
-    File.read('.env').each_line do |line|
-      key, value = line.split('=').map(&:chomp).map(&:strip)
-      @gconf[key] = value
-    end
-    @gconf
+  def app_sign(ticket)
+    to_sign = "#{ENV['GENIUS_APP_ID']}-#{ticket}-#{ENV['GENIUS_APP_SECRET']}"
+    Digest::MD5::hexdigest(to_sign)
   end
 end
